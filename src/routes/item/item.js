@@ -1,15 +1,24 @@
 const express = require("express");
 const router = express.Router();
-const multer = require("multer");
-const upload = multer();
-const type = upload.single('recfile');
+const multer = require('multer')
 
 const itemController = require("../../controllers/item.controller");
-// const upload = require("../../middlewares/upload");
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, './src/public/uploads/')
+    },
+    filename: (req, file, cb) => {
+        console.log(file, "file")
+        cb(null, file.originalname)
+    },
+})
+
+const upload = multer({ storage: storage })
 
 router.route("/item")
     .get(itemController.getItem)
-    .post(type, itemController.postItem)
+    .post(upload.array('file'), itemController.postItem)
 
 router.route("/item/:slug")
     .get(itemController.getItemSlug)

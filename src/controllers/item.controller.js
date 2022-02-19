@@ -27,32 +27,32 @@ async function getItem(req, res) {
 // Add Product
 async function postItem(req, res) {
   try {
-    
+    console.log(req.files)
     const searchCategory = await Category.find({
       categoryId: req.query.categoryId,
     })
 
-    /*     const reqFiles = [];
-    
-        for (let index = 0; index < req.files.length; index++) {
-          reqFiles.push(req.files[index].filename)
-        }  */
+    const reqFiles = [];
+
+    for (let index = 0; index < req.files.length; index++) {
+      console.log(req.files[index].filename, "fieldname");
+      reqFiles.push(req.files[index].filename)
+    }
 
     const item = new Item({
       title: req.body.title,
       price: req.body.price,
       description: req.body.description,
-      condition: req.body.condition
-      //picture: reqFiles,
+      condition: req.body.condition,
+      picture: reqFiles
     })
 
     await item.save()
 
-
     searchCategory.map(async (e) => {
-      //item.category.push(e._id)
+      item.category.push(e._id)
       // Hardcode?
-      //const pepe = await Category.findById(e._id)
+      const pepe = await Category.findById(e._id)
       pepe.items.push(item)
       await pepe.save()
     })
