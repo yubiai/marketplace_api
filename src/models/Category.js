@@ -18,7 +18,11 @@ const categorySchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Item"
   }]
-})
+},
+  {
+    versionKey: false,
+    timestamps: true
+  })
 
 const Category = mongoose.model('Category', categorySchema)
 

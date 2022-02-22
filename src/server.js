@@ -20,6 +20,7 @@ const shipping = require("./routes/shipping/shipping");
 const message = require("./routes/message/message");
 
 const config = require("./db");
+const LoadCategories = require('./scripts/loadCategories');
 
 app.use(cors());
 app.use(passport.initialize())
@@ -37,6 +38,9 @@ app.use("/api/messages", message);
 app.listen(4000, () => {
   console.log("Server running on port 4000");
 });
+
+// Load Categories
+//LoadCategories()
 
 /* const listenToEvents = () => {
   const provider = new ethers.providers.JsonRpcProvider(

@@ -17,12 +17,7 @@ const itemSchema = new Schema({
     unique: true,
     slug: 'title',
   },
-  category: [
-    {
-      type: Schema.Types.Mixed,
-      ref: 'category',
-    },
-  ],
+  category: { type: Schema.Types.ObjectId, ref: 'Category', required: true }
 })
 
 const Item = mongoose.model('Item', itemSchema)

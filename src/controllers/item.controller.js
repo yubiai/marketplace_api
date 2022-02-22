@@ -1,6 +1,8 @@
 const { Category } = require('../models/Category')
 const { Item } = require('../models/Item')
 const { Payment } = require('../models/Payment')
+const cloudinary = require('../utils/cloudinary')
+const fs = require('fs');
 
 const items = {
   '1': { id: 1, url: 'http://UrlToDownloadItem1' },
@@ -24,19 +26,40 @@ async function getItem(req, res) {
   }
 }
 
-// Add Product
+// New Product
 async function postItem(req, res) {
+
+  const urls = []
+  const files = req.files;
+
+  // Validate
+  const body = Object.keys(req.body)
+  const allowedCreates = ['title', 'price', 'condition', 'description', 'seller']
+  const isValidOperation = body.every((elem) => allowedCreates.includes(elem))
+  if(!isValidOperation || !req.query.categoryId) {
+    // Deleted Images
+    for (const file of files) {
+      const { path } = file;
+      console.log(path)
+      fs.unlinkSync(path)
+    }
+    return res.status(400).json({
+      message: 'Data is missing '
+    })
+  }
+
   try {
-    console.log(req.files)
-    const searchCategory = await Category.find({
+    const searchCategory = await Category.findOne({
       categoryId: req.query.categoryId,
     })
 
-    const reqFiles = [];
+    const uploader = async (path) => await cloudinary.uploads(path, 'Images');
 
-    for (let index = 0; index < req.files.length; index++) {
-      console.log(req.files[index].filename, "fieldname");
-      reqFiles.push(req.files[index].filename)
+    for (const file of files) {
+      const { path } = file;
+      const newPath = await uploader(path)
+      urls.push(newPath)
+      fs.unlinkSync(path)
     }
 
     const item = new Item({
@@ -44,26 +67,23 @@ async function postItem(req, res) {
       price: req.body.price,
       description: req.body.description,
       condition: req.body.condition,
-      picture: reqFiles
+      seller: req.body.seller,
+      category: searchCategory._id,
+      status: "new",
+      picture: urls
     })
 
-    await item.save()
+    let saveItem = await item.save()
+    let updateCategory = await Category.findById(searchCategory._id);
+    updateCategory.items.push(saveItem.id)
+    await updateCategory.save();
 
-    searchCategory.map(async (e) => {
-      item.category.push(e._id)
-      // Hardcode?
-      const pepe = await Category.findById(e._id)
-      pepe.items.push(item)
-      await pepe.save()
-    })
-
-    console.log("Save")
-
+    console.log("Save: ", saveItem.id)
     res.status(200).json({
       message: 'Item agregado con éxito!',
     })
+
   } catch (error) {
-    console.log(error, "aca")
     res.status(400).json({
       message: 'Ups Hubo un error!',
       error: error,
@@ -128,10 +148,40 @@ async function getItemUrl(req, res) {
   }
 }
 
+async function test(req, res) {
+  try {
+    const uploader = async (path) => await cloudinary.uploads(path, 'Images');
+
+    if (req.method === 'POST') {
+      const urls = []
+      const files = req.files;
+      for (const file of files) {
+        const { path } = file;
+        const newPath = await uploader(path)
+        urls.push(newPath)
+        fs.unlinkSync(path)
+      }
+
+      res.status(200).json({
+        message: 'images uploaded successfully',
+        data: urls
+      })
+
+    } else {
+      res.status(405).json({
+        err: `${req.method} method not allowed`
+      })
+    }
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 module.exports = {
   getPaymendId,
   getItemUrl,
   getItem,
   postItem,
   getItemSlug,
+  test
 }
