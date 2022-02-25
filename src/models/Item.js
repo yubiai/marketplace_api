@@ -9,7 +9,7 @@ const itemSchema = new Schema({
   price: Number,
   description: String,
   condition: String,
-  picture: Array,
+  pictures: Array,
   seller: String,
   status: String,
   slug: {

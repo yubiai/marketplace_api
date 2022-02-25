@@ -70,7 +70,7 @@ async function postItem(req, res) {
       seller: req.body.seller,
       category: searchCategory._id,
       status: "new",
-      picture: urls
+      pictures: urls
     })
 
     let saveItem = await item.save()
