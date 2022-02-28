@@ -16,5 +16,5 @@ EXPOSE 4000
 
 ENTRYPOINT npm start
 
-## Docker build -t api_marketplace .
+## docker build -t api_marketplace .
 ## docker run --name api_marketplace -p 4001:4000 -d api_marketplace

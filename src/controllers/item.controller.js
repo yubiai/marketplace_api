@@ -1,7 +1,7 @@
 const { Category } = require('../models/Category')
 const { Item } = require('../models/Item')
 const { Payment } = require('../models/Payment')
-const cloudinary = require('../utils/cloudinary')
+const fleek = require('../utils/fleek')
 const fs = require('fs');
 
 const items = {
@@ -53,12 +53,12 @@ async function postItem(req, res) {
       categoryId: req.query.categoryId,
     })
 
-    const uploader = async (path) => await cloudinary.uploads(path, 'Images');
+    const uploader = async (path) => await fleek.uploads(path);
 
     for (const file of files) {
       const { path } = file;
       const newPath = await uploader(path)
-      urls.push(newPath)
+      urls.push(newPath.publicUrl)
       fs.unlinkSync(path)
     }
 
