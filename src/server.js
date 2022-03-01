@@ -18,9 +18,11 @@ const question = require("./routes/question/question");
 const cart = require("./routes/cart/cart");
 const shipping = require("./routes/shipping/shipping");
 const message = require("./routes/message/message");
+const pricecoin = require("./routes/pricecoin/pricecoin");
 
 const config = require("./db");
 const LoadCategories = require('./scripts/loadCategories');
+const { refreshPriceCoin } = require('./worker/regreshPriceCoin');
 
 app.use(cors());
 app.use(passport.initialize())
@@ -34,10 +36,13 @@ app.use("/api/questions", question);
 app.use("/api/carts", cart);
 app.use("/api/shipping", shipping);
 app.use("/api/messages", message);
+app.use("/api/prices", pricecoin);
 
 app.listen(4000, () => {
   console.log("Server running on port 4000");
 });
+
+refreshPriceCoin();
 
 // Load Categories
 //LoadCategories()
