@@ -12,7 +12,7 @@ const { Payment } = require("./models/Payment"); */
 
 const app = express();
 const category = require("./routes/category/category");
-const item = require("./routes/item/item");
+//const item = require("./routes/item/item");
 const profile = require("./routes/profile/profile");
 const question = require("./routes/question/question");
 const cart = require("./routes/cart/cart");
@@ -24,7 +24,7 @@ const config = require("./db");
 const LoadCategories = require('./scripts/loadCategories');
 const { refreshPriceCoin } = require('./worker/regreshPriceCoin');
 
-app.use(cors());
+app.use(cors('*'));
 app.use(passport.initialize())
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -38,8 +38,8 @@ app.use("/api/shipping", shipping);
 app.use("/api/messages", message);
 app.use("/api/prices", pricecoin);
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log("Server running on port 4000");
+app.listen(process.env.PORT || 4000, () => {
+  console.log("Server running on port", process.env.PORT);
 });
 
 refreshPriceCoin();
