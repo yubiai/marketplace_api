@@ -30,7 +30,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use("/api/categories", category)
-app.use("/api/items", passport.authenticate('jwt', {session: false}), item);
+//app.use("/api/items", passport.authenticate('jwt', {session: false}), item);
 app.use("/api/profiles", profile);
 app.use("/api/questions", question);
 app.use("/api/carts", cart);
