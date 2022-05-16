@@ -57,7 +57,7 @@ const profileSchema = new Schema(
       type: String,
       trim: true
     },
-    products: {
+    items: {
       type: Array,
       default: []
     },
