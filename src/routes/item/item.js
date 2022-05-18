@@ -19,6 +19,9 @@ router.route("/item")
     .get(itemController.getItem)
     .post(upload.array('file'), itemController.postItem)
 
+router.route("/new")
+    .post(upload.array('file'), itemController.newItem)
+
 router.route("/item/:slug")
     .get(itemController.getItemSlug)
 

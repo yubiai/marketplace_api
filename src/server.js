@@ -4,6 +4,8 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const path = require("path");
 const passport = require('passport')
+const fs = require("fs");
+const https = require("https");
 require('./utils/passport')(passport)
 
 /* const ethers = require("ethers");
@@ -12,7 +14,7 @@ const { Payment } = require("./models/Payment"); */
 
 const app = express();
 const category = require("./routes/category/category");
-//const item = require("./routes/item/item");
+const item = require("./routes/item/item");
 const profile = require("./routes/profile/profile");
 const question = require("./routes/question/question");
 const cart = require("./routes/cart/cart");
@@ -31,6 +33,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use("/api/categories", category)
 //app.use("/api/items", passport.authenticate('jwt', {session: false}), item);
+app.use("/api/items", item);
 app.use("/api/profiles", profile);
 app.use("/api/questions", question);
 app.use("/api/carts", cart);
@@ -38,9 +41,27 @@ app.use("/api/shipping", shipping);
 app.use("/api/messages", message);
 app.use("/api/prices", pricecoin);
 
-app.listen(process.env.PORT || 4000, () => {
-  console.log("Server running on port", process.env.PORT);
-});
+if (process.env.NODE_ENV === "DEV"){
+  app.listen(process.env.PORT || 4000, () => {
+    console.log("Server running on port", process.env.PORT);
+  });
+} else {
+  const sslServer = https.createServer(
+    {
+      key: fs.readFileSync("./keyback.pem"),
+      cert: fs.readFileSync("./certbackend.pem"),
+    },
+    app
+  );
+  
+  sslServer.listen(process.env.PORT || 4000, () => {
+    console.log("Server running on port", process.env.PORT || 4000);
+  });
+  
+}
+
+
+
 
 refreshPriceCoin();
 

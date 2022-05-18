@@ -41,11 +41,14 @@ const itemSchema = new Schema({
     unique: true,
     slug: "title",
   },
-  category: { type: Schema.Types.ObjectId, ref: "Category", required: true },
+  category: {
+    type: String,
+    required: true,
+    trim: true,
+  },
   subcategories: {
     type: Array,
-  }
-
+  },
 });
 
 const Item = mongoose.model("Item", itemSchema);
