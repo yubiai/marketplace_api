@@ -48,8 +48,8 @@ if (process.env.NODE_ENV === "DEV"){
 } else {
   const sslServer = https.createServer(
     {
-      key: fs.readFileSync("./keyback.pem"),
-      cert: fs.readFileSync("./certbackend.pem"),
+      key: fs.readFileSync("./certs/privkey.pem"),
+      cert: fs.readFileSync("./certs/fullchain.pem"),
     },
     app
   );
