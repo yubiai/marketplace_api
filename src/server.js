@@ -60,10 +60,7 @@ if (process.env.NODE_ENV === "DEV"){
   
 }
 
-
-
-
-refreshPriceCoin();
+//refreshPriceCoin();
 
 // Load Categories
 //LoadCategories()

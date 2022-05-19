@@ -69,7 +69,8 @@ async function login(req, res, next) {
     const response = await checkProfileOnPOH(walletAddress);
     if (response) {
       // If it is not validated in Poh
-      if (!response.registered) {
+      // Falta Validacion si existe una orden activa para dejarlo pasar.
+      if (!response.registered && response.status !== 'EXPIRED') {
         res.status(404).json({ error: "User not validated in Poh" });
         return next();
       }
