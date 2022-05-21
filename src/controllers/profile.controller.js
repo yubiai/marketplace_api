@@ -13,7 +13,7 @@ async function getProfile(req, res, _) {
 
   try {
     const profile = await Profile.findOne({
-      eth_address: walletAddress.toLowerCase()
+      eth_address: walletAddress.toLowerCase(),
     });
     res.status(200).json(profile);
   } catch (error) {
@@ -70,7 +70,7 @@ async function login(req, res, next) {
     if (response) {
       // If it is not validated in Poh
       // Falta Validacion si existe una orden activa para dejarlo pasar.
-      if (!response.registered && response.status !== 'EXPIRED') {
+      if (!response.registered && response.status !== "EXPIRED") {
         res.status(404).json({ error: "User not validated in Poh" });
         return next();
       }
@@ -94,28 +94,24 @@ async function login(req, res, next) {
       if (!userExists) {
         let newUser = new Profile(response);
         let result = await newUser.save();
-        token = signData({
-          walletAddress,
-          id: result._id
-        });
-  
-        res.status(200).json({
-          token: token,
-          ...response,
-        });
-        return next();
+        userExists = {
+          _id: result._id,
+        };
       }
 
+      let dataUser = await Profile.findById(userExists._id);
+
+      console.log(dataUser, "dataUser");
+
       token = signData({
-        walletAddress,
-        id: userExists._id
+        walletAddress: dataUser.eth_address,
+        id: dataUser._id,
       });
 
-      res.status(200).json({
+      return res.status(200).json({
         token: token,
-        ...response,
+        data: dataUser._doc
       });
-      return next();
     }
   } catch (error) {
     console.log("ERROR: ", error);
@@ -213,7 +209,6 @@ async function getMyPurchases(req, res) {
   }
 
   try {
-
     // no finish
     let items = [];
     return res.status(200).json(items);
@@ -235,9 +230,9 @@ async function getMySales(req, res) {
   }
 
   try {
-    const items = await Item.find({ 
+    const items = await Item.find({
       seller: userID,
-      status: "finish"
+      status: "finish",
     });
     return res.status(200).json(items);
   } catch (error) {
@@ -253,5 +248,5 @@ module.exports = {
   getFavorites,
   updateFavorites,
   getMyPurchases,
-  getMySales
+  getMySales,
 };

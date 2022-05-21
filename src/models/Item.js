@@ -24,8 +24,9 @@ const itemSchema = new Schema({
     required: true,
   },
   seller: {
-    type: String,
-    trim: true,
+    type: Schema.Types.ObjectId,
+    ref: "Profile",
+    required: true
   },
   maxorders: {
     type: Number,
