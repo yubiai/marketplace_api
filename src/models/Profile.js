@@ -13,6 +13,10 @@ const profileSchema = new Schema(
       required: true,
       trim: true
     },
+    realname: {
+      type: String,
+      trim: true
+    },
     first_name: {
       type: String,
       trim: true,
@@ -20,10 +24,6 @@ const profileSchema = new Schema(
     last_name: {
       type: String,
       trim: true
-    },
-    dni: {
-      type: String,
-      default: ""
     },
     address: {
       type: String,
@@ -54,7 +54,7 @@ const profileSchema = new Schema(
       default: 1
     },
     photo: {
-      type: String,
+      type: String, 
       trim: true
     },
     items: {

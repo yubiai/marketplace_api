@@ -14,6 +14,7 @@ const { Payment } = require("./models/Payment"); */
 
 const app = express();
 const category = require("./routes/category/category");
+const subcategory = require("./routes/subcategory/subcategory");
 const item = require("./routes/item/item");
 const profile = require("./routes/profile/profile");
 const question = require("./routes/question/question");
@@ -32,6 +33,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use("/api/categories", category)
+app.use("/api/subcategories", subcategory)
 //app.use("/api/items", passport.authenticate('jwt', {session: false}), item);
 app.use("/api/items", item);
 app.use("/api/profiles", profile);

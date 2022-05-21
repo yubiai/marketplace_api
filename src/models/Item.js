@@ -46,9 +46,11 @@ const itemSchema = new Schema({
     required: true,
     trim: true,
   },
-  subcategories: {
-    type: Array,
-  },
+  subcategory: {
+    type: Schema.Types.ObjectId,
+    ref: "subCategory",
+    required: true
+  }
 });
 
 const Item = mongoose.model("Item", itemSchema);

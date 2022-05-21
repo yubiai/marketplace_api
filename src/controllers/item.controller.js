@@ -3,6 +3,7 @@ const { Item } = require("../models/Item");
 const { Payment } = require("../models/Payment");
 const fleek = require("../utils/fleek");
 const fs = require("fs");
+const mongoose = require("mongoose");
 
 const items = {
   1: { id: 1, url: "http://UrlToDownloadItem1" },
@@ -84,8 +85,6 @@ async function newItem(req, res) {
       pictures: urls,
     });
 
-    console.log(item, "item")
-
     let saveItem = await item.save();
     console.log(saveItem, "saveItem")
     res.status(200).json({
@@ -93,6 +92,7 @@ async function newItem(req, res) {
       result: saveItem,
     });
   } catch (error) {
+    console.log(error)
     res.status(400).json({
       message: "Ups Hubo un error!",
       error: error,
