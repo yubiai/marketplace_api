@@ -18,7 +18,11 @@ const subcategorySchema = new Schema({
   items: [{
     type: Schema.Types.ObjectId,
     ref: "Item"
-  }]
+  }],
+  createdBy: {
+    type: Schema.Types.ObjectId,
+    ref: "Profile"
+  }
 },
   {
     versionKey: false,

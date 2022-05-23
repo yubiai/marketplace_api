@@ -20,10 +20,9 @@ async function getCategory(req, res) {
 async function postCategory(req, res) {
   try {
     const item = new Category({
-      categoryId: req.body.categoryId,
       title: req.body.title,
       description: req.body.description,
-      permalink: req.body.permalink,
+      createdBy: req.body.createdBy
     })
 
     await item.save()

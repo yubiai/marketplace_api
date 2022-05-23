@@ -7,8 +7,6 @@ mongoose.plugin(slug)
 const categorySchema = new Schema({
   title: String,
   description: String,
-  permalink: String,
-  categoryId: { type: String, default: 0 },
   slug: {
     type: String,
     unique: true,
@@ -17,7 +15,11 @@ const categorySchema = new Schema({
   items: [{
     type: Schema.Types.ObjectId,
     ref: "Item"
-  }]
+  }],
+  createdBy: {
+    type: Schema.Types.ObjectId,
+    ref: "Profile"
+  }
 },
   {
     versionKey: false,
