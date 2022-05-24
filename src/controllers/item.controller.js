@@ -307,8 +307,44 @@ async function test(req, res) {
   }
 }
 
+
+// Items by Category
+async function getItemsByCategory(req, res) {
+  try {
+    const categoryId = req.params.categoryId;
+    const category = await Category.findById(categoryId);
+
+    const itemsID = category.items;
+
+    if (!itemsID || itemsID.length === 0) {
+      return res.status(400).json({
+        message: "Not items."
+      });
+    }
+
+    let items = [];
+
+    for (let i = 0; i < itemsID.length; i++){
+      let item = await Item.findById(itemsID[i]);
+      items.push(item);
+    }
+
+    return res.status(200).json({
+      message: "Items By Category",
+      result: items
+    });
+  } catch (error) {
+    return res.status(400).json({
+      message: "Ups hubo un error!",
+    });
+  }
+}
+
 module.exports = {
+  // News
+  getItemsByCategory,
   newItem,
+  // Olds
   getPaymendId,
   getItemUrl,
   getItem,
