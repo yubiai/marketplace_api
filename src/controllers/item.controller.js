@@ -30,7 +30,6 @@ async function getItem(req, res) {
 }
 
 async function newItem(req, res) {
-  console.log("Arranco");
   const urls = [];
   const files = req.files;
 
@@ -225,6 +224,7 @@ async function postItem(req, res) {
 // One Product by SLUG
 async function getItemSlug(req, res) {
   try {
+    console.log(req.params.slug,"slug")
     const item = await Item.find({ slug: req.params.slug });
 
     res.status(200).json({
