@@ -224,8 +224,10 @@ async function postItem(req, res) {
 // One Product by SLUG
 async function getItemSlug(req, res) {
   try {
-    console.log(req.params.slug,"slug")
-    const item = await Item.find({ slug: req.params.slug });
+    const item = await Item.findOne({ slug: req.params.slug })
+      .populate("seller", "first_name last_name photo eth_address")
+      .populate("category", "title")
+      .populate("subcategory", "title")
 
     res.status(200).json({
       status: "ok",
@@ -344,11 +346,11 @@ module.exports = {
   // News
   getItemsByCategory,
   newItem,
+  getItemSlug,
   // Olds
   getPaymendId,
   getItemUrl,
   getItem,
   postItem,
-  getItemSlug,
   test,
 };

@@ -49,7 +49,7 @@ const itemSchema = new Schema({
   },
   subcategory: {
     type: Schema.Types.ObjectId,
-    ref: "subCategory",
+    ref: "Subcategory",
     required: true
   }
 });
