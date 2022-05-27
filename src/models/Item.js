@@ -43,13 +43,13 @@ const itemSchema = new Schema({
     slug: "title",
   },
   category: {
-    type: String,
-    required: true,
-    trim: true,
+    type: Schema.Types.ObjectId,
+    ref: "Category",
+    required: true
   },
   subcategory: {
     type: Schema.Types.ObjectId,
-    ref: "subCategory",
+    ref: "Subcategory",
     required: true
   }
 });

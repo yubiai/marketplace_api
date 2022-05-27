@@ -23,6 +23,7 @@ const shipping = require("./routes/shipping/shipping");
 const message = require("./routes/message/message");
 const pricecoin = require("./routes/pricecoin/pricecoin");
 const order = require("./routes/order/order");
+const user = require("./routes/user/user");
 
 const config = require("./db");
 const LoadCategories = require('./scripts/loadCategories');
@@ -44,6 +45,7 @@ app.use("/api/shipping", shipping);
 app.use("/api/messages", message);
 app.use("/api/prices", pricecoin);
 app.use("/api/orders", order);
+app.use("/api/user", user);
 
 if (process.env.NODE_ENV === "DEV"){
   app.listen(process.env.PORT || 4000, () => {

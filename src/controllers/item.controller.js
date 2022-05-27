@@ -1,6 +1,8 @@
 const { Category } = require("../models/Category");
+const { Subcategory } = require("../models/Subcategory");
 const { Item } = require("../models/Item");
 const { Payment } = require("../models/Payment");
+const { Profile } = require("../models/Profile");
 const fleek = require("../utils/fleek");
 const fs = require("fs");
 const mongoose = require("mongoose");
@@ -28,14 +30,12 @@ async function getItem(req, res) {
 }
 
 async function newItem(req, res) {
-  console.log("Arranco");
   const urls = [];
   const files = req.files;
 
   try {
-    // Validate
+    // Validates
     const body = Object.keys(req.body);
-    console.log(body, "1");
     const allowedCreates = [
       "title",
       "description",
@@ -45,9 +45,12 @@ async function newItem(req, res) {
       "category",
       "subcategory",
     ];
+
     const isValidOperation = body.every((elem) =>
       allowedCreates.includes(elem)
     );
+
+    // If Fail
     if (!isValidOperation) {
       // Deleted Images
       for (const file of files) {
@@ -61,7 +64,41 @@ async function newItem(req, res) {
       });
     }
 
-    console.log(req.body);
+    // Verify Profile
+    const profileID = req.body.seller;
+    const verifyProfile = await Profile.findOne({
+      _id: profileID,
+    });
+
+    if (!verifyProfile) {
+      return res.status(400).json({
+        message: "Profile is missing.",
+      });
+    }
+
+    // Verify Category
+    const categoryID = req.body.category;
+    const verifyCategory = await Category.findOne({
+      _id: categoryID,
+    });
+
+    if (!verifyCategory) {
+      return res.status(400).json({
+        message: "Category is missing.",
+      });
+    }
+
+    // Verify Sub Category
+    const subCategoryID = req.body.subcategory;
+    const verifySubCategory = await Subcategory.findOne({
+      _id: subCategoryID,
+    });
+
+    if (!verifySubCategory) {
+      return res.status(400).json({
+        message: "SubCategory is missing.",
+      });
+    }
 
     const uploader = async (path) => await fleek.uploads(path);
 
@@ -71,8 +108,6 @@ async function newItem(req, res) {
       urls.push(newPath.publicUrl);
       fs.unlinkSync(path);
     }
-
-    console.log(urls, "urlss");
 
     const item = new Item({
       title: req.body.title,
@@ -85,14 +120,30 @@ async function newItem(req, res) {
       pictures: urls,
     });
 
-    let saveItem = await item.save();
-    console.log(saveItem, "saveItem")
+    let savedItem = await item.save();
+    console.log(savedItem, "saveItem");
+
+    // Update profile in items.
+    await Profile.findByIdAndUpdate(req.body.seller, {
+      items: [...verifyProfile.items, savedItem._id],
+    });
+
+    // Update category in items.
+    await Category.findByIdAndUpdate(req.body.category, {
+      items: [...verifyCategory.items, savedItem._id],
+    });
+
+    // Update sub category in items.
+    await Subcategory.findByIdAndUpdate(req.body.subcategory, {
+      items: [...verifySubCategory.items, savedItem._id],
+    });
+
     res.status(200).json({
       message: "Item agregado con éxito!",
-      result: saveItem,
+      result: savedItem,
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(400).json({
       message: "Ups Hubo un error!",
       error: error,
@@ -173,7 +224,10 @@ async function postItem(req, res) {
 // One Product by SLUG
 async function getItemSlug(req, res) {
   try {
-    const item = await Item.find({ slug: req.params.slug });
+    const item = await Item.findOne({ slug: req.params.slug })
+      .populate("seller", "first_name last_name photo eth_address")
+      .populate("category", "title")
+      .populate("subcategory", "title")
 
     res.status(200).json({
       status: "ok",
@@ -255,12 +309,48 @@ async function test(req, res) {
   }
 }
 
+
+// Items by Category
+async function getItemsByCategory(req, res) {
+  try {
+    const categoryId = req.params.categoryId;
+    const category = await Category.findById(categoryId);
+
+    const itemsID = category.items;
+
+    if (!itemsID || itemsID.length === 0) {
+      return res.status(400).json({
+        message: "Not items."
+      });
+    }
+
+    let items = [];
+
+    for (let i = 0; i < itemsID.length; i++){
+      let item = await Item.findById(itemsID[i]);
+      items.push(item);
+    }
+
+    return res.status(200).json({
+      message: "Items By Category",
+      result: items
+    });
+  } catch (error) {
+    return res.status(400).json({
+      message: "Ups hubo un error!",
+    });
+  }
+}
+
 module.exports = {
+  // News
+  getItemsByCategory,
   newItem,
+  getItemSlug,
+  // Olds
   getPaymendId,
   getItemUrl,
   getItem,
   postItem,
-  getItemSlug,
   test,
 };
