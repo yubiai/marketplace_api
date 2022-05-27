@@ -34,12 +34,37 @@ async function createOrder(req, res) {
 
 async function getOrderByTransaction(req, res) {
   try {
-    const order = await Order.find({
-        transactionId: req.params.transactionId
-    })
+    let order = {};
+    let transaction = {};
+    let result = {};
+
+    if (req.params.transactionId) {
+      order = await Order.findOne({
+        transactionHash: req.params.transactionId
+      })
+      transaction = await Transaction.findOne({
+        transactionHash: req.params.transactionId
+      })
+
+      const { items, userBuyer, dateOrder, _id } = order;
+      const { transactionHash, transactionIndex, to } = transaction;
+
+      result = {
+        _id,
+        items,
+        userBuyer,
+        dateOrder,
+        transaction: {
+          transactionHash,
+          transactionIndex,
+          to
+        }
+      };
+    }
+
     res.status(200).json({
       status: 'ok',
-      result: order,
+      result
     })
   } catch (error) {
     res.status(404).json({
