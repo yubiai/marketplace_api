@@ -14,8 +14,14 @@ const priceCoinSchema = new Schema({
     type: Number,
     required: true
   },
+  token_address: {
+    type: String,
+  },
+  protocol: {
+    type: String
+  },
   last_updated_at: {
-    type: Number
+    type: Date
   }
 },
   {

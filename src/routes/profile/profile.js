@@ -7,6 +7,8 @@ router.route("/").post(profileController.getProfile);
 
 router.route("/login").post(profileController.login);
 
+router.route("/:userID").get(profileController.getProfileFromId);
+
 router.route("/:userID").put(profileController.updateProfile);
 
 router.route("/:userID").delete(profileController.deleteProfile);
