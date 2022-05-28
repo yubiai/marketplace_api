@@ -18,6 +18,28 @@ async function getChannel(req, res) {
   }
 }
 
+async function getChannelByOrderId(req, res) {
+  const { id } = req.params;
+
+  try {
+    const channel = await Channel.findOne({
+      order_id: id
+    })
+    .populate("buyer", "first_name last_name photo eth_address")
+    .populate("seller", "first_name last_name photo eth_address")
+
+    res.status(200).json({
+      status: "ok",
+      result: channel
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: "Ups Hubo un error!",
+      error: error,
+    });
+  }
+}
+
 async function newChannel(req, res) {
   const channel = req.body;
 
@@ -40,10 +62,9 @@ async function newChannel(req, res) {
 
 async function pushMsg(req, res) {
   const { id } = req.params;
-  console.log(id, req.body);
 
   try {
-    const channel = await Channel.findById(id);
+    const channel = await Channel.findById(id)
     console.log(channel, "channel");
 
     let user = JSON.stringify(req.body.user);
@@ -86,6 +107,7 @@ async function pushMsg(req, res) {
 
 module.exports = {
   getChannel,
+  getChannelByOrderId,
   newChannel,
   pushMsg,
 };
