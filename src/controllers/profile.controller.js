@@ -125,15 +125,15 @@ async function login(req, res, next) {
 async function getFavorites(req, res) {
   const { userID } = req.params;
 
-  let userExists = await Profile.findOne({
-    _id: userID,
-  });
+  let user = await Profile.findById(userID).populate('favorites', '_id title pictures price category subcategory slug')
 
-  if (!userExists) {
+  if (!user) {
     return res.status(404).json({ error: "User id not exists" });
   }
 
-  let favorites = userExists.favorites;
+  console.log(user)
+
+  let favorites = user.favorites;
 
   if (favorites && favorites.length > 0) {
     return res.status(200).json(favorites);
@@ -145,6 +145,7 @@ async function getFavorites(req, res) {
 // Update Favorite Profile
 async function updateFavorites(req, res) {
   const { userID } = req.params;
+  console.log(req.body, "asd")
 
   let userExists = await Profile.findOne({
     _id: userID,
@@ -154,10 +155,16 @@ async function updateFavorites(req, res) {
     return res.status(404).json({ error: "User id not exists" });
   }
 
-  const { product, action } = { ...req.body };
+  const { item_id, action } = { ...req.body };
 
-  if (!product) {
-    return res.status(404).json({ error: "Not Product" });
+  if (!item_id || !action) {
+    return res.status(404).json({ error: "Not Product or not action." });
+  }
+
+  const verifItem = await Item.findById(item_id)
+
+  if (!verifItem) {
+    return res.status(404).json({ error: "Item not exist." });
   }
 
   let newFavorites = userExists.favorites;
@@ -165,20 +172,20 @@ async function updateFavorites(req, res) {
 
   switch (action) {
     case "add":
-      i = newFavorites.indexOf(product);
+      i = newFavorites.indexOf(verifItem._id);
       if (i !== -1) {
         return res
           .status(404)
-          .json({ error: "Product already added as a favorite." });
+          .json({ error: "Item already added as a favorite." });
       }
-      newFavorites.push(product);
+      newFavorites.push(verifItem._id);
       break;
     case "remove":
-      i = newFavorites.indexOf(product);
+      i = newFavorites.indexOf(verifItem._id);
       if (i == -1) {
         return res
           .status(404)
-          .json({ error: "Product not found in favorites." });
+          .json({ error: "Item not found in favorites." });
       }
       newFavorites.splice(i, 1);
       break;
