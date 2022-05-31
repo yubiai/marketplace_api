@@ -48,7 +48,7 @@ async function loadBasicTokens() {
   return _copyTokens;
 }
 
-async function createOrUpdateTokens(loadedTokens=[]) {
+async function createOrUpdateTokens(loadedTokens=[], protocol='') {
   const today = new Date();
   for (const token of loadedTokens) {
     await PriceCoin.updateOne(
@@ -59,7 +59,8 @@ async function createOrUpdateTokens(loadedTokens=[]) {
           symbol: token.symbol,
           price: token.price || 0,
           token_address: (token.platform || {}).token_address,
-          last_updated_at: today
+          last_updated_at: today,
+          protocol
         }
       },
       { upsert: true }
@@ -68,16 +69,19 @@ async function createOrUpdateTokens(loadedTokens=[]) {
 }
 
 // All Prices
-async function allPrices(_, res) {
+async function allPrices(req, res) {
   try {
-    const loadedTokens = await loadBasicTokens();
+    const { protocol } = req.query || {};
+    let query = protocol ? { protocol } : {};
     const now = new Date();
-    const DIFF_MONTH = 1000 * 60 * 60 * 24 * 28;
-    let prices = await PriceCoin.find({});
+    const DIFF_MONTH = 1000 * 60 * 60 * 24 * 14;
+
+    let prices = await PriceCoin.find({...query});
 
     if (!prices.length || (now - prices[0].last_updated_at) / 1000 > DIFF_MONTH) {
-      await createOrUpdateTokens(loadedTokens);
-      prices = await PriceCoin.find({});
+      const loadedTokens = await loadBasicTokens();
+      await createOrUpdateTokens(loadedTokens, 'ERC20');
+      prices = await PriceCoin.find({...query});
     }
     return res.status(200).json(prices);
   } catch (error) {
