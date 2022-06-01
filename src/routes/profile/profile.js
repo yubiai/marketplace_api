@@ -3,7 +3,7 @@ const router = express.Router();
 
 const profileController = require("../../controllers/profile.controller");
 
-router.route("/").post(profileController.getProfile);
+router.route("/:eth_address").get(profileController.getProfile);
 
 router.route("/login").post(profileController.login);
 
@@ -17,7 +17,7 @@ router.route("/favorites/:userID").put(profileController.updateFavorites);
 
 router.route("/my_purchases/:userID").get(profileController.getMyPurchases);
 
-router.route("/my_sales/:userID").get(profileController.getMySales);
+router.route("/my_published/:userID").get(profileController.getMyPublished);
 
 
 module.exports = router;

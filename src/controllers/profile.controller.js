@@ -9,23 +9,24 @@ const { checkProfileOnPOH, signData } = require("../utils/utils");
 
 // TODO: Implement secure request with token
 async function getProfile(req, res, _) {
-  const { walletAddress } = { ...req.body };
+  const { eth_address } = req.params;
 
   try {
     const profile = await Profile.findOne({
-      eth_address: walletAddress.toLowerCase(),
+      eth_address: eth_address.toLowerCase()
     });
     res.status(200).json(profile);
   } catch (error) {
-    res.status(404);
+    res.status(404).json(error);
   }
 }
 
 // Update Profile
 async function updateProfile(req, res) {
   const { userID } = req.params;
+  const dataUser = req.body;
 
-  let verify = await Profile.exists({
+  const verify = await Profile.exists({
     _id: userID,
   });
 
@@ -34,7 +35,14 @@ async function updateProfile(req, res) {
   }
 
   try {
-    await Profile.findByIdAndUpdate(userID, req.body);
+    await Profile.findByIdAndUpdate(userID, {
+      realname: dataUser.realname || '',
+      address: dataUser.address || '',
+      city: dataUser.city || '',
+      country: dataUser.country || '',
+      telephone: dataUser.telephone || '',
+      email: dataUser.email || ''
+    });
     return res.status(200).json({ message: "Successfully updated" });
   } catch (error) {
     return res.status(404).json(error);
@@ -224,8 +232,8 @@ async function getMyPurchases(req, res) {
   }
 }
 
-// My Sales
-async function getMySales(req, res) {
+// My Published
+async function getMyPublished(req, res) {
   const { userID } = req.params;
 
   let userExists = await Profile.findOne({
@@ -238,8 +246,7 @@ async function getMySales(req, res) {
 
   try {
     const items = await Item.find({
-      seller: userID,
-      status: "finish",
+      seller: userID
     });
     return res.status(200).json(items);
   } catch (error) {
@@ -252,8 +259,9 @@ module.exports = {
   login,
   updateProfile,
   deleteProfile,
-  getFavorites,
-  updateFavorites,
   getMyPurchases,
-  getMySales,
+  getMyPublished,
+  //Favorites
+  getFavorites,
+  updateFavorites
 };

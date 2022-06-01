@@ -227,15 +227,32 @@ async function getItemSlug(req, res) {
     const item = await Item.findOne({ slug: req.params.slug })
       .populate("seller", "first_name last_name photo eth_address")
       .populate("category", "title")
-      .populate("subcategory", "title")
+      .populate("subcategory", "title");
 
-    res.status(200).json({
+    return res.status(200).json({
       status: "ok",
       result: item,
     });
   } catch (error) {
     console.log(error);
-    res.status(400).json({
+    return res.status(400).json({
+      message: "Ups Hubo un error!",
+      error: error,
+    });
+  }
+}
+
+// One Product by SLUG
+async function getItemsAll(req, res) {
+  try {
+    const items = await Item.find({},'_id title price pictures')
+
+    return res.status(200).json({
+      status: "ok",
+      result: items,
+    });
+  } catch (error) {
+    return res.status(400).json({
       message: "Ups Hubo un error!",
       error: error,
     });
@@ -309,7 +326,6 @@ async function test(req, res) {
   }
 }
 
-
 // Items by Category
 async function getItemsByCategory(req, res) {
   try {
@@ -320,20 +336,20 @@ async function getItemsByCategory(req, res) {
 
     if (!itemsID || itemsID.length === 0) {
       return res.status(400).json({
-        message: "Not items."
+        message: "Not items.",
       });
     }
 
     let items = [];
 
-    for (let i = 0; i < itemsID.length; i++){
+    for (let i = 0; i < itemsID.length; i++) {
       let item = await Item.findById(itemsID[i]);
       items.push(item);
     }
 
     return res.status(200).json({
       message: "Items By Category",
-      result: items
+      result: items,
     });
   } catch (error) {
     return res.status(400).json({
@@ -347,6 +363,7 @@ module.exports = {
   getItemsByCategory,
   newItem,
   getItemSlug,
+  getItemsAll,
   // Olds
   getPaymendId,
   getItemUrl,
