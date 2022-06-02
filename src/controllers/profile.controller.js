@@ -273,7 +273,6 @@ module.exports = {
   updateProfile,
   deleteProfile,
   getMyPurchases,
-  getMySales,
   getProfileFromId,
   getMyPublished,
   //Favorites
