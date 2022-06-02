@@ -57,14 +57,14 @@ const profileSchema = new Schema(
       type: String, 
       trim: true
     },
-    items: {
-      type: Array,
-      default: []
-    },
-    favorites: {
-      type: Array,
-      default: []
-    },
+    items: [{
+      type: Schema.Types.ObjectId,
+      ref: "Item"
+    }],
+    favorites: [{
+      type: Schema.Types.ObjectId,
+      ref: "Item"
+    }]
   },
   {
     versionKey: false,
