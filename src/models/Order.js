@@ -62,6 +62,9 @@ const orderSchema = new Schema(
     },
     transactionHash: {
       type: String,
+    },
+    status: {
+      type: String
     }
   },
 );

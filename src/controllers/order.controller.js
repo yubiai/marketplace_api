@@ -12,11 +12,12 @@ async function createOrder(req, res) {
     try {
       const { transactionInfo, order } = req.body; 
       const transactionCreated = await createTransaction({...transactionInfo});
-      const { items, userBuyer } = order;
+      const { items, userBuyer, status } = order;
 
       const orderCreated = new Order({
         items,
         userBuyer,
+        status,
         transactionHash: transactionCreated.transactionHash
       })
   
@@ -30,7 +31,34 @@ async function createOrder(req, res) {
         error: error,
       })
     }
+}
+
+async function updateOrderStatus(req, res) {
+  try {
+    const { status } = req.body;
+
+    if (req.params.transactionId) {
+      await Order.findOneAndUpdate({
+        transactionHash: req.params.transactionId
+      }, { status })
+      res.status(200).json({
+        status: 'ok',
+        result
+      })
+    } else {
+      res.status(404).json({
+        message: 'Order not found',
+        error: error,
+      })
+    }
+  } catch (error) {
+    res.status(400).json({
+      message: 'Error on order',
+      error: error,
+    })
   }
+}
+
 
 async function getOrderByTransaction(req, res) {
   try {
@@ -46,7 +74,7 @@ async function getOrderByTransaction(req, res) {
         transactionHash: req.params.transactionId
       })
 
-      const { items, userBuyer, dateOrder, _id } = order;
+      const { items, userBuyer, dateOrder, _id, status } = order;
       const { transactionHash, transactionIndex, to } = transaction;
 
       result = {
@@ -54,6 +82,7 @@ async function getOrderByTransaction(req, res) {
         items,
         userBuyer,
         dateOrder,
+        status,
         transaction: {
           transactionHash,
           transactionIndex,
@@ -76,5 +105,6 @@ async function getOrderByTransaction(req, res) {
 
 module.exports = {
   createOrder,
-  getOrderByTransaction
+  getOrderByTransaction,
+  updateOrderStatus
 }
