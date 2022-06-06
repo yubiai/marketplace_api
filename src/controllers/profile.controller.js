@@ -21,6 +21,19 @@ async function getProfile(req, res, _) {
   }
 }
 
+async function getProfileFromId(req, res) {
+  const { _id } = { ...req.body };
+  try {
+    const profile = await Profile.findById(_id);
+    res.status(200).json({
+      name: `${profile.first_name} ${profile.last_name}`,
+      addressWallet: profile.eth_address
+    });
+  } catch (error) {
+    res.status(404);
+  }
+}
+
 // Update Profile
 async function updateProfile(req, res) {
   const { userID } = req.params;
@@ -260,6 +273,7 @@ module.exports = {
   updateProfile,
   deleteProfile,
   getMyPurchases,
+  getProfileFromId,
   getMyPublished,
   //Favorites
   getFavorites,

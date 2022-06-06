@@ -19,6 +19,10 @@ const itemSchema = new Schema({
     type: Number,
     required: true,
   },
+  currencySymbolPrice: {
+    type: String,
+    required: true
+  },
   pictures: {
     type: Array,
     required: true,

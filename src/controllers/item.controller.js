@@ -165,6 +165,7 @@ async function postItem(req, res) {
     "condition",
     "description",
     "seller",
+    "currencySymbolPrice"
   ];
   const isValidOperation = body.every((elem) => allowedCreates.includes(elem));
   if (!isValidOperation || !req.query.categoryId) {

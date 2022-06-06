@@ -21,6 +21,7 @@ const question = require("./routes/question/question");
 const cart = require("./routes/cart/cart");
 const shipping = require("./routes/shipping/shipping");
 const pricecoin = require("./routes/pricecoin/pricecoin");
+const order = require("./routes/order/order");
 const user = require("./routes/user/user");
 const channel = require("./routes/channel/channel");
 
@@ -43,6 +44,7 @@ app.use("/api/carts", cart);
 app.use("/api/shipping", shipping);
 app.use("/api/channel", channel);
 app.use("/api/prices", pricecoin);
+app.use("/api/orders", order);
 app.use("/api/user", user);
 
 if (process.env.NODE_ENV === "DEV"){
