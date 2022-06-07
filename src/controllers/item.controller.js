@@ -165,7 +165,7 @@ async function postItem(req, res) {
     "condition",
     "description",
     "seller",
-    "currencySymbolPrice"
+    "currencySymbolPrice",
   ];
   const isValidOperation = body.every((elem) => allowedCreates.includes(elem));
   if (!isValidOperation || !req.query.categoryId) {
@@ -246,7 +246,7 @@ async function getItemSlug(req, res) {
 // One Product by SLUG
 async function getItemsAll(req, res) {
   try {
-    const items = await Item.find({},'_id title price pictures')
+    const items = await Item.find({}, "_id title price pictures");
 
     return res.status(200).json({
       status: "ok",
@@ -359,12 +359,49 @@ async function getItemsByCategory(req, res) {
   }
 }
 
+// Items by Category
+async function search(req, res) {
+  try {
+    const query = req.query.q;
+    console.log(query);
+
+    const result = await Item.aggregate([
+      {
+        $search: {
+          index: "default",
+          text: {
+            query: query,
+            path: "title",
+          },
+        },
+      },
+      {
+        $project: {
+          title: 1,
+          slug: 1,
+          pictures: 1,
+          price: 1
+         },
+      },
+    ]);
+
+    console.log(result, "result");
+
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(400).json({
+      message: "Ups hubo un error!",
+    });
+  }
+}
+
 module.exports = {
   // News
   getItemsByCategory,
   newItem,
   getItemSlug,
   getItemsAll,
+  search,
   // Olds
   getPaymendId,
   getItemUrl,

@@ -28,6 +28,8 @@ router.route("/new").post(upload.array("file"), itemController.newItem);
 
 router.route("/item/:slug").get(itemController.getItemSlug);
 
+router.route("/search/").get(itemController.search);
+
 router.route("/bycategory/:categoryId").get(itemController.getItemsByCategory);
 
 router.route("/getPaymentId/:itemId").get(itemController.getPaymendId);
