@@ -1,4 +1,5 @@
 const { Channel } = require("../models/Channel");
+const ObjectId = require("mongoose").Types.ObjectId;
 
 async function getChannel(req, res) {
   const { id } = req.params;
@@ -42,9 +43,14 @@ async function getChannelByOrderId(req, res) {
 
 async function newChannel(req, res) {
   const channel = req.body;
+  const { order_id, buyer, seller } = channel;
 
   try {
-    let channelNew = new Channel(channel);
+    let channelNew = new Channel({
+      order_id,
+      buyer: ObjectId(buyer),
+      seller: ObjectId(seller)
+    });
     result = await channelNew.save();
 
     return res.status(200).json({
