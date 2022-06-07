@@ -1,57 +1,78 @@
-const { Category } = require('../models/Category');
-const { Item }=require('../models/Item');
+const { Category } = require("../models/Category");
 
 async function getCategory(req, res) {
   try {
-    const categories = await Category.find({}).populate('items')
+    const categories = await Category.find({}).populate("items");
 
     res.status(200).json({
-      status: 'ok',
+      status: "ok",
       result: categories,
-    })
+    });
   } catch (error) {
     res.status(400).json({
-      message: 'Ups Hubo un error!',
+      message: "Ups Hubo un error!",
       error: error,
-    })
+    });
   }
 }
 
 async function postCategory(req, res) {
   try {
     const item = new Category({
-      categoryId: req.body.categoryId,
       title: req.body.title,
       description: req.body.description,
-      permalink: req.body.permalink,
-    })
+      createdBy: req.body.createdBy,
+    });
 
-    await item.save()
+    await item.save();
 
     res.status(200).json({
-      message: 'Categoria agregado con éxito!',
-    })
+      message: "Categoria agregado con éxito!",
+    });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(400).json({
-      message: 'Ups Hubo un error!',
+      message: "Ups Hubo un error!",
       error: error,
-    })
+    });
   }
 }
 
 async function getCategoryId(req, res) {
   try {
-    const categories = await Category.findById({_id: req.params.id}).populate("items")
+    const categories = await Category.findById({ _id: req.params.id }).populate(
+      "items"
+    );
     res.status(200).json({
-      status: 'ok',
-      response: categories
-    })
+      status: "ok",
+      response: categories,
+    });
   } catch (error) {
     res.status(400).json({
-      message: 'Ups Hubo un error!',
+      message: "Ups Hubo un error!",
       error: error,
-    })
+    });
+  }
+}
+
+async function getCategoryBySlug(req, res) {
+  try {
+    const slug = req.params.slug;
+    if (!slug) {
+      return res.status(400).json({
+        message: "Not Slug"
+      });
+    }
+    const category = await Category.findOne({ slug: slug });
+    res.status(200).json({
+      status: "ok",
+      result: category
+    });
+  } catch (error) {
+    return res.status(400).json({
+      message: "Ups Hubo un error!",
+      error: error,
+    });
   }
 }
 
@@ -59,4 +80,5 @@ module.exports = {
   getCategory,
   postCategory,
   getCategoryId,
-}
+  getCategoryBySlug
+};

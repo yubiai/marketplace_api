@@ -4,6 +4,8 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const path = require("path");
 const passport = require('passport')
+const fs = require("fs");
+const https = require("https");
 require('./utils/passport')(passport)
 
 /* const ethers = require("ethers");
@@ -12,37 +14,59 @@ const { Payment } = require("./models/Payment"); */
 
 const app = express();
 const category = require("./routes/category/category");
+const subcategory = require("./routes/subcategory/subcategory");
 const item = require("./routes/item/item");
 const profile = require("./routes/profile/profile");
 const question = require("./routes/question/question");
 const cart = require("./routes/cart/cart");
 const shipping = require("./routes/shipping/shipping");
-const message = require("./routes/message/message");
 const pricecoin = require("./routes/pricecoin/pricecoin");
+const order = require("./routes/order/order");
+const user = require("./routes/user/user");
+const channel = require("./routes/channel/channel");
 
 const config = require("./db");
 const LoadCategories = require('./scripts/loadCategories');
 const { refreshPriceCoin } = require('./worker/regreshPriceCoin');
 
-app.use(cors());
+app.use(cors('*'));
 app.use(passport.initialize())
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use("/api/categories", category)
-app.use("/api/items", passport.authenticate('jwt', {session: false}), item);
+app.use("/api/subcategories", subcategory)
+//app.use("/api/items", passport.authenticate('jwt', {session: false}), item);
+app.use("/api/items", item);
 app.use("/api/profiles", profile);
 app.use("/api/questions", question);
 app.use("/api/carts", cart);
 app.use("/api/shipping", shipping);
-app.use("/api/messages", message);
+app.use("/api/channel", channel);
 app.use("/api/prices", pricecoin);
+app.use("/api/orders", order);
+app.use("/api/user", user);
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log("Server running on port 4000");
-});
+if (process.env.NODE_ENV === "DEV"){
+  app.listen(process.env.PORT || 4000, () => {
+    console.log("Server running on port", process.env.PORT);
+  });
+} else {
+  const sslServer = https.createServer(
+    {
+      key: fs.readFileSync("./certs/privkey.pem"),
+      cert: fs.readFileSync("./certs/fullchain.pem"),
+    },
+    app
+  );
+  
+  sslServer.listen(process.env.PORT || 4000, () => {
+    console.log("Server running on port", process.env.PORT || 4000);
+  });
+  
+}
 
-refreshPriceCoin();
+//refreshPriceCoin();
 
 // Load Categories
 //LoadCategories()

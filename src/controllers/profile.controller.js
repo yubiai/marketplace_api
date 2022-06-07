@@ -9,13 +9,26 @@ const { checkProfileOnPOH, signData } = require("../utils/utils");
 
 // TODO: Implement secure request with token
 async function getProfile(req, res, _) {
-  const { walletAddress } = { ...req.body };
+  const { eth_address } = req.params;
 
   try {
     const profile = await Profile.findOne({
-      eth_address: walletAddress.toLowerCase()
+      eth_address: eth_address.toLowerCase()
     });
     res.status(200).json(profile);
+  } catch (error) {
+    res.status(404).json(error);
+  }
+}
+
+async function getProfileFromId(req, res) {
+  const { _id } = { ...req.body };
+  try {
+    const profile = await Profile.findById(_id);
+    res.status(200).json({
+      name: `${profile.first_name} ${profile.last_name}`,
+      addressWallet: profile.eth_address
+    });
   } catch (error) {
     res.status(404);
   }
@@ -24,8 +37,9 @@ async function getProfile(req, res, _) {
 // Update Profile
 async function updateProfile(req, res) {
   const { userID } = req.params;
+  const dataUser = req.body;
 
-  let verify = await Profile.exists({
+  const verify = await Profile.exists({
     _id: userID,
   });
 
@@ -34,7 +48,14 @@ async function updateProfile(req, res) {
   }
 
   try {
-    await Profile.findByIdAndUpdate(userID, req.body);
+    await Profile.findByIdAndUpdate(userID, {
+      realname: dataUser.realname || '',
+      address: dataUser.address || '',
+      city: dataUser.city || '',
+      country: dataUser.country || '',
+      telephone: dataUser.telephone || '',
+      email: dataUser.email || ''
+    });
     return res.status(200).json({ message: "Successfully updated" });
   } catch (error) {
     return res.status(404).json(error);
@@ -69,7 +90,8 @@ async function login(req, res, next) {
     const response = await checkProfileOnPOH(walletAddress);
     if (response) {
       // If it is not validated in Poh
-      if (!response.registered) {
+      // Falta Validacion si existe una orden activa para dejarlo pasar.
+      if (!response.registered && response.status !== "EXPIRED") {
         res.status(404).json({ error: "User not validated in Poh" });
         return next();
       }
@@ -93,28 +115,24 @@ async function login(req, res, next) {
       if (!userExists) {
         let newUser = new Profile(response);
         let result = await newUser.save();
-        token = signData({
-          walletAddress,
-          id: result._id
-        });
-  
-        res.status(200).json({
-          token: token,
-          ...response,
-        });
-        return next();
+        userExists = {
+          _id: result._id,
+        };
       }
 
+      let dataUser = await Profile.findById(userExists._id);
+
+      console.log(dataUser, "dataUser");
+
       token = signData({
-        walletAddress,
-        id: userExists._id
+        walletAddress: dataUser.eth_address,
+        id: dataUser._id,
       });
 
-      res.status(200).json({
+      return res.status(200).json({
         token: token,
-        ...response,
+        data: dataUser._doc
       });
-      return next();
     }
   } catch (error) {
     console.log("ERROR: ", error);
@@ -128,15 +146,15 @@ async function login(req, res, next) {
 async function getFavorites(req, res) {
   const { userID } = req.params;
 
-  let userExists = await Profile.findOne({
-    _id: userID,
-  });
+  let user = await Profile.findById(userID).populate('favorites', '_id title pictures price category subcategory slug')
 
-  if (!userExists) {
+  if (!user) {
     return res.status(404).json({ error: "User id not exists" });
   }
 
-  let favorites = userExists.favorites;
+  console.log(user)
+
+  let favorites = user.favorites;
 
   if (favorites && favorites.length > 0) {
     return res.status(200).json(favorites);
@@ -148,6 +166,7 @@ async function getFavorites(req, res) {
 // Update Favorite Profile
 async function updateFavorites(req, res) {
   const { userID } = req.params;
+  console.log(req.body, "asd")
 
   let userExists = await Profile.findOne({
     _id: userID,
@@ -157,10 +176,16 @@ async function updateFavorites(req, res) {
     return res.status(404).json({ error: "User id not exists" });
   }
 
-  const { product, action } = { ...req.body };
+  const { item_id, action } = { ...req.body };
 
-  if (!product) {
-    return res.status(404).json({ error: "Not Product" });
+  if (!item_id || !action) {
+    return res.status(404).json({ error: "Not Product or not action." });
+  }
+
+  const verifItem = await Item.findById(item_id)
+
+  if (!verifItem) {
+    return res.status(404).json({ error: "Item not exist." });
   }
 
   let newFavorites = userExists.favorites;
@@ -168,20 +193,20 @@ async function updateFavorites(req, res) {
 
   switch (action) {
     case "add":
-      i = newFavorites.indexOf(product);
+      i = newFavorites.indexOf(verifItem._id);
       if (i !== -1) {
         return res
           .status(404)
-          .json({ error: "Product already added as a favorite." });
+          .json({ error: "Item already added as a favorite." });
       }
-      newFavorites.push(product);
+      newFavorites.push(verifItem._id);
       break;
     case "remove":
-      i = newFavorites.indexOf(product);
+      i = newFavorites.indexOf(verifItem._id);
       if (i == -1) {
         return res
           .status(404)
-          .json({ error: "Product not found in favorites." });
+          .json({ error: "Item not found in favorites." });
       }
       newFavorites.splice(i, 1);
       break;
@@ -212,7 +237,6 @@ async function getMyPurchases(req, res) {
   }
 
   try {
-
     // no finish
     let items = [];
     return res.status(200).json(items);
@@ -221,8 +245,8 @@ async function getMyPurchases(req, res) {
   }
 }
 
-// My Sales
-async function getMySales(req, res) {
+// My Published
+async function getMyPublished(req, res) {
   const { userID } = req.params;
 
   let userExists = await Profile.findOne({
@@ -234,9 +258,8 @@ async function getMySales(req, res) {
   }
 
   try {
-    const items = await Item.find({ 
-      seller: userID,
-      status: "finish"
+    const items = await Item.find({
+      seller: userID
     });
     return res.status(200).json(items);
   } catch (error) {
@@ -249,8 +272,10 @@ module.exports = {
   login,
   updateProfile,
   deleteProfile,
-  getFavorites,
-  updateFavorites,
   getMyPurchases,
-  getMySales
+  getProfileFromId,
+  getMyPublished,
+  //Favorites
+  getFavorites,
+  updateFavorites
 };

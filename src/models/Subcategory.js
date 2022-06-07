@@ -4,9 +4,12 @@ const slug = require('mongoose-slug-updater')
 
 mongoose.plugin(slug)
 
-const categorySchema = new Schema({
+const subcategorySchema = new Schema({
   title: String,
-  description: String,
+  status: {
+    type: Boolean,
+    default: true
+  },
   slug: {
     type: String,
     unique: true,
@@ -26,8 +29,8 @@ const categorySchema = new Schema({
     timestamps: true
   })
 
-const Category = mongoose.model('Category', categorySchema)
+const Subcategory = mongoose.model('Subcategory', subcategorySchema)
 
 module.exports = {
-  Category,
+  Subcategory,
 }

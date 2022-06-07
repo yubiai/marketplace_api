@@ -5,6 +5,7 @@ const {
 const router = express.Router();
 
 // Get Price Coin
+router.route("/:protocol").get(allPrices);
 router.route("/").get(allPrices);
 
 
