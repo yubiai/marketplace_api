@@ -38,9 +38,10 @@ async function updateOrderStatus(req, res) {
     const { status } = req.body;
 
     if (req.params.transactionId) {
-      await Order.findOneAndUpdate({
+      const result = await Order.findOneAndUpdate({
         transactionHash: req.params.transactionId
       }, { status })
+
       res.status(200).json({
         status: 'ok',
         result
