@@ -5,7 +5,7 @@ const { Payment } = require("../models/Payment");
 const { Profile } = require("../models/Profile");
 const fleek = require("../utils/fleek");
 const fs = require("fs");
-const mongoose = require("mongoose");
+const getPagination = require("../libs/getPagination");
 
 const items = {
   1: { id: 1, url: "http://UrlToDownloadItem1" },
@@ -243,7 +243,7 @@ async function getItemSlug(req, res) {
   }
 }
 
-// One Product by SLUG
+// Get Items All
 async function getItemsAll(req, res) {
   try {
     const items = await Item.find({}, "_id title price pictures");
@@ -328,33 +328,36 @@ async function test(req, res) {
 }
 
 // Items by Category
-async function getItemsByCategory(req, res) {
+async function getItems(req, res) {
   try {
-    const categoryId = req.params.categoryId;
-    const category = await Category.findById(categoryId);
+    const { size, page, categoryId, subcategoryId } = req.query;
+    const { limit, offset } = getPagination(page, size);
+    const sort = { item: 1 };
 
-    const itemsID = category.items;
+    let condition = {};
 
-    if (!itemsID || itemsID.length === 0) {
-      return res.status(400).json({
-        message: "Not items.",
-      });
+    if (categoryId) {
+      condition.category = categoryId;
     }
 
-    let items = [];
-
-    for (let i = 0; i < itemsID.length; i++) {
-      let item = await Item.findById(itemsID[i]);
-      items.push(item);
+    if (subcategoryId) {
+      condition.subcategory = subcategoryId;
     }
+
+    const data = await Item.paginate(condition, { offset, limit, sort });
 
     return res.status(200).json({
-      message: "Items By Category",
-      result: items,
+      totalItems: data.totalDocs,
+      items: data.docs,
+      totalPages: data.totalPages,
+      currentPage: data.page - 1,
+      prevPage: data.prevPage - 1,
+      nextPage: data.nextPage - 1,
     });
   } catch (error) {
     return res.status(400).json({
       message: "Ups hubo un error!",
+      error: JSON.stringify(error.message)
     });
   }
 }
@@ -380,8 +383,8 @@ async function search(req, res) {
           title: 1,
           slug: 1,
           pictures: 1,
-          price: 1
-         },
+          price: 1,
+        },
       },
     ]);
 
@@ -397,10 +400,9 @@ async function search(req, res) {
 
 module.exports = {
   // News
-  getItemsByCategory,
+  getItems,
   newItem,
   getItemSlug,
-  getItemsAll,
   search,
   // Olds
   getPaymendId,

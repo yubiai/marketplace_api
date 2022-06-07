@@ -3,8 +3,9 @@ const router = express.Router();
 
 const subcategoryController = require("../../controllers/subcategory.controller");
 
+router.route("/:categoryId").get(subcategoryController.getSubCategories);
+
 router.route("/")
-    .get(subcategoryController.getSubCategories)
     .post(subcategoryController.postSubCategory);
 
 module.exports = router;

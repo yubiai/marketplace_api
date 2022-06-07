@@ -2,14 +2,13 @@ const { Subcategory } = require('../models/Subcategory');
 
 async function getSubCategories(req, res) {
   try {
-    const subcategories = await Subcategory.find({})
-
-    res.status(200).json({
-      status: 'ok',
-      result: subcategories,
+    const categoryId = req.params.categoryId;
+    const subcategories = await Subcategory.find({
+      category: categoryId
     })
+    return res.status(200).json(subcategories)
   } catch (error) {
-    res.status(400).json({
+    return res.status(400).json({
       message: 'Ups Hubo un error!',
       error: error,
     })
@@ -22,7 +21,8 @@ async function postSubCategory(req, res) {
     const item = new Subcategory({
       title: req.body.title,
       description: req.body.description,
-      createdBy: req.body.createdBy
+      createdBy: req.body.createdBy,
+      category: req.body.category
     })
 
     await item.save()

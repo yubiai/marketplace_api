@@ -22,6 +22,10 @@ const subcategorySchema = new Schema({
   createdBy: {
     type: Schema.Types.ObjectId,
     ref: "Profile"
+  },
+  category: {
+    type: Schema.Types.ObjectId,
+    ref: "Category"
   }
 },
   {

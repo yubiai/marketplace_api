@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const slug = require("mongoose-slug-updater");
+const mongoosePagination = require("mongoose-paginate-v2");
 
 mongoose.plugin(slug);
 
@@ -57,6 +58,8 @@ const itemSchema = new Schema({
     required: true
   }
 });
+
+itemSchema.plugin(mongoosePagination)
 
 const Item = mongoose.model("Item", itemSchema);
 
