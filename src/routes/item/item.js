@@ -31,8 +31,4 @@ router.route("/item/:slug").get(itemController.getItemSlug);
 
 router.route("/search/").get(itemController.search);
 
-router.route("/getPaymentId/:itemId").get(itemController.getPaymendId);
-
-router.route("/getItemUrl/:paymentId").get(itemController.getItemUrl);
-
 module.exports = router;
