@@ -118,7 +118,7 @@ async function newItem(req, res) {
       category: req.body.category,
       subcategory: req.body.subcategory,
       pictures: urls,
-      currencySymbolPrice: "DAI"
+      currencySymbolPrice: req.body.currencySymbolPrice || "ETH"
     });
 
     let savedItem = await item.save();
