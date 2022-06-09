@@ -118,6 +118,7 @@ async function newItem(req, res) {
       category: req.body.category,
       subcategory: req.body.subcategory,
       pictures: urls,
+      currencySymbolPrice: "DAI"
     });
 
     let savedItem = await item.save();
@@ -165,7 +166,7 @@ async function postItem(req, res) {
     "condition",
     "description",
     "seller",
-    "currencySymbolPrice",
+    "currencySymbolPrice"
   ];
   const isValidOperation = body.every((elem) => allowedCreates.includes(elem));
   if (!isValidOperation || !req.query.categoryId) {

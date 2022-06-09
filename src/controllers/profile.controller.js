@@ -1,3 +1,4 @@
+const getPagination = require("../libs/getPagination");
 const { Item } = require("../models/Item");
 const { Profile } = require("../models/Profile");
 const { checkProfileOnPOH, signData } = require("../utils/utils");
@@ -145,22 +146,43 @@ async function login(req, res, next) {
 // Get Favorites
 async function getFavorites(req, res) {
   const { userID } = req.params;
+  const { size, page } = req.query;
+  const { limit, offset } = getPagination(page, size);
 
-  let user = await Profile.findById(userID).populate('favorites', '_id title pictures price category subcategory slug')
+  let user = await Profile.findById(userID);
 
   if (!user) {
     return res.status(404).json({ error: "User id not exists" });
   }
 
-  console.log(user)
-
   let favorites = user.favorites;
+  if(favorites.length === 0){
+    return res.status(404).json({ error: "Favorites not found" });
+  }
+  
+  const total_items = favorites.length;
+	const total_pages = Math.ceil(favorites.length / limit);
+	current_page = Number(page) || 0;
+  favorites = favorites.slice(offset).slice(0, limit);
 
-  if (favorites && favorites.length > 0) {
-    return res.status(200).json(favorites);
+  let items = [];
+  
+  for (let i = 0; i < favorites.length; i++){
+    const item = await Item.findById(favorites[i]).populate('favorites', '_id title pictures price category subcategory slug')
+    if(item){
+      items.push(item);
+    }
   }
 
-  return res.status(404).json({ error: "Favorites not found" });
+  return res.status(200).json({
+    totalItems: total_items,
+    totalPages: total_pages,
+    currentPage: current_page,
+    prevPage: current_page ? current_page - 1 : null,
+    nextPage: total_pages > current_page + 1 ? current_page + 1 : null,
+    items
+  });
+
 }
 
 // Update Favorite Profile
