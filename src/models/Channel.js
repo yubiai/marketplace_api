@@ -4,8 +4,9 @@ const Schema = mongoose.Schema;
 const channelSchema = new Schema(
   {
     order_id: {
-      type: String,
-      required: true,
+      type: Schema.Types.ObjectId,
+      ref: "Order",
+      required: true
     },
     buyer: {
       type: Schema.Types.ObjectId,
