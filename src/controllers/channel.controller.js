@@ -29,10 +29,7 @@ async function getChannelByOrderId(req, res) {
     .populate("buyer", "first_name last_name photo eth_address")
     .populate("seller", "first_name last_name photo eth_address")
 
-    res.status(200).json({
-      status: "ok",
-      result: channel
-    });
+    res.status(200).json(channel);
   } catch (error) {
     res.status(400).json({
       message: "Ups Hubo un error!",
