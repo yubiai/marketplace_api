@@ -1,36 +1,35 @@
-const { Order, Transaction } = require('../models/Order');
-
+const { Order, Transaction } = require("../models/Order");
 
 async function createTransaction(transactionData) {
-    const transaction = new Transaction({
-        ...transactionData
-    })
-    return await transaction.save()
+  const transaction = new Transaction({
+    ...transactionData,
+  });
+  return await transaction.save();
 }
 
 async function createOrder(req, res) {
-    try {
-      const { transactionInfo, order } = req.body; 
-      const transactionCreated = await createTransaction({...transactionInfo});
-      const { items, userBuyer, status } = order;
+  try {
+    const { transactionInfo, order } = req.body;
+    const transactionCreated = await createTransaction({ ...transactionInfo });
+    const { items, userBuyer, status } = order;
 
-      const orderCreated = new Order({
-        items,
-        userBuyer,
-        status,
-        transactionHash: transactionCreated.transactionHash
-      })
-  
-      await orderCreated.save()
-  
-      res.status(200).json({ result: orderCreated })
-    } catch (error) {
-      console.log(error)
-      res.status(400).json({
-        message: 'Ups Hubo un error!',
-        error: error,
-      })
-    }
+    const orderCreated = new Order({
+      items,
+      userBuyer,
+      status,
+      transactionHash: transactionCreated.transactionHash,
+    });
+
+    await orderCreated.save();
+
+    res.status(200).json({ result: orderCreated });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({
+      message: "Ups Hubo un error!",
+      error: error,
+    });
+  }
 }
 
 async function updateOrderStatus(req, res) {
@@ -38,28 +37,30 @@ async function updateOrderStatus(req, res) {
     const { status } = req.body;
 
     if (req.params.transactionId) {
-      const result = await Order.findOneAndUpdate({
-        transactionHash: req.params.transactionId
-      }, { status })
+      const result = await Order.findOneAndUpdate(
+        {
+          transactionHash: req.params.transactionId,
+        },
+        { status }
+      );
 
       res.status(200).json({
-        status: 'ok',
-        result
-      })
+        status: "ok",
+        result,
+      });
     } else {
       res.status(404).json({
-        message: 'Order not found',
+        message: "Order not found",
         error: error,
-      })
+      });
     }
   } catch (error) {
     res.status(400).json({
-      message: 'Error on order',
+      message: "Error on order",
       error: error,
-    })
+    });
   }
 }
-
 
 async function getOrderByTransaction(req, res) {
   try {
@@ -69,11 +70,11 @@ async function getOrderByTransaction(req, res) {
 
     if (req.params.transactionId) {
       order = await Order.findOne({
-        transactionHash: req.params.transactionId
-      })
+        transactionHash: req.params.transactionId,
+      });
       transaction = await Transaction.findOne({
-        transactionHash: req.params.transactionId
-      })
+        transactionHash: req.params.transactionId,
+      });
 
       const { items, userBuyer, dateOrder, _id, status } = order;
       const { transactionHash, transactionIndex, to } = transaction;
@@ -87,25 +88,44 @@ async function getOrderByTransaction(req, res) {
         transaction: {
           transactionHash,
           transactionIndex,
-          to
-        }
+          to,
+        },
       };
     }
 
     res.status(200).json({
-      status: 'ok',
-      result
-    })
+      status: "ok",
+      result,
+    });
   } catch (error) {
     res.status(404).json({
-      message: 'Order not found',
+      message: "Order not found",
       error: error,
+    });
+  }
+}
+
+async function getOrdersByBuyer(req, res) {
+  try {
+    const { eth_address_buyer } = req.params;
+
+    console.log("Arranco")
+    const orders = await Order.find({
+      userBuyer: eth_address_buyer
     })
+
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(400).json({
+      message: "Error on order",
+      error: error,
+    });
   }
 }
 
 module.exports = {
   createOrder,
   getOrderByTransaction,
-  updateOrderStatus
-}
+  updateOrderStatus,
+  getOrdersByBuyer
+};
