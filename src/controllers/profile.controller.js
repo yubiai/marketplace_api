@@ -14,7 +14,7 @@ async function getProfile(req, res, _) {
 
   try {
     const profile = await Profile.findOne({
-      eth_address: eth_address.toLowerCase()
+      eth_address: eth_address,
     });
     res.status(200).json(profile);
   } catch (error) {
@@ -28,7 +28,7 @@ async function getProfileFromId(req, res) {
     const profile = await Profile.findById(_id);
     res.status(200).json({
       name: `${profile.first_name} ${profile.last_name}`,
-      addressWallet: profile.eth_address
+      addressWallet: profile.eth_address,
     });
   } catch (error) {
     res.status(404);
@@ -50,12 +50,12 @@ async function updateProfile(req, res) {
 
   try {
     await Profile.findByIdAndUpdate(userID, {
-      realname: dataUser.realname || '',
-      address: dataUser.address || '',
-      city: dataUser.city || '',
-      country: dataUser.country || '',
-      telephone: dataUser.telephone || '',
-      email: dataUser.email || ''
+      realname: dataUser.realname || "",
+      address: dataUser.address || "",
+      city: dataUser.city || "",
+      country: dataUser.country || "",
+      telephone: dataUser.telephone || "",
+      email: dataUser.email || "",
     });
     return res.status(200).json({ message: "Successfully updated" });
   } catch (error) {
@@ -98,15 +98,18 @@ async function login(req, res) {
       }
 
       let userExists = await Profile.findOne({
-        eth_address: response && response.eth_address ? response.eth_address.toUpperCase() : null
+        eth_address:
+          response && response.eth_address
+            ? response.eth_address.toUpperCase()
+            : null,
       });
 
-      console.log(userExists)
+      console.log(userExists);
 
       const newResponse = {
         ...response,
-        eth_address: response.eth_address.toUpperCase()
-      }
+        eth_address: response.eth_address.toUpperCase(),
+      };
 
       // If the registration time is different in poh update the data
       if (
@@ -139,7 +142,7 @@ async function login(req, res) {
 
       return res.status(200).json({
         token: token,
-        data: dataUser._doc
+        data: dataUser._doc,
       });
     }
   } catch (error) {
@@ -162,20 +165,23 @@ async function getFavorites(req, res) {
   }
 
   let favorites = user.favorites;
-  if(favorites.length === 0){
+  if (favorites.length === 0) {
     return res.status(404).json({ error: "Favorites not found" });
   }
-  
+
   const total_items = favorites.length;
-	const total_pages = Math.ceil(favorites.length / limit);
-	current_page = Number(page) || 0;
+  const total_pages = Math.ceil(favorites.length / limit);
+  current_page = Number(page) || 0;
   favorites = favorites.slice(offset).slice(0, limit);
 
   let items = [];
-  
-  for (let i = 0; i < favorites.length; i++){
-    const item = await Item.findById(favorites[i]).populate('favorites', '_id title pictures price category subcategory slug')
-    if(item){
+
+  for (let i = 0; i < favorites.length; i++) {
+    const item = await Item.findById(favorites[i]).populate(
+      "favorites",
+      "_id title pictures price category subcategory slug"
+    );
+    if (item) {
       items.push(item);
     }
   }
@@ -186,15 +192,14 @@ async function getFavorites(req, res) {
     currentPage: current_page,
     prevPage: current_page ? current_page - 1 : null,
     nextPage: total_pages > current_page + 1 ? current_page + 1 : null,
-    items
+    items,
   });
-
 }
 
 // Update Favorite Profile
 async function updateFavorites(req, res) {
   const { userID } = req.params;
-  console.log(req.body, "asd")
+  console.log(req.body, "asd");
 
   let userExists = await Profile.findOne({
     _id: userID,
@@ -210,7 +215,7 @@ async function updateFavorites(req, res) {
     return res.status(404).json({ error: "Not Product or not action." });
   }
 
-  const verifItem = await Item.findById(item_id)
+  const verifItem = await Item.findById(item_id);
 
   if (!verifItem) {
     return res.status(404).json({ error: "Item not exist." });
@@ -232,9 +237,7 @@ async function updateFavorites(req, res) {
     case "remove":
       i = newFavorites.indexOf(verifItem._id);
       if (i == -1) {
-        return res
-          .status(404)
-          .json({ error: "Item not found in favorites." });
+        return res.status(404).json({ error: "Item not found in favorites." });
       }
       newFavorites.splice(i, 1);
       break;
@@ -276,21 +279,50 @@ async function getMyPurchases(req, res) {
 // My Published
 async function getMyPublished(req, res) {
   const { userID } = req.params;
-
-  let userExists = await Profile.findOne({
-    _id: userID,
-  });
-
-  if (!userExists) {
-    return res.status(404).json({ error: "User id not exists" });
-  }
-
+  const { size, page } = req.query;
+  const { limit, offset } = getPagination(page, size);
   try {
-    const items = await Item.find({
-      seller: userID
+    let user = await Profile.findById(userID);
+
+    if (!user) {
+      return res.status(404).json({ error: "User id not exists" });
+    }
+
+    let published = user.items;
+
+    if (published.length === 0) {
+      return res.status(404).json({ error: "Items Published not found" });
+    }
+
+    const total_items = published.length;
+    const total_pages = Math.ceil(published.length / limit);
+    current_page = Number(page) || 0;
+    published = published.slice(offset).slice(0, limit);
+
+    let items = [];
+
+    for (let i = 0; i < published.length; i++) {
+      const item = await Item.findById(published[i], {
+        title: 1,
+        pictures: 1,
+        price: 1,
+        slug: 1
+      })
+      if (item) {
+        items.push(item);
+      }
+    }
+
+    return res.status(200).json({
+      totalItems: total_items,
+      totalPages: total_pages,
+      currentPage: current_page,
+      prevPage: current_page ? current_page - 1 : null,
+      nextPage: total_pages > current_page + 1 ? current_page + 1 : null,
+      items,
     });
-    return res.status(200).json(items);
   } catch (error) {
+    console.log(error)
     return res.status(404).json(error);
   }
 }
@@ -305,5 +337,5 @@ module.exports = {
   getMyPublished,
   //Favorites
   getFavorites,
-  updateFavorites
+  updateFavorites,
 };
