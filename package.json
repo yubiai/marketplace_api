@@ -27,6 +27,7 @@
     "mongoose-paginate-v2": "^1.6.3",
     "mongoose-slug-updater": "^3.3.0",
     "multer": "^1.4.3",
+    "newrelic": "^8.14.1",
     "node-cron": "^3.0.0",
     "nodemon": "^2.0.12",
     "passport": "^0.5.0",
