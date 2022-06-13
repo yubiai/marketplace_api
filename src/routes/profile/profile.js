@@ -7,11 +7,13 @@ router.route("/:eth_address").get(profileController.getProfile);
 
 router.route("/login").post(profileController.login);
 
-router.route("/:userID").get(profileController.getProfileFromId);
+router.route("/session/:token").get(profileController.authToken);
 
-router.route("/:userID").put(profileController.updateProfile);
+router.route("/id/:userID").get(profileController.getProfileFromId);
 
-router.route("/:userID").delete(profileController.deleteProfile);
+router.route("/id/:userID").put(profileController.updateProfile);
+
+router.route("/id/:userID").delete(profileController.deleteProfile);
 
 router.route("/favorites/:userID").get(profileController.getFavorites);
 

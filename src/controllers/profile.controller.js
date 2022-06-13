@@ -2,6 +2,7 @@ const getPagination = require("../libs/getPagination");
 const { Item } = require("../models/Item");
 const { Profile } = require("../models/Profile");
 const { checkProfileOnPOH, signData } = require("../utils/utils");
+const jwtService = require("jsonwebtoken");
 
 /**
  *
@@ -23,15 +24,14 @@ async function getProfile(req, res, _) {
 }
 
 async function getProfileFromId(req, res) {
-  const { _id } = { ...req.body };
+  const { userID } = { ...req.params };
+  console.log(userID, "Arranco")
+
   try {
-    const profile = await Profile.findById(_id);
-    res.status(200).json({
-      name: `${profile.first_name} ${profile.last_name}`,
-      addressWallet: profile.eth_address,
-    });
+    const profile = await Profile.findById(userID);
+    return res.status(200).json(profile);
   } catch (error) {
-    res.status(404);
+    return res.status(404);
   }
 }
 
@@ -148,6 +148,30 @@ async function login(req, res) {
   } catch (error) {
     console.log("ERROR: ", error);
     return res.status(401).json({ error: "Unauthorized" });
+  }
+}
+
+async function authToken(req, res) {
+  const { token } = req.params;
+  console.log("Entro un token: ", token);
+
+  if (!token) {
+    return res.status(403).json({ error: "Unauthorized" });
+  }
+
+  try {
+    jwtService.verify(token, process.env.JWT_PRIVATE_KEY, (err, userInfo) => {
+      if (err) {
+        console.log(err, "Token no valido");
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+
+      console.log("Usuario valido")
+
+      return res.status(200).json(userInfo);
+    });
+  } catch (error) {
+    return res.status(403).json({ error: "Unauthorized" });
   }
 }
 
@@ -306,8 +330,8 @@ async function getMyPublished(req, res) {
         title: 1,
         pictures: 1,
         price: 1,
-        slug: 1
-      })
+        slug: 1,
+      });
       if (item) {
         items.push(item);
       }
@@ -322,7 +346,7 @@ async function getMyPublished(req, res) {
       items,
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return res.status(404).json(error);
   }
 }
@@ -330,6 +354,7 @@ async function getMyPublished(req, res) {
 module.exports = {
   getProfile,
   login,
+  authToken,
   updateProfile,
   deleteProfile,
   getMyPurchases,
