@@ -153,7 +153,6 @@ async function login(req, res) {
 
 async function authToken(req, res) {
   const { token } = req.params;
-  console.log("Entro un token: ", token);
 
   if (!token) {
     return res.status(403).json({ error: "Unauthorized" });
@@ -162,11 +161,8 @@ async function authToken(req, res) {
   try {
     jwtService.verify(token, process.env.JWT_PRIVATE_KEY, (err, userInfo) => {
       if (err) {
-        console.log(err, "Token no valido");
         return res.status(403).json({ error: "Unauthorized" });
       }
-
-      console.log("Usuario valido")
 
       return res.status(200).json(userInfo);
     });
