@@ -116,7 +116,7 @@ async function getOrderByTransaction(req, res) {
       });
 
       const { items, userBuyer, dateOrder, _id, status } = order;
-      const { transactionHash, transactionIndex, to } = transaction;
+      const { transactionHash, transactionIndex, to, disputeId } = transaction;
 
       result = {
         _id,
@@ -128,6 +128,7 @@ async function getOrderByTransaction(req, res) {
           transactionHash,
           transactionIndex,
           to,
+          disputeId
         },
       };
     }
