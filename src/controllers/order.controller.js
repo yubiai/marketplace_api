@@ -32,6 +32,15 @@ async function createOrder(req, res) {
   }
 }
 
+/**
+ * Possible values for order status:
+ * - ORDER_CREATED
+ * - ORDER_PAID
+ * - ORDER_DISPUTE_RECEIVER_FEE_PENDING
+ * - ORDER_DISPUTE_IN_PROGRESS
+ * - ORDER_DISPUTE_FINISHED
+ * - ORDER_DISPUTE_APPEALABLE
+ */
 async function updateOrderStatus(req, res) {
   try {
     const { status } = req.body;
@@ -57,6 +66,36 @@ async function updateOrderStatus(req, res) {
   } catch (error) {
     res.status(400).json({
       message: "Error on order",
+      error: error,
+    });
+  }
+}
+
+async function setDisputeOnOrderTransaction(req, res) {
+  try {
+    const { disputeId } = req.body;
+
+    if (req.params.transactionId) {
+      const result = await Transaction.findOneAndUpdate(
+        {
+          transactionHash: req.params.transactionId,
+        },
+        { disputeId }
+      );
+
+      res.status(200).json({
+        status: "ok",
+        result,
+      });
+    } else {
+      res.status(404).json({
+        message: "Transaction not found",
+        error: error,
+      });
+    }
+  } catch (error) {
+    res.status(400).json({
+      message: "Error on transaction",
       error: error,
     });
   }
@@ -127,5 +166,6 @@ module.exports = {
   createOrder,
   getOrderByTransaction,
   updateOrderStatus,
-  getOrdersByBuyer
+  getOrdersByBuyer,
+  setDisputeOnOrderTransaction
 };
