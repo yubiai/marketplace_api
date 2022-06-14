@@ -1,4 +1,6 @@
-require('newrelic');
+if (process.env.NODE_ENV === "PROD"){
+  require('newrelic');
+}
 require('dotenv').config()
 const express = require("express");
 const cors = require("cors");
@@ -25,28 +27,30 @@ const pricecoin = require("./routes/pricecoin/pricecoin");
 const order = require("./routes/order/order");
 const user = require("./routes/user/user");
 const channel = require("./routes/channel/channel");
+const auth = require("./routes/auth/auth");
 
 const config = require("./db");
-const LoadCategories = require('./scripts/loadCategories');
-const { refreshPriceCoin } = require('./worker/regreshPriceCoin');
 
 app.use(cors('*'));
 app.use(passport.initialize())
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+//Routes
 app.use("/api/categories", category)
 app.use("/api/subcategories", subcategory)
+app.use("/api/items", item);  // security
+app.use("/api/profiles", passport.authenticate('jwt', {session: false}), profile);
+app.use("/api/channel", channel); // security
+app.use("/api/prices", pricecoin);  // security
+app.use("/api/orders", order);  // security
+app.use("/api/user", user);  // security
+app.use("/api/auth", auth);
 //app.use("/api/items", passport.authenticate('jwt', {session: false}), item);
-app.use("/api/items", item);
-app.use("/api/profiles", profile);
-app.use("/api/questions", question);
-app.use("/api/carts", cart);
-app.use("/api/shipping", shipping);
-app.use("/api/channel", channel);
-app.use("/api/prices", pricecoin);
-app.use("/api/orders", order);
-app.use("/api/user", user);
+//app.use("/api/questions", question);
+//app.use("/api/carts", cart);
+//app.use("/api/shipping", shipping);
 
 if (process.env.NODE_ENV === "DEV"){
   app.listen(process.env.PORT || 4000, () => {
@@ -66,39 +70,3 @@ if (process.env.NODE_ENV === "DEV"){
   });
   
 }
-
-//refreshPriceCoin();
-
-// Load Categories
-//LoadCategories()
-
-/* const listenToEvents = () => {
-  const provider = new ethers.providers.JsonRpcProvider(
-    "http://localhost:8545"
-  );
-  
-  const ppAddress = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0";
-
-  const paymentProcessor = new ethers.Contract(
-    ppAddress,
-    PaymentProcessor.abi,
-    provider
-  );
-
-  paymentProcessor.on("PaymentDone", async (payer, amount, paymentId, date) => {
-    console.log(`
-          from ${payer}
-          amount ${amount}
-          paymentId ${paymentId}
-          date ${new Date(date.toNumber() * 1000).toLocaleString()}
-        `);
-    const payment = await Payment.findOne({ id: paymentId });
-    if (payment) {
-      payment.paid = true;
-      await payment.save();
-    }
-  });
-};
-
-listenToEvents();
- */
