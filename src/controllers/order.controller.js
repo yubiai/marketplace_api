@@ -1,3 +1,4 @@
+const getPagination = require("../libs/getPagination");
 const { Order, Transaction } = require("../models/Order");
 
 async function createTransaction(transactionData) {
@@ -146,15 +147,26 @@ async function getOrderByTransaction(req, res) {
 }
 
 async function getOrdersByBuyer(req, res) {
+  const { eth_address_buyer } = req.params;
+  const { size, page } = req.query;
+  const { limit, offset } = getPagination(page, size);
+  const sort = { dataOrder: -1 };
+
   try {
-    const { eth_address_buyer } = req.params;
 
-    console.log("Arranco")
-    const orders = await Order.find({
-      userBuyer: eth_address_buyer
-    })
+    let condition = {userBuyer:{'$regex': `${eth_address_buyer}$`, $options: 'i'}}
 
-    res.status(200).json(orders);
+    const data = await Order.paginate(condition, { offset, limit, sort });
+
+    return res.status(200).json({
+      totalItems: data.totalDocs,
+      items: data.docs,
+      totalPages: data.totalPages,
+      currentPage: data.page - 1,
+      prevPage: data.prevPage - 1,
+      nextPage: data.nextPage - 1,
+    });
+
   } catch (error) {
     res.status(400).json({
       message: "Error on order",
