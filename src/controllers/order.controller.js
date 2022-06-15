@@ -154,6 +154,10 @@ async function getOrdersByBuyer(req, res) {
 
   try {
 
+    if (!eth_address_buyer) {
+      return res.status(404).json({ error: "Data not exists" });
+    }
+
     let condition = {userBuyer:{'$regex': `${eth_address_buyer}$`, $options: 'i'}}
 
     const data = await Order.paginate(condition, { offset, limit, sort });
