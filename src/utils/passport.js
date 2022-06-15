@@ -4,7 +4,7 @@ const { Profile } = require('../models/Profile')
 const opts = {}
 
 opts.jwtFromRequest = ExtractJWT.fromAuthHeaderAsBearerToken()
-opts.secretOrKey = process.env.JWT_PRIVATE_KEY || 'pepe'
+opts.secretOrKey = process.env.JWT_PRIVATE_KEY
 
 module.exports = (passport) => {
   passport.use(

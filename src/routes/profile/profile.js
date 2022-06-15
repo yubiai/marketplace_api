@@ -5,10 +5,6 @@ const profileController = require("../../controllers/profile.controller");
 
 router.route("/:eth_address").get(profileController.getProfile);
 
-router.route("/login").post(profileController.login);
-
-router.route("/session/:token").get(profileController.authToken);
-
 router.route("/id/:userID").get(profileController.getProfileFromId);
 
 router.route("/id/:userID").put(profileController.updateProfile);
