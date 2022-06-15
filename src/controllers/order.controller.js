@@ -150,7 +150,7 @@ async function getOrdersByBuyer(req, res) {
   const { eth_address_buyer } = req.params;
   const { size, page } = req.query;
   const { limit, offset } = getPagination(page, size);
-  const sort = { dataOrder: -1 };
+  const sort = { createdAt: -1 };
 
   try {
 

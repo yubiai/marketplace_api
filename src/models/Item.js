@@ -57,6 +57,10 @@ const itemSchema = new Schema({
     ref: "Subcategory",
     required: true
   }
+},
+{
+  versionKey: false,
+  timestamps: true,
 });
 
 itemSchema.plugin(mongoosePagination)

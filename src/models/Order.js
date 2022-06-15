@@ -72,6 +72,10 @@ const orderSchema = new Schema(
       type: String
     }
   },
+  {
+    versionKey: false,
+    timestamps: true,
+  }
 );
 
 orderSchema.plugin(mongoosePagination)
