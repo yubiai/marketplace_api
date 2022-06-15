@@ -75,14 +75,16 @@ async function login(req, res) {
 
 // Auth Token
 async function authToken(req, res) {
-  const { token } = req.params;
+  const { authorization } = req.headers;
+
+  const token = authorization.split(" ")
 
   if (!token) {
     return res.status(403).json({ error: "Unauthorized" });
   }
 
   try {
-    jwtService.verify(token, process.env.JWT_PRIVATE_KEY, (err, userInfo) => {
+    jwtService.verify(token[1], process.env.JWT_PRIVATE_KEY, (err, userInfo) => {
       if (err) {
         return res.status(403).json({ error: "Unauthorized" });
       }
