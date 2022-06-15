@@ -33,6 +33,10 @@ const transactionSchema = new Schema(
     transactionIndex: {
       type: String,
       required: true
+    },
+    disputeId: {
+      type: Number,
+      default: 0
     }
   },
 );

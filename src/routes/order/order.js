@@ -6,6 +6,7 @@ const orderController = require("../../controllers/order.controller");
 router.route("/").post(orderController.createOrder);
 router.route("/:transactionId").get(orderController.getOrderByTransaction);
 router.route("/:transactionId").put(orderController.updateOrderStatus);
+router.route('/:transactionId/set-dispute').post(orderController.setDisputeOnOrderTransaction);
 router.route("/buyer/:eth_address_buyer").get(orderController.getOrdersByBuyer);
 
 
