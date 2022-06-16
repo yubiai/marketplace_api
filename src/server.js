@@ -10,6 +10,7 @@ const passport = require('passport')
 const fs = require("fs");
 const https = require("https");
 require('./utils/passport')(passport)
+const config = require("./db");
 
 /* const ethers = require("ethers");
 const PaymentProcessor = require("./../../frontend/src/artifacts/contracts/PaymentProcessor.sol/PaymentProcessor.json");
@@ -20,16 +21,16 @@ const category = require("./routes/category/category");
 const subcategory = require("./routes/subcategory/subcategory");
 const item = require("./routes/item/item");
 const profile = require("./routes/profile/profile");
-const question = require("./routes/question/question");
-const cart = require("./routes/cart/cart");
-const shipping = require("./routes/shipping/shipping");
 const pricecoin = require("./routes/pricecoin/pricecoin");
 const order = require("./routes/order/order");
-const user = require("./routes/user/user");
 const channel = require("./routes/channel/channel");
+const publish = require("./routes/publish/publish");
 const auth = require("./routes/auth/auth");
-
-const config = require("./db");
+/* const user = require("./routes/user/user");
+const shipping = require("./routes/shipping/shipping");
+const question = require("./routes/question/question");
+const cart = require("./routes/cart/cart");
+ */
 
 app.use(cors('*'));
 app.use(passport.initialize())
@@ -38,15 +39,16 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 //Routes
+app.use("/api/auth", auth);
+app.use("/api/items", item);  // security
 app.use("/api/categories", category)
 app.use("/api/subcategories", subcategory)
-app.use("/api/items", item);  // security
-app.use("/api/profiles", passport.authenticate('jwt', {session: false}), profile);
-app.use("/api/channel", channel); // security
 app.use("/api/prices", pricecoin);  // security
 app.use("/api/orders", order);  // security
-app.use("/api/user", user);  // security
-app.use("/api/auth", auth);
+app.use("/api/profiles", passport.authenticate('jwt', {session: false}), profile);
+app.use("/api/channel", passport.authenticate('jwt', {session: false}), channel);
+app.use("/api/publish", passport.authenticate('jwt', {session: false}), publish);
+//app.use("/api/user", user);
 //app.use("/api/items", passport.authenticate('jwt', {session: false}), item);
 //app.use("/api/questions", question);
 //app.use("/api/carts", cart);
