@@ -58,8 +58,8 @@ app.use("/api/auth", auth);
 app.use("/api/items", item);  // security
 app.use("/api/categories", category)
 app.use("/api/subcategories", subcategory)
-app.use("/api/prices", passport.authenticate('jwt', {session: false}, pricecoin));
-app.use("/api/orders", passport.authenticate('jwt', {session: false}, order));
+app.use("/api/prices", passport.authenticate('jwt', {session: false}), pricecoin);
+app.use("/api/orders", passport.authenticate('jwt', {session: false}), order);
 app.use("/api/profiles", passport.authenticate('jwt', {session: false}), profile);
 app.use("/api/channel", passport.authenticate('jwt', {session: false}), channel);
 app.use("/api/publish", passport.authenticate('jwt', {session: false}), publish);
