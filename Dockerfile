@@ -18,3 +18,6 @@ ENTRYPOINT npm start
 
 ## docker build -t api_marketplace .
 ## docker run --name api_marketplace -p 4001:4000 -d api_marketplace
+## git tag v0.3 -m "Primera versión"
+## git tag
+## git push --tags
