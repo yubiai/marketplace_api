@@ -43,7 +43,7 @@ async function updateProfile(req, res) {
   });
 
   if (!verify) {
-    return res.status(404).json({ error: "User id not exists" });
+    return res.status(404).json({ message: "User id not exists" });
   }
 
   try {
@@ -57,7 +57,7 @@ async function updateProfile(req, res) {
     });
     return res.status(200).json({ message: "Successfully updated" });
   } catch (error) {
-    return res.status(404).json(error);
+    return res.status(404).json({message: "Update error"});
   }
 }
 
@@ -70,14 +70,14 @@ async function deleteProfile(req, res) {
   });
 
   if (!verify) {
-    return res.status(404).json({ error: "User id not exists" });
+    return res.status(404).json({ message: "User id not exists" });
   }
 
   try {
     await Profile.findByIdAndRemove(userID);
     return res.status(200).json({ message: "Successfully removed" });
   } catch (error) {
-    return res.status(404).json(error);
+    return res.status(404).json({message: "Delete error"});
   }
 }
 
@@ -96,7 +96,7 @@ async function getFavorites(req, res) {
 
   let favorites = user.favorites;
   if (favorites.length === 0) {
-    return res.status(404).json({ error: "Favorites not found" });
+    return res.status(200).json({ message: "Favorites not found", items: [] });
   }
 
   const total_items = favorites.length;
@@ -221,7 +221,7 @@ async function getMyPublished(req, res) {
     let published = user.items;
 
     if (published.length === 0) {
-      return res.status(404).json({ error: "Items Published not found" });
+      return res.status(200).json({ message: "Items Published not found", items: [] });
     }
 
     const total_items = published.length;
