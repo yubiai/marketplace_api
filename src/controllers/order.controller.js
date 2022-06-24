@@ -1,5 +1,6 @@
 const getPagination = require("../libs/getPagination");
 const { Order, Transaction } = require("../models/Order");
+const ObjectId = require("mongoose").Types.ObjectId;
 
 async function createTransaction(transactionData) {
   const transaction = new Transaction({
@@ -12,11 +13,12 @@ async function createOrder(req, res) {
   try {
     const { transactionInfo, order } = req.body;
     const transactionCreated = await createTransaction({ ...transactionInfo });
-    const { items, userBuyer, status } = order;
+    const { itemId, userBuyer, userSeller, status } = order;
 
     const orderCreated = new Order({
-      items,
+      itemId: ObjectId(itemId),
       userBuyer,
+      userSeller,
       status,
       transactionHash: transactionCreated.transactionHash,
     });
@@ -116,13 +118,14 @@ async function getOrderByTransaction(req, res) {
         transactionHash: req.params.transactionId,
       });
 
-      const { items, userBuyer, dateOrder, _id, status } = order;
+      const { itemId, userBuyer, userSeller, dateOrder, _id, status } = order;
       const { transactionHash, transactionIndex, to, disputeId } = transaction;
 
       result = {
         _id,
-        items,
+        itemId,
         userBuyer,
+        userSeller,
         dateOrder,
         status,
         transaction: {
