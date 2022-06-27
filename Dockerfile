@@ -1,23 +1,14 @@
 FROM node:16
 
-RUN mkdir -p /home/node/app/node_modules && chown -R node:node /home/node/app
+WORKDIR /dist
 
-WORKDIR /home/node/app
-
-USER node
-
-COPY package.json ./
+COPY package.json /dist
 
 RUN npm install
 
-COPY --chown=node:node . .
+COPY ./ /dist
 
-EXPOSE 4000
-
-ENTRYPOINT npm start
-
-## docker build -t api_marketplace .
-## docker run --name api_marketplace -p 4001:4000 -d api_marketplace
+## docker build -t yb/api-test:latest .
 ## git tag v0.3 -m "Primera versión"
 ## git tag
 ## git push --tags
