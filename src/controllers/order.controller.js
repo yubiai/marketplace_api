@@ -170,7 +170,7 @@ async function getOrdersByBuyer(req, res) {
 
     let condition = {userBuyer:{'$regex': `${eth_address_buyer}$`, $options: 'i'}}
 
-    const data = await Order.paginate(condition, { offset, limit, sort });
+    const data = await Order.paginate(condition, { offset, limit, sort })
 
     return res.status(200).json({
       totalItems: data.totalDocs,
@@ -183,7 +183,42 @@ async function getOrdersByBuyer(req, res) {
 
   } catch (error) {
     res.status(400).json({
-      message: "Error on order",
+      message: "Error in orders",
+      error: error,
+    });
+  }
+}
+
+async function getOrdersBySeller(req, res) {
+  const { eth_address_seller } = req.params;
+  const { size, page } = req.query;
+  const { limit, offset } = getPagination(page, size);
+  const sort = { createdAt: -1 };
+
+  try {
+
+    if (!eth_address_seller) {
+      return res.status(404).json({ error: "Data not exists" });
+    }
+
+    let condition = {userSeller:{'$regex': `${eth_address_seller}$`, $options: 'i'}}
+
+    const data = await Order.paginate(condition, { offset, limit, sort })
+
+
+    return res.status(200).json({
+      totalItems: data.totalDocs,
+      items: data.docs,
+      totalPages: data.totalPages,
+      currentPage: data.page - 1,
+      prevPage: data.prevPage - 1,
+      nextPage: data.nextPage - 1,
+    });
+
+  } catch (error) {
+    console.log(error)
+    res.status(400).json({
+      message: "Error in orders",
       error: error,
     });
   }
@@ -194,5 +229,6 @@ module.exports = {
   getOrderByTransaction,
   updateOrderStatus,
   getOrdersByBuyer,
+  getOrdersBySeller,
   setDisputeOnOrderTransaction
 };
