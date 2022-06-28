@@ -1,5 +1,8 @@
 const getPagination = require("../libs/getPagination");
 const { Order, Transaction } = require("../models/Order");
+const { Item } = require("../models/Item");
+const { Profile } = require("../models/Profile");
+const ObjectId = require("mongoose").Types.ObjectId;
 
 async function createTransaction(transactionData) {
   const transaction = new Transaction({
@@ -12,11 +15,12 @@ async function createOrder(req, res) {
   try {
     const { transactionInfo, order } = req.body;
     const transactionCreated = await createTransaction({ ...transactionInfo });
-    const { items, userBuyer, status } = order;
+    const { itemId, userBuyer, userSeller, status } = order;
 
     const orderCreated = new Order({
-      items,
+      itemId: ObjectId(itemId),
       userBuyer,
+      userSeller,
       status,
       transactionHash: transactionCreated.transactionHash,
     });
@@ -116,13 +120,19 @@ async function getOrderByTransaction(req, res) {
         transactionHash: req.params.transactionId,
       });
 
-      const { items, userBuyer, dateOrder, _id, status } = order;
+      const { itemId, userBuyer, userSeller, dateOrder, _id, status } = order;
       const { transactionHash, transactionIndex, to, disputeId } = transaction;
+      const item = await Item.findOne({ _id: itemId }).lean()
+      const seller = await Profile.findOne({ eth_address: userSeller }).lean()
 
       result = {
         _id,
-        items,
+        item: {
+          ...item,
+          seller
+        },
         userBuyer,
+        userSeller,
         dateOrder,
         status,
         transaction: {
@@ -160,7 +170,7 @@ async function getOrdersByBuyer(req, res) {
 
     let condition = {userBuyer:{'$regex': `${eth_address_buyer}$`, $options: 'i'}}
 
-    const data = await Order.paginate(condition, { offset, limit, sort });
+    const data = await Order.paginate(condition, { offset, limit, sort })
 
     return res.status(200).json({
       totalItems: data.totalDocs,
@@ -173,7 +183,42 @@ async function getOrdersByBuyer(req, res) {
 
   } catch (error) {
     res.status(400).json({
-      message: "Error on order",
+      message: "Error in orders",
+      error: error,
+    });
+  }
+}
+
+async function getOrdersBySeller(req, res) {
+  const { eth_address_seller } = req.params;
+  const { size, page } = req.query;
+  const { limit, offset } = getPagination(page, size);
+  const sort = { createdAt: -1 };
+
+  try {
+
+    if (!eth_address_seller) {
+      return res.status(404).json({ error: "Data not exists" });
+    }
+
+    let condition = {userSeller:{'$regex': `${eth_address_seller}$`, $options: 'i'}}
+
+    const data = await Order.paginate(condition, { offset, limit, sort })
+
+
+    return res.status(200).json({
+      totalItems: data.totalDocs,
+      items: data.docs,
+      totalPages: data.totalPages,
+      currentPage: data.page - 1,
+      prevPage: data.prevPage - 1,
+      nextPage: data.nextPage - 1,
+    });
+
+  } catch (error) {
+    console.log(error)
+    res.status(400).json({
+      message: "Error in orders",
       error: error,
     });
   }
@@ -184,5 +229,6 @@ module.exports = {
   getOrderByTransaction,
   updateOrderStatus,
   getOrdersByBuyer,
+  getOrdersBySeller,
   setDisputeOnOrderTransaction
 };

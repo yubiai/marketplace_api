@@ -42,26 +42,23 @@ const transactionSchema = new Schema(
   },
 );
 
-/**
- * FIXME: It should reply
- * items: [{
-      type: Schema.Types.ObjectId,
-      ref: 'Item'
-    }],
- */
 const orderSchema = new Schema(
   {
     orderId: {
       type: Schema.Types.ObjectId,
     },
-    items: [{
-      type: Object
-    }],
+    itemId: {
+      type: Schema.Types.ObjectId
+    },
     dateOrder: {
       type: Date,
       default: Date.now,
     },
     userBuyer: {
+      type: String,
+      required: true
+    },
+    userSeller: {
       type: String,
       required: true
     },

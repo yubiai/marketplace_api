@@ -21,7 +21,8 @@ async function newItem(req, res) {
       "maxorders",
       "category",
       "subcategory",
-      "currencySymbolPrice"
+      "currencySymbolPrice",
+      "ubiburningamount"
     ];
 
     const isValidOperation = body.every((elem) =>
@@ -95,6 +96,7 @@ async function newItem(req, res) {
       maxorders: req.body.maxorders,
       category: req.body.category,
       subcategory: req.body.subcategory,
+      ubiburningamount: req.body.ubiburningamount,
       pictures: urls,
       currencySymbolPrice: req.body.currencySymbolPrice || "ETH",
     });
