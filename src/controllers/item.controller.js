@@ -134,7 +134,7 @@ async function search(req, res) {
     const result = await Item.aggregate([
       {
         $search: {
-          index: "default",
+          index: process.env.MONGODB_SEARCH,
           text: {
             query: query,
             path: "title",

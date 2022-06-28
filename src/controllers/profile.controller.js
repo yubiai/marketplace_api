@@ -1,5 +1,5 @@
 const getPagination = require("../libs/getPagination");
-const publisher = require("../libs/useRabbit");
+const useRabbit = require("../libs/useRabbit");
 const { Item } = require("../models/Item");
 const { Profile } = require("../models/Profile");
 
@@ -179,7 +179,7 @@ async function updateFavorites(req, res) {
     await Profile.findByIdAndUpdate(userID, {
       favorites: newFavorites,
     });
-    publisher("notifications", {
+    useRabbit("notifications", {
       user_id: userID,
       type: "Item",
       message: "New Favorite!"
