@@ -24,6 +24,10 @@ const itemSchema = new Schema({
     type: String,
     required: true
   },
+  ubiburningamount: {
+    type: Number,
+    required: true
+  },
   pictures: {
     type: Array,
     required: true,
