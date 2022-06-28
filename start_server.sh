@@ -1,4 +1,10 @@
 cd /root/server
 npm install
 
-if [ $DEV ];then npm run dev;else npm start;fi
+if [ $DEV ]
+then 
+    npm run dev
+else 
+    echo "Production";
+    node ${YB_SCRIPT}
+fi
