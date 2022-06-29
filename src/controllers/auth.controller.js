@@ -13,7 +13,7 @@ async function login(req, res) {
       // If it is not validated in Poh
       // Falta Validacion si existe una orden activa para dejarlo pasar.
       if (!response.registered && response.status !== "EXPIRED") {
-        return res.status(404).json({ error: "User not validated in Poh" });
+        return res.status(404).json({ error: "User not validated in Poh, please head on to https://app.proofofhumanity.id/" });
       }
 
       let userExists = await Profile.findOne({
