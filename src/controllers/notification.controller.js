@@ -1,5 +1,5 @@
 const getPagination = require("../libs/getPagination");
-const useRabbit = require("../libs/useRabbit");
+const { useSeenNotiRabbit } = require("../libs/useRabbit");
 const { Notification } = require("../models/Notifications");
 const ObjectId = require("mongoose").Types.ObjectId;
 
@@ -46,17 +46,14 @@ async function updateSeenById(req, res) {
   const { notiID } = req.params;
   console.log(notiID, "arranco")
   try {
-    await useRabbit("notifications", {
-      noti_id: notiID,
+    await useSeenNotiRabbit("notifications", notiID)
+    .then((res) => {
+      console.log(res, "res 53")
     })
-      .then((res) => {
-        console.log(res);
-        return;
-      })
-      .catch((err) => {
-        console.log(err);
-        return;
-      });
+    .catch((err) => {
+      console.log(err,"err 56")
+    })
+      
     return res.status(200).json();
   } catch (error) {
     return res.status(400).json({
