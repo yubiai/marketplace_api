@@ -3,11 +3,7 @@ const { Order, Transaction } = require("../models/Order");
 const { Item } = require("../models/Item");
 const { Profile } = require("../models/Profile");
 const ObjectId = require("mongoose").Types.ObjectId;
-<<<<<<< HEAD
-const useRabbit = require("../libs/useRabbit");
-=======
-const {useNewNotiRabbit} = require('../libs/useRabbit');
->>>>>>> dev
+const { useNewNotiRabbit } = require("../libs/useRabbit");
 
 async function createTransaction(transactionData) {
   const transaction = new Transaction({
@@ -33,7 +29,12 @@ async function createOrder(req, res) {
     await orderCreated.save();
 
     // Noti seller
-    await useNewNotiRabbit("notifications", userBuyer, "Sale", transactionCreated.transactionHash);
+    await useNewNotiRabbit(
+      "notifications",
+      userBuyer,
+      "Sale",
+      transactionCreated.transactionHash
+    );
 
     res.status(200).json({ result: orderCreated });
   } catch (error) {
@@ -130,14 +131,14 @@ async function getOrderByTransaction(req, res) {
 
       const { itemId, userBuyer, userSeller, dateOrder, _id, status } = order;
       const { transactionHash, transactionIndex, to, disputeId } = transaction;
-      const item = await Item.findOne({ _id: itemId }).lean()
-      const seller = await Profile.findOne({ eth_address: userSeller }).lean()
+      const item = await Item.findOne({ _id: itemId }).lean();
+      const seller = await Profile.findOne({ eth_address: userSeller }).lean();
 
       result = {
         _id,
         item: {
           ...item,
-          seller
+          seller,
         },
         userBuyer,
         userSeller,
@@ -147,7 +148,7 @@ async function getOrderByTransaction(req, res) {
           transactionHash,
           transactionIndex,
           to,
-          disputeId
+          disputeId,
         },
       };
     }
@@ -171,14 +172,15 @@ async function getOrdersByBuyer(req, res) {
   const sort = { createdAt: -1 };
 
   try {
-
     if (!eth_address_buyer) {
       return res.status(404).json({ error: "Data not exists" });
     }
 
-    let condition = {userBuyer:{'$regex': `${eth_address_buyer}$`, $options: 'i'}}
+    let condition = {
+      userBuyer: { $regex: `${eth_address_buyer}$`, $options: "i" },
+    };
 
-    const data = await Order.paginate(condition, { offset, limit, sort })
+    const data = await Order.paginate(condition, { offset, limit, sort });
 
     return res.status(200).json({
       totalItems: data.totalDocs,
@@ -188,7 +190,6 @@ async function getOrdersByBuyer(req, res) {
       prevPage: data.prevPage - 1,
       nextPage: data.nextPage - 1,
     });
-
   } catch (error) {
     res.status(400).json({
       message: "Error in orders",
@@ -204,15 +205,15 @@ async function getOrdersBySeller(req, res) {
   const sort = { createdAt: -1 };
 
   try {
-
     if (!eth_address_seller) {
       return res.status(404).json({ error: "Data not exists" });
     }
 
-    let condition = {userSeller:{'$regex': `${eth_address_seller}$`, $options: 'i'}}
+    let condition = {
+      userSeller: { $regex: `${eth_address_seller}$`, $options: "i" },
+    };
 
-    const data = await Order.paginate(condition, { offset, limit, sort })
-
+    const data = await Order.paginate(condition, { offset, limit, sort });
 
     return res.status(200).json({
       totalItems: data.totalDocs,
@@ -222,9 +223,8 @@ async function getOrdersBySeller(req, res) {
       prevPage: data.prevPage - 1,
       nextPage: data.nextPage - 1,
     });
-
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(400).json({
       message: "Error in orders",
       error: error,
@@ -238,5 +238,5 @@ module.exports = {
   updateOrderStatus,
   getOrdersByBuyer,
   getOrdersBySeller,
-  setDisputeOnOrderTransaction
+  setDisputeOnOrderTransaction,
 };
