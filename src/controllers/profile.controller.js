@@ -1,5 +1,4 @@
 const getPagination = require("../libs/getPagination");
-const useRabbit = require("../libs/useRabbit");
 const { Item } = require("../models/Item");
 const { Profile } = require("../models/Profile");
 
@@ -178,11 +177,6 @@ async function updateFavorites(req, res) {
   try {
     await Profile.findByIdAndUpdate(userID, {
       favorites: newFavorites,
-    });
-    useRabbit("notifications", {
-      user_id: userID,
-      type: "Item",
-      message: "New Favorite!"
     });
     return res.status(200).json({ message: "Successfully updated favorites" });
   } catch (error) {

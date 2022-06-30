@@ -27,6 +27,15 @@ async function createOrder(req, res) {
 
     await orderCreated.save();
 
+    // Noti seller
+    useRabbit("notifications", {
+      user_id: userSeller,
+      type: "Sale",
+      message: "New Sale!",
+      path: "as-seller",
+      reference: transactionCreated.transactionHash
+    });
+
     res.status(200).json({ result: orderCreated });
   } catch (error) {
     console.log(error);

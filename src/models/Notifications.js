@@ -13,6 +13,14 @@ const notificationSchema = new Schema(
       type: String,
       required: true
     },
+    path: {
+      type: String,
+      required: true
+    },
+    reference: {
+      type: String,
+      required: true
+    },
     message: {
       type: String,
       required: true
