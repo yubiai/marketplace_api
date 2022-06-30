@@ -3,6 +3,7 @@ const { Order, Transaction } = require("../models/Order");
 const { Item } = require("../models/Item");
 const { Profile } = require("../models/Profile");
 const ObjectId = require("mongoose").Types.ObjectId;
+const {useNewNotiRabbit} = require('../libs/useRabbit');
 
 async function createTransaction(transactionData) {
   const transaction = new Transaction({
@@ -28,13 +29,7 @@ async function createOrder(req, res) {
     await orderCreated.save();
 
     // Noti seller
-    useRabbit("notifications", {
-      user_id: userSeller,
-      type: "Sale",
-      message: "New Sale!",
-      path: "as-seller",
-      reference: transactionCreated.transactionHash
-    });
+    await useNewNotiRabbit("notifications", userBuyer, "Sale", transactionCreated.transactionHash);
 
     res.status(200).json({ result: orderCreated });
   } catch (error) {
