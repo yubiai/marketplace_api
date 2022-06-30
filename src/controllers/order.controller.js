@@ -3,6 +3,7 @@ const { Order, Transaction } = require("../models/Order");
 const { Item } = require("../models/Item");
 const { Profile } = require("../models/Profile");
 const ObjectId = require("mongoose").Types.ObjectId;
+const useRabbit = require("../libs/useRabbit");
 
 async function createTransaction(transactionData) {
   const transaction = new Transaction({
