@@ -35,9 +35,9 @@ async function useNewNotiRabbit(queue, user, type, reference) {
           path = "profile/orders/as-seller"
           message = "New Sale!"
           break;
-      case 'ReleasePayment':
-          path = "payment"
-          message = "New Payment!"
+      case 'Channel':
+          path = "profile/mailboxs"
+          message = "New Message!"
           break;
       default:
         return reject("Type not valid.")
