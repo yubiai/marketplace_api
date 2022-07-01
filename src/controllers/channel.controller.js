@@ -1,5 +1,6 @@
 const { Channel } = require("../models/Channel");
 const ObjectId = require("mongoose").Types.ObjectId;
+const { useNewNotiRabbit } = require("../libs/useRabbit");
 
 async function getChannel(req, res) {
   const { id } = req.params;
@@ -24,10 +25,10 @@ async function getChannelByOrderId(req, res) {
 
   try {
     const channel = await Channel.findOne({
-      order_id: id
+      order_id: id,
     })
-    .populate("buyer", "first_name last_name photo eth_address")
-    .populate("seller", "first_name last_name photo eth_address")
+      .populate("buyer", "first_name last_name photo eth_address")
+      .populate("seller", "first_name last_name photo eth_address");
 
     res.status(200).json(channel);
   } catch (error) {
@@ -46,7 +47,7 @@ async function newChannel(req, res) {
     let channelNew = new Channel({
       order_id,
       buyer: ObjectId(buyer),
-      seller: ObjectId(seller)
+      seller: ObjectId(seller),
     });
     result = await channelNew.save();
 
@@ -65,9 +66,9 @@ async function newChannel(req, res) {
 
 async function pushMsg(req, res) {
   const { id } = req.params;
-
+  console.log("unicio push msg", req.body.user);
   try {
-    const channel = await Channel.findById(id)
+    const channel = await Channel.findById(id);
     console.log(channel, "channel");
 
     let user = JSON.stringify(req.body.user);
@@ -96,8 +97,25 @@ async function pushMsg(req, res) {
     let result = await Channel.findByIdAndUpdate(channel._id, {
       $push: {
         messages: message,
-      }
+      },
     });
+
+    // Noti
+    await useNewNotiRabbit(
+      "notifications",
+      user == buyer ? channel.seller : channel.buyer,
+      "Channel",
+      channel.order_id
+    )
+      .then((res) => {
+        console.log(res);
+        return;
+      })
+      .catch((err) => {
+        console.log(err);
+        return;
+      });
+
     return res.status(200).json(result);
   } catch (error) {
     console.log(error);

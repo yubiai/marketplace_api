@@ -29,7 +29,15 @@ async function createOrder(req, res) {
     await orderCreated.save();
 
     // Noti seller
-    await useNewNotiRabbit("notifications", userBuyer, "Sale", transactionCreated.transactionHash);
+    await useNewNotiRabbit("notifications", userSeller, "Sale", transactionCreated.transactionHash)
+    .then((res) => {
+      console.log(res)
+      return
+    })
+    .catch((err) => {
+      console.log(err)
+      return
+    })
 
     res.status(200).json({ result: orderCreated });
   } catch (error) {
