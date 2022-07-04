@@ -39,10 +39,10 @@ async function createOrder(req, res) {
       return
     })
 
-    res.status(200).json({ result: orderCreated });
+    return res.status(200).json({ result: orderCreated });
   } catch (error) {
     console.log(error);
-    res.status(400).json({
+    return res.status(400).json({
       message: "Ups Hubo un error!",
       error: error,
     });

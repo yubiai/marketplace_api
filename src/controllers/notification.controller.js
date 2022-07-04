@@ -16,9 +16,15 @@ async function getNotiByUserId(req, res) {
     }
 
     let condition = {
-      user_id: userID,
-      seen
+      user_id: userID
     };
+
+    if(seen){
+      condition = {
+        ...condition,
+        seen
+      }
+    }
 
     const data = await Notification.paginate(condition, {
       offset,

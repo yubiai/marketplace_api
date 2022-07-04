@@ -6,8 +6,6 @@ async function useNewNotiRabbit(queue, user, type, reference) {
   return new Promise(async (resolve, reject) => {
 
     let user_id
-    let path
-    let message 
 
     if(!queue || !user || !type || !reference){
       return reject("Missing Data.")
@@ -30,25 +28,10 @@ async function useNewNotiRabbit(queue, user, type, reference) {
       return reject("User not valid.")
     }
 
-    switch (type) {
-      case 'Sale':
-          path = "profile/orders/as-seller"
-          message = "New Sale!"
-          break;
-      case 'Channel':
-          path = "profile/mailboxs"
-          message = "New Message!"
-          break;
-      default:
-        return reject("Type not valid.")
-    }
-
     let content = {
       user_id,
       type: type,
-      path,
-      reference,
-      message
+      reference
     }
 
     // Connect Rabbit
