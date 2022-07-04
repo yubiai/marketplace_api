@@ -9,7 +9,7 @@ async function getNotiByUserId(req, res) {
     const { userID } = req.params;
     const { size, page, seen } = req.query;
     const { limit, offset } = getPagination(page, size);
-    const sort = { item: 1 };
+    const sort = { item: -1 };
 
     if (!ObjectId.isValid(userID)) {
       return res.status(404).json({ error: "Not Object userId" });
