@@ -23,6 +23,30 @@ function saveNotification(content) {
   });
 }
 
+function seenNotification(content) {
+  return new Promise(async (resolve, reject) => {
+    try {
+
+      let notiExists = await Notification.findOne({
+        _id: content.noti_id
+      });
+
+      if (!notiExists) {
+        return reject("Notification not exist.")
+      }
+
+      const result = await Notification.findByIdAndUpdate(content.noti_id, {
+        seen: true
+      })
+
+      return resolve(result);
+    } catch (err) {
+      console.log(err);
+      return reject(err);
+    }
+  });
+}
+
 async function subscriber() {
   console.log("-- Worker Notifications Started --")
   const connection = await amqp.connect(process.env.AMQP_URL);
@@ -36,8 +60,18 @@ async function subscriber() {
     intensiveOperation();
 
     console.log(`Received message from "${queue}" queue`);
-    console.log(content);
-    await saveNotification(content);
+
+    if(content.noti_id){
+      await seenNotification(content)
+        .then((res) => {
+          console.log(res)
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    } else {
+      await saveNotification(content);
+    }
     channel.ack(message);
   });
 }

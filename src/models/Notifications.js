@@ -13,7 +13,7 @@ const notificationSchema = new Schema(
       type: String,
       required: true
     },
-    message: {
+    reference: {
       type: String,
       required: true
     },

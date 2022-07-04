@@ -25,6 +25,7 @@ const pricecoin = require("./routes/pricecoin/pricecoin");
 const order = require("./routes/order/order");
 const channel = require("./routes/channel/channel");
 const publish = require("./routes/publish/publish");
+const notification = require("./routes/notification/notification");
 const auth = require("./routes/auth/auth");
 /* const user = require("./routes/user/user");
 const shipping = require("./routes/shipping/shipping");
@@ -58,6 +59,7 @@ app.use("/api/auth", auth);
 app.use("/api/items", item);  // security
 app.use("/api/categories", category)
 app.use("/api/subcategories", subcategory)
+app.use("/api/noti", notification)
 app.use("/api/prices", passport.authenticate('jwt', {session: false}), pricecoin);
 app.use("/api/orders", passport.authenticate('jwt', {session: false}), order);
 app.use("/api/profiles", passport.authenticate('jwt', {session: false}), profile);
