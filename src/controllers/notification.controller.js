@@ -7,9 +7,9 @@ const ObjectId = require("mongoose").Types.ObjectId;
 async function getNotiByUserId(req, res) {
   try {
     const { userID } = req.params;
-    const { size, page, seen } = req.query;
+    const { size, page } = req.query;
     const { limit, offset } = getPagination(page, size);
-    const sort = { item: -1 };
+    const sort = { createdAt: -1 };
 
     if (!ObjectId.isValid(userID)) {
       return res.status(404).json({ error: "Not Object userId" });
@@ -18,13 +18,6 @@ async function getNotiByUserId(req, res) {
     let condition = {
       user_id: userID
     };
-
-    if(seen){
-      condition = {
-        ...condition,
-        seen
-      }
-    }
 
     const data = await Notification.paginate(condition, {
       offset,
@@ -53,11 +46,8 @@ async function updateSeenById(req, res) {
   console.log(notiID, "arranco")
   try {
     await useSeenNotiRabbit("notifications", notiID)
-    .then((res) => {
-      console.log(res, "res 53")
-    })
     .catch((err) => {
-      console.log(err,"err 56")
+      console.log(err)
     })
       
     return res.status(200).json();
