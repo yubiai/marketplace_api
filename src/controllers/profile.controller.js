@@ -23,7 +23,7 @@ async function getProfile(req, res, _) {
 
 async function getProfileFromId(req, res) {
   const { userID } = { ...req.params };
-  console.log(userID, "Arranco")
+  console.log(userID, "Arranco");
 
   try {
     const profile = await Profile.findById(userID);
@@ -57,7 +57,7 @@ async function updateProfile(req, res) {
     });
     return res.status(200).json({ message: "Successfully updated" });
   } catch (error) {
-    return res.status(404).json({message: "Update error"});
+    return res.status(404).json({ message: "Update error" });
   }
 }
 
@@ -77,56 +77,66 @@ async function deleteProfile(req, res) {
     await Profile.findByIdAndRemove(userID);
     return res.status(200).json({ message: "Successfully removed" });
   } catch (error) {
-    return res.status(404).json({message: "Delete error"});
+    return res.status(404).json({ message: "Delete error" });
   }
 }
 
-// FAVORITES
-// Get Favorites
+// FAVOURITES
+// Get Favourites
 async function getFavorites(req, res) {
   const { userID } = req.params;
   const { size, page } = req.query;
   const { limit, offset } = getPagination(page, size);
 
-  let user = await Profile.findById(userID);
+  try {
+    let user = await Profile.findById(userID);
 
-  if (!user) {
-    return res.status(404).json({ error: "User id not exists" });
-  }
-
-  let favorites = user.favorites;
-  if (favorites.length === 0) {
-    return res.status(200).json({ message: "Favorites not found", items: [] });
-  }
-
-  const total_items = favorites.length;
-  const total_pages = Math.ceil(favorites.length / limit);
-  current_page = Number(page) || 0;
-  favorites = favorites.slice(offset).slice(0, limit);
-
-  let items = [];
-
-  for (let i = 0; i < favorites.length; i++) {
-    const item = await Item.findById(favorites[i]).populate(
-      "favorites",
-      "_id title pictures price category subcategory slug"
-    );
-    if (item) {
-      items.push(item);
+    if (!user) {
+      return res.status(404).json({ message: "User id not exists" });
     }
-  }
 
-  return res.status(200).json({
-    totalItems: total_items,
-    totalPages: total_pages,
-    currentPage: current_page,
-    prevPage: current_page ? current_page - 1 : null,
-    nextPage: total_pages > current_page + 1 ? current_page + 1 : null,
-    items,
-  });
+    let favorites = user.favorites;
+    if (favorites.length === 0) {
+      return res
+        .status(200)
+        .json({ message: "Favorites not found", items: [] });
+    }
+
+    const total_items = favorites.length;
+    const total_pages = Math.ceil(favorites.length / limit);
+    current_page = Number(page) || 0;
+    favorites = favorites.slice(offset).slice(0, limit);
+
+    let items = [];
+
+    for (let i = 0; i < favorites.length; i++) {
+      const item = await Item.findById(favorites[i]).populate(
+        "favorites",
+        "_id title pictures price category subcategory slug"
+      );
+      if (item) {
+        items.push(item);
+      }
+    }
+
+    return res.status(200).json({
+      totalItems: total_items,
+      totalPages: total_pages,
+      currentPage: current_page,
+      prevPage: current_page ? current_page - 1 : null,
+      nextPage: total_pages > current_page + 1 ? current_page + 1 : null,
+      items,
+    });
+  } catch (error) {
+
+    return res.status(400).json({
+      message: "Ups Hubo un error!",
+      error: error,
+    });
+  }
 }
 
-// Update Favorite Profile
+// Update Favourite Profile
 async function updateFavorites(req, res) {
   const { userID } = req.params;
 
@@ -220,7 +230,9 @@ async function getMyPublished(req, res) {
     let published = user.items;
 
     if (published.length === 0) {
-      return res.status(200).json({ message: "Items Published not found", items: [] });
+      return res
+        .status(200)
+        .json({ message: "Items Published not found", items: [] });
     }
 
     const total_items = published.length;

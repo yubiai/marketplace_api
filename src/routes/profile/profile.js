@@ -11,9 +11,9 @@ router.route("/id/:userID").put(profileController.updateProfile);
 
 router.route("/id/:userID").delete(profileController.deleteProfile);
 
-router.route("/favorites/:userID").get(profileController.getFavorites);
+router.route("/favourites/:userID").get(profileController.getFavorites);
 
-router.route("/favorites/:userID").put(profileController.updateFavorites);
+router.route("/favourites/:userID").put(profileController.updateFavorites);
 
 router.route("/my_purchases/:userID").get(profileController.getMyPurchases);
 
