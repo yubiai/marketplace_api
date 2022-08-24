@@ -4,6 +4,8 @@ const { Item } = require("../models/Item");
 const { Profile } = require("../models/Profile");
 const fleek = require("../utils/fleek");
 const fs = require("fs");
+const { removeFiles, getRandomName, changeNameFileRandomMp4 } = require("../utils/utils");
+const { upload_gc, convertWebp } = require("../utils/uploads");
 
 // Publish Item
 async function newItem(req, res) {
@@ -32,11 +34,7 @@ async function newItem(req, res) {
     // If Fail
     if (!isValidOperation) {
       // Deleted Images
-      for (const file of files) {
-        const { path } = file;
-        console.log(path);
-        fs.unlinkSync(path);
-      }
+      await removeFiles(files)
       console.log("Data is missing ");
       return res.status(400).json({
         message: "Data is missing ",
@@ -50,6 +48,8 @@ async function newItem(req, res) {
     });
 
     if (!verifyProfile) {
+      // Deleted Images
+      await removeFiles(files)
       return res.status(400).json({
         message: "Profile is missing.",
       });
@@ -62,6 +62,8 @@ async function newItem(req, res) {
     });
 
     if (!verifyCategory) {
+      // Deleted Images
+      await removeFiles(files)
       return res.status(400).json({
         message: "Category is missing.",
       });
@@ -74,18 +76,35 @@ async function newItem(req, res) {
     });
 
     if (!verifySubCategory) {
+      // Deleted Images
+      await removeFiles(files)
       return res.status(400).json({
         message: "SubCategory is missing.",
       });
     }
 
-    const uploader = async (path) => await fleek.uploads(path);
+    const uploader_gc = async (path) => await upload_gc(path);
 
     for (const file of files) {
-      const { path } = file;
-      const newPath = await uploader(path);
-      urls.push(newPath.publicUrl);
-      fs.unlinkSync(path);
+      console.log(file, "fileee")
+
+      if(file.mimetype === "video/mp4"){
+        console.log("es video")
+        // change name
+
+        const newFilenamePath = await changeNameFileRandomMp4(file)
+        console.log(newFilenamePath, "newFilenamePathnewFilenamePath")
+        const resultUrlPath = await uploader_gc(newFilenamePath);
+        console.log(resultUrlPath)
+        urls.push(resultUrlPath);
+      }
+
+      if(file.mimetype === "image/jpeg" || file.mimetype === "image/jpg" || file.mimetype === "image/png"){
+        const newFileWebp = await convertWebp(file)
+        const resultUrlPath = await uploader_gc(newFileWebp);
+        urls.push(resultUrlPath);
+      }
+
     }
 
     const item = new Item({
@@ -97,9 +116,14 @@ async function newItem(req, res) {
       category: req.body.category,
       subcategory: req.body.subcategory,
       ubiburningamount: req.body.ubiburningamount,
-      pictures: urls,
+      files: {
+        gc: urls
+      },
       currencySymbolPrice: req.body.currencySymbolPrice || "ETH",
     });
+
+    console.log(item)
+    return res.json(item)
 
     let savedItem = await item.save();
     console.log(savedItem, "saveItem");

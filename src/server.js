@@ -27,6 +27,8 @@ const channel = require("./routes/channel/channel");
 const publish = require("./routes/publish/publish");
 const notification = require("./routes/notification/notification");
 const auth = require("./routes/auth/auth");
+const test = require("./routes/test/test");
+
 /* const user = require("./routes/user/user");
 const shipping = require("./routes/shipping/shipping");
 const question = require("./routes/question/question");
@@ -59,6 +61,7 @@ app.get('/api/ping', function (req, res) {
 });
 
 //Routes
+app.use("/api/test", test);
 app.use("/api/auth", auth);
 app.use("/api/items", item);  // security
 app.use("/api/categories", category)

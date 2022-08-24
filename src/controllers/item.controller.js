@@ -48,7 +48,7 @@ async function getItemSlug(req, res) {
 // Get Items All
 async function getItemsAll(req, res) {
   try {
-    const items = await Item.find({}, "_id title price pictures");
+    const items = await Item.find({}, "_id title price files");
 
     return res.status(200).json({
       status: "ok",
@@ -145,7 +145,7 @@ async function search(req, res) {
         $project: {
           title: 1,
           slug: 1,
-          pictures: 1,
+          files: 1,
           price: 1,
         },
       },

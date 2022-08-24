@@ -28,8 +28,8 @@ const itemSchema = new Schema({
     type: Number,
     required: true
   },
-  pictures: {
-    type: Array,
+  files: {
+    type: Object,
     required: true,
   },
   seller: {

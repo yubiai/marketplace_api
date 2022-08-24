@@ -8,7 +8,7 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(
       null,
-      process.env.NODE_ENV === "PROD" ? "./upload" : "./src/public/uploads/"
+      "./upload/"
     );
   },
   filename: (req, file, cb) => {
