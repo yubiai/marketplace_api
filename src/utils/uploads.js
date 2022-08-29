@@ -5,7 +5,7 @@ const { Storage } = require("@google-cloud/storage");
 const gc_Storage = new Storage({ keyFilename: './yubiai-78689dd071d6.json' });
 
 const fleek_Storage = require('@fleekhq/fleek-storage-js');
-const { getRandomName } = require("./utils");
+const { File } = require("../models/File");
 
 
 /**
@@ -16,42 +16,21 @@ function convertWebp(file) {
     return new Promise(async (resolve, reject) => {
 
         try {
-            const random_name = await getRandomName();
-            const newNameFile = random_name + ".webp"
-            console.log(newNameFile, "newNameFile")
-            await webp.cwebp(file.path, "./upload/" + newNameFile, "-q 80", logging = "-v");
-            console.log(`Image: ${file.filename} converted to webp, new name is ${newNameFile}`)
+
+            let newFilename = file.filename;
+            newFilename = newFilename.split(".");
+            newFilename = newFilename[0] + ".webp"
+            console.log(newFilename, "newNameFile")
+
+            await webp.cwebp(file.path, "./upload/" + newFilename, "-q 80", logging = "-v");
+            console.log(`Image: ${file.filename} converted to webp, new name is ${newFilename}`)
             fs.unlinkSync(file.path);
+
             console.log(`File old removed`)
-            return resolve(newNameFile)
+            return resolve(newFilename)
         } catch (err) {
             console.error(err)
             return reject(err)
-        }
-    })
-}
-
-/**
- * Upload Google Cloud Storage
- */
-function upload_gc(fileName) {
-    return new Promise(async (resolve, reject) => {
-        try {
-
-            const result = await gc_Storage.bucket(process.env.STORAGE_GC_BUCKET).upload("./upload/" + fileName, {
-                destination: fileName
-            });
-
-            const urlPath = result[0].metadata.name;
-            console.log("File Saved" + urlPath)
-
-            fs.unlinkSync("./upload/" + fileName);
-            console.log("File Deleted")
-
-            return resolve(urlPath)
-        } catch (err) {
-            console.error(err);
-            return reject(err);
         }
     })
 }
@@ -85,9 +64,41 @@ function upload_Fleek() {
     })
 }
 
+function uploadFile(file, authorId) {
+    return new Promise(async (resolve, reject) => {
+        console.log(file, "acaa")
+        try {
+
+            if (file.mimetype === "image/jpeg" || file.mimetype === "image/jpg" || file.mimetype === "image/png") {
+                const newFilename = await convertWebp(file)
+                file.filename = newFilename
+            }
+
+            await gc_Storage.bucket(process.env.STORAGE_GC_BUCKET).upload("./upload/" + file.filename, {
+                destination: file.fileName
+            });
+
+
+            const newItem = new File({
+                filename: file.filename,
+                mimetype: file.mimetype,
+                author: authorId
+            });
+
+            const result = await newItem.save();
+
+            fs.unlinkSync("./upload/" + file.filename);
+            resolve(result)
+        } catch (err) {
+            console.error(err);
+            reject(err)
+        }
+    })
+}
+
 
 module.exports = {
+    uploadFile,
     convertWebp,
-    upload_gc,
     upload_Fleek
 };

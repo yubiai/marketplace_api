@@ -101,7 +101,39 @@ async function useSeenNotiRabbit(queue, noti_id) {
   });
 }
 
+async function useSaveItemRabbit(queue, newItem) {
+  return new Promise(async (resolve, reject) => {
+
+    if(!queue || !newItem){
+      return reject("Missing Data.")
+    }
+
+    // Connect Rabbit
+    const connection = await amqp.connect(process.env.AMQP_URL);
+    const channel = await connection.createChannel();
+
+    await channel.assertQueue(queue);
+
+    const sent = channel.sendToQueue(
+      queue,
+      Buffer.from(JSON.stringify(newItem)),
+      {
+        // persistent: true
+      }
+    );
+
+    if (sent) {
+      console.log(`Sent message to "${queue}" queue`);
+      return resolve(sent);
+    } else {
+      console.log(`Fails sending message to "${queue}" queue`);
+      return reject("Fails sending message");
+    }
+  });
+}
+
 module.exports = {
   useNewNotiRabbit,
-  useSeenNotiRabbit
+  useSeenNotiRabbit,
+  useSaveItemRabbit
 };

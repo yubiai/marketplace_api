@@ -56,12 +56,12 @@ async function getRandomName() {
  * Change Name File
  */
 
-async function changeNameFileRandomMp4(file) {
+async function changeNameFileRandom(file, type) {
   return new Promise(async (resolve, reject) => {
     try {
       const oldPath = file.path;
       const random_name = await getRandomName();
-      const newNameFile = random_name + ".mp4"
+      const newNameFile = random_name + type
       const newPath = "./upload/" + newNameFile;
       console.log(newNameFile, "hola")
       fs.rename(oldPath, newPath, function (err) {
@@ -80,5 +80,5 @@ module.exports = {
   signData,
   removeFiles,
   getRandomName,
-  changeNameFileRandomMp4
+  changeNameFileRandom
 };
