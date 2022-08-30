@@ -35,6 +35,10 @@ const transactionSchema = new Schema(
       type: String,
       required: true
     },
+    transactionPayedAmount: {
+      type: String,
+      default: ''
+    },
     disputeId: {
       type: Number,
       default: 0
