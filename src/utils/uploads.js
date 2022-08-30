@@ -70,8 +70,9 @@ function uploadFile(file, authorId) {
         try {
 
             if (file.mimetype === "image/jpeg" || file.mimetype === "image/jpg" || file.mimetype === "image/png") {
-                const newFilename = await convertWebp(file)
-                file.filename = newFilename
+                const newFilename = await convertWebp(file);
+                file.filename = newFilename;
+                file.mimetype = "image/webp"
             }
 
             await gc_Storage.bucket(process.env.STORAGE_GC_BUCKET).upload("./upload/" + file.filename, {

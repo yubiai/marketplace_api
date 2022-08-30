@@ -248,7 +248,11 @@ async function getMyPublished(req, res) {
         files: 1,
         price: 1,
         slug: 1,
-      });
+      }).populate({
+        path: 'files',
+        model: 'File',
+        select: { filename: 1, mimetype: 1 }
+      })
       if (item) {
         items.push(item);
       }

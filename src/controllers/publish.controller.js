@@ -3,7 +3,6 @@ const { Subcategory } = require("../models/Subcategory");
 const { Item } = require("../models/Item");
 const { Profile } = require("../models/Profile");
 const { removeFiles } = require("../utils/utils");
-const { useSaveItemRabbit } = require("../libs/useRabbit");
 const { uploadFile } = require("../utils/uploads");
 
 // Publish Item
@@ -84,10 +83,29 @@ async function newItem(req, res) {
       files: files
     }
 
-    console.log(newItem, "item")
+    const item = new Item(newItem)
 
-    return res.status(400).json({
-      message: "Item added successfully!"
+    const savedItem = await item.save();
+
+    // Update profile in items.
+    await Profile.findByIdAndUpdate(newItem.seller, {
+      items: [...verifyProfile.items, savedItem._id],
+    });
+
+    // Update category in items.
+    await Category.findByIdAndUpdate(newItem.category, {
+      items: [...verifyCategory.items, savedItem._id],
+    });
+
+    // Update sub category in items.
+    await Subcategory.findByIdAndUpdate(newItem.subcategory, {
+      items: [...verifySubCategory.items, savedItem._id],
+    });
+
+    console.log(savedItem, "FinishS")
+    return res.status(200).json({
+      message: "Item added successfully!",
+      result: savedItem
     });
   } catch (error) {
     await removeFiles(files)

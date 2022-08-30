@@ -29,7 +29,7 @@ const itemSchema = new Schema({
     required: true
   },
   files: {
-    type: Object,
+    type: Array,
     required: true,
   },
   seller: {
@@ -43,8 +43,8 @@ const itemSchema = new Schema({
     default: 1,
   },
   status: {
-    type: String,
-    default: "review",
+    type: Number,
+    default: 0,
   },
   slug: {
     type: String,

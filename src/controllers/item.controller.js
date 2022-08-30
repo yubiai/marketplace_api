@@ -30,7 +30,14 @@ async function getItemSlug(req, res) {
     const item = await Item.findOne({ slug: req.params.slug })
       .populate("seller", "first_name last_name photo eth_address")
       .populate("category", "title")
-      .populate("subcategory", "title");
+      .populate("subcategory", "title")
+      .populate({
+        path: 'files',
+        model: 'File',
+        select: { filename: 1, mimetype: 1 }
+      })
+
+    console.log(item, "itemitem")
 
     return res.status(200).json({
       status: "ok",
@@ -107,7 +114,13 @@ async function getItems(req, res) {
       condition.subcategory = subcategoryId;
     }
 
-    const data = await Item.paginate(condition, { offset, limit, sort });
+    const data = await Item.paginate(condition, {
+      offset, limit, sort, populate: {
+        path: 'files',
+        model: 'File',
+        select: { filename: 1, mimetype: 1 }
+      }
+    });
 
     return res.status(200).json({
       totalItems: data.totalDocs,
@@ -125,11 +138,11 @@ async function getItems(req, res) {
   }
 }
 
-// Items by Category
+// Items by Search
 async function search(req, res) {
   try {
     const query = req.query.q;
-    console.log(query);
+    console.log(query, "aca");
 
     const result = await Item.aggregate([
       {
@@ -150,6 +163,8 @@ async function search(req, res) {
         },
       },
     ]);
+
+    console.log("hola")
 
     console.log(result, "result");
 
