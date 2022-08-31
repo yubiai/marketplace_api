@@ -35,33 +35,36 @@ function convertWebp(file) {
     })
 }
 
-
 /**
  * Upload Fleek Storage
  */
 function upload_Fleek(file) {
     return new Promise((resolve, reject) => {
 
-        fs.readFile("./upload/" + file.filename, async (error, fileData) => {
+        try {
+            fs.readFile("./upload/" + file.filename, async (error, fileData) => {
 
-            if (error) {
-                console.log(error);
-                reject(error);
-            }
-            let fileName = file.filename;
-            const uploadedFile = await fleek_Storage.upload({
-                apiKey: process.env.STORAGE_FLEEK_API_KEY,
-                apiSecret: process.env.STORAGE_FLEEK_API_SECRET,
-                key: fileName,
-                data: fileData,
-                bucket: "3547361c-6cea-4745-8807-5760c4eafa94-bucket/Images",
-                httpUploadProgressCallback: (event) => {
-                    console.log(Math.round(event.loaded / event.total * 100) + '% done');
+                if (error) {
+                    console.log(error);
+                    reject(error);
                 }
+                let fileName = file.filename;
+                const uploadedFile = await fleek_Storage.upload({
+                    apiKey: process.env.STORAGE_FLEEK_API_KEY,
+                    apiSecret: process.env.STORAGE_FLEEK_API_SECRET,
+                    key: fileName,
+                    data: fileData,
+                    bucket: "3547361c-6cea-4745-8807-5760c4eafa94-bucket/Images",
+                    httpUploadProgressCallback: (event) => {
+                        console.log(Math.round(event.loaded / event.total * 100) + '% done');
+                    }
+                })
+                resolve(uploadedFile)
             })
-            console.log(uploadedFile, "uploadedFile")
-            resolve(uploadedFile)
-        })
+        } catch(err){
+            console.error(err);
+            reject(err)
+        }
     })
 }
 
