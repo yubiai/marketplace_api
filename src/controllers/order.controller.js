@@ -133,7 +133,7 @@ async function getOrderByTransaction(req, res) {
       });
 
       const { itemId, userBuyer, userSeller, dateOrder, _id, status } = order;
-      const { transactionHash, transactionIndex, to, disputeId } = transaction;
+      const { transactionHash, transactionIndex, to, disputeId, transactionPayedAmount } = transaction;
       const item = await Item.findOne({ _id: itemId }).lean();
       const seller = await Profile.findOne({ eth_address: userSeller }).lean();
 
@@ -152,6 +152,7 @@ async function getOrderByTransaction(req, res) {
           transactionIndex,
           to,
           disputeId,
+          transactionPayedAmount
         },
       };
     }
