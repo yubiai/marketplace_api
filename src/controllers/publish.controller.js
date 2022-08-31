@@ -4,6 +4,8 @@ const { Item } = require("../models/Item");
 const { Profile } = require("../models/Profile");
 const { removeFiles } = require("../utils/utils");
 const { uploadFile } = require("../utils/uploads");
+const { File } = require("../models/File");
+const { useImagesUpload } = require("../libs/useRabbit");
 
 // Publish Item
 async function newItem(req, res) {
@@ -101,6 +103,21 @@ async function newItem(req, res) {
     await Subcategory.findByIdAndUpdate(newItem.subcategory, {
       items: [...verifySubCategory.items, savedItem._id],
     });
+
+    for (const file of savedItem.files) {
+      const verifyFile = await File.findOne({
+        _id: file
+      });
+      if (!verifyFile) {
+        console.error("No exists")
+        continue
+      }
+      await File.findByIdAndUpdate(file, {
+        items: [...verifyFile.items, savedItem._id],
+      });
+      await useImagesUpload("images.upload", verifyFile)
+      continue
+    }
 
     console.log(savedItem, "FinishS")
     return res.status(200).json({

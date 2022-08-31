@@ -101,10 +101,10 @@ async function useSeenNotiRabbit(queue, noti_id) {
   });
 }
 
-async function useSaveItemRabbit(queue, newItem) {
+async function useImagesUpload(queue, file) {
   return new Promise(async (resolve, reject) => {
 
-    if(!queue || !newItem){
+    if(!queue || !file){
       return reject("Missing Data.")
     }
 
@@ -116,7 +116,7 @@ async function useSaveItemRabbit(queue, newItem) {
 
     const sent = channel.sendToQueue(
       queue,
-      Buffer.from(JSON.stringify(newItem)),
+      Buffer.from(JSON.stringify(file)),
       {
         // persistent: true
       }
@@ -135,5 +135,5 @@ async function useSaveItemRabbit(queue, newItem) {
 module.exports = {
   useNewNotiRabbit,
   useSeenNotiRabbit,
-  useSaveItemRabbit
+  useImagesUpload
 };

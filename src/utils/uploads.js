@@ -24,8 +24,8 @@ function convertWebp(file) {
 
             await webp.cwebp(file.path, "./upload/" + newFilename, "-q 80", logging = "-v");
             console.log(`Image: ${file.filename} converted to webp, new name is ${newFilename}`)
-            fs.unlinkSync(file.path);
 
+            fs.unlinkSync(file.path);
             console.log(`File old removed`)
             return resolve(newFilename)
         } catch (err) {
@@ -39,26 +39,27 @@ function convertWebp(file) {
 /**
  * Upload Fleek Storage
  */
-function upload_Fleek() {
+function upload_Fleek(file) {
     return new Promise((resolve, reject) => {
 
-        fs.readFile(file, async (error, fileData) => {
+        fs.readFile("./upload/" + file.filename, async (error, fileData) => {
 
             if (error) {
                 console.log(error);
                 reject(error);
             }
-            let fileName = file.split("/")
+            let fileName = file.filename;
             const uploadedFile = await fleek_Storage.upload({
                 apiKey: process.env.STORAGE_FLEEK_API_KEY,
                 apiSecret: process.env.STORAGE_FLEEK_API_SECRET,
-                key: fileName[fileName.length - 1],
+                key: fileName,
                 data: fileData,
                 bucket: "3547361c-6cea-4745-8807-5760c4eafa94-bucket/Images",
                 httpUploadProgressCallback: (event) => {
                     console.log(Math.round(event.loaded / event.total * 100) + '% done');
                 }
             })
+            console.log(uploadedFile, "uploadedFile")
             resolve(uploadedFile)
         })
     })
@@ -88,7 +89,6 @@ function uploadFile(file, authorId) {
 
             const result = await newItem.save();
 
-            fs.unlinkSync("./upload/" + file.filename);
             resolve(result)
         } catch (err) {
             console.error(err);

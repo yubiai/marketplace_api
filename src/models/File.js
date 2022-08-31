@@ -21,7 +21,11 @@ const fileSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Profile",
       required: true
-    }
+    },
+    items: [{
+      type: Schema.Types.ObjectId,
+      ref: "Item"
+    }]
   },
   {
     versionKey: false,

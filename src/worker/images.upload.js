@@ -1,25 +1,32 @@
 const amqp = require("amqplib");
-const queue = "items";
+const fs = require("fs");
+const { upload_Fleek } = require("../utils/uploads");
+const queue = "images.upload";
 require("dotenv").config();
 require("../db");
 
 async function subscriber() {
-    console.log("-- Worker Items Save Started --")
+    console.log("-- Worker Images Upload Save Started --")
     const connection = await amqp.connect(process.env.AMQP_URL);
     const channel = await connection.createChannel();
   
     await channel.assertQueue(queue);
   
     channel.consume(queue, async (message) => {
-      const content = JSON.parse(message.content.toString());
+      const file = JSON.parse(message.content.toString());
      
-      console.log(content, "content")
+      console.log(file, "file")
       console.log(`Received message from "${queue}" queue`);
-  
-        setTimeout(() => {
-            channel.ack(message);
 
-        }, 8000);
+      const result = await upload_Fleek(file)
+
+      if(!result){
+        console.error("No upload")
+      }
+
+      fs.unlinkSync("./upload/" + file.filename);
+      console.log(`File old removed`)  
+      channel.ack(message);
     });
   }
   
