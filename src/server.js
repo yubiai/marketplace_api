@@ -54,6 +54,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.get('/api/ping', function (req, res) {
+  res.json("pong")
+});
+
 //Routes
 app.use("/api/auth", auth);
 app.use("/api/items", item);  // security
@@ -71,21 +75,6 @@ app.use("/api/publish", passport.authenticate('jwt', {session: false}), publish)
 //app.use("/api/carts", cart);
 //app.use("/api/shipping", shipping);
 
-if (process.env.NODE_ENV === "DEV"){
-  app.listen(process.env.PORT || 4000, () => {
-    console.log("Server running on port", process.env.PORT);
-  });
-} else {
-  const sslServer = https.createServer(
-    {
-      key: fs.readFileSync("./certs/privkey.pem"),
-      cert: fs.readFileSync("./certs/fullchain.pem"),
-    },
-    app
-  );
-  
-  sslServer.listen(process.env.PORT || 4000, () => {
-    console.log("Server running on port", process.env.PORT || 4000);
-  });
-  
-}
+app.listen(process.env.PORT || 4000, () => {
+  console.log("Server running on port", process.env.PORT);
+});
