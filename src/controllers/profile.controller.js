@@ -112,7 +112,7 @@ async function getFavorites(req, res) {
     for (let i = 0; i < favorites.length; i++) {
       const item = await Item.findById(favorites[i]).populate(
         "favorites",
-        "_id title files price category subcategory slug"
+        "_id title files price category subcategory slug published status"
       );
       if (item) {
         items.push(item);
@@ -248,6 +248,8 @@ async function getMyPublished(req, res) {
         files: 1,
         price: 1,
         slug: 1,
+        published: 1,
+        status: 1
       }).populate({
         path: 'files',
         model: 'File',

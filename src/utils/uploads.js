@@ -54,7 +54,7 @@ function upload_Fleek(file) {
                     apiSecret: process.env.STORAGE_FLEEK_API_SECRET,
                     key: fileName,
                     data: fileData,
-                    bucket: "3547361c-6cea-4745-8807-5760c4eafa94-bucket/",
+                    bucket: process.env.STORAGE_FLLEK_API_BUCKET,
                     httpUploadProgressCallback: (event) => {
                         console.log(Math.round(event.loaded / event.total * 100) + '% done');
                     }
@@ -70,9 +70,7 @@ function upload_Fleek(file) {
 
 function uploadFile(file, authorId) {
     return new Promise(async (resolve, reject) => {
-        console.log(file, "acaa")
         try {
-
             if (file.mimetype === "image/jpeg" || file.mimetype === "image/jpg" || file.mimetype === "image/png") {
                 const newFilename = await convertWebp(file);
                 file.filename = newFilename;
@@ -80,9 +78,8 @@ function uploadFile(file, authorId) {
             }
 
             await gc_Storage.bucket(process.env.STORAGE_GC_BUCKET).upload("./upload/" + file.filename, {
-                destination: file.fileName
+                destination: `${process.env.STORAGE_GC_FOLD}/${file.filename}`
             });
-
 
             const newItem = new File({
                 filename: file.filename,
