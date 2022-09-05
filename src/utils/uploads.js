@@ -54,7 +54,7 @@ function upload_Fleek(file) {
                     apiSecret: process.env.STORAGE_FLEEK_API_SECRET,
                     key: fileName,
                     data: fileData,
-                    bucket: "3547361c-6cea-4745-8807-5760c4eafa94-bucket/Images",
+                    bucket: "3547361c-6cea-4745-8807-5760c4eafa94-bucket/",
                     httpUploadProgressCallback: (event) => {
                         console.log(Math.round(event.loaded / event.total * 100) + '% done');
                     }

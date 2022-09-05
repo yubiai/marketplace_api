@@ -46,6 +46,14 @@ const itemSchema = new Schema({
     type: Number,
     default: 0,
   },
+  published: {
+    type: Boolean,
+    default: false
+  },
+  publishedDate: {
+    type: Date,
+    default: null
+  },
   slug: {
     type: String,
     unique: true,

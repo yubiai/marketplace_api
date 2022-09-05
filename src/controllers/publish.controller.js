@@ -7,7 +7,7 @@ const { uploadFile } = require("../utils/uploads");
 const { File } = require("../models/File");
 const { useImagesUpload } = require("../libs/useRabbit");
 
-// Publish Item
+// New Item
 async function newItem(req, res) {
   let newItem = req.body;
   let filesUpload = req.files;
@@ -74,20 +74,31 @@ async function newItem(req, res) {
       throw new Error("SubCategory is missing.");
     }
 
+    // Verify Files
+    if (!filesUpload || filesUpload.length < 1) {
+      console.error("Files is missing.");
+      throw new Error("Files is missing.")
+    }
+
+    // Step 2 - Upload Files
     for (const file of filesUpload) {
-      console.log(file, "fileee")
       const result = await uploadFile(file, profileID);
       files.push(result._id)
     }
 
+    // Step 3 - Adding properties
     newItem = {
       ...newItem,
-      files: files
+      files: files,
+      currencySymbolPrice: newItem.currencySymbolPrice || "ETH",
+      status: 1
     }
 
+    // Step 4 - Saving new item
     const item = new Item(newItem)
-
     const savedItem = await item.save();
+
+    // Step 5 - Adding your relationships
 
     // Update profile in items.
     await Profile.findByIdAndUpdate(newItem.seller, {
@@ -104,6 +115,7 @@ async function newItem(req, res) {
       items: [...verifySubCategory.items, savedItem._id],
     });
 
+    // Step 6 - Save files to other storage
     for (const file of savedItem.files) {
       const verifyFile = await File.findOne({
         _id: file
@@ -119,19 +131,62 @@ async function newItem(req, res) {
       continue
     }
 
-    console.log(savedItem, "FinishS")
+    // Step 7 - Finish
     return res.status(200).json({
       message: "Item added successfully!",
       result: savedItem
     });
   } catch (error) {
+    // if an error is caught the files are deleted
     await removeFiles(files)
+
+    // Finish
     return res.status(400).json({
       message: error && error.message ? error.message : "Failed to post.",
     });
   }
 }
 
+// New Item
+async function publishItem(req, res) {
+
+  try {
+
+    // Verify Code Security
+    if (req.body.code !== process.env.CODE_SECU) {
+      console.error("Command No valid")
+      throw new Error("Command No valid");
+    }
+
+    // Verify Item
+    const verifyProfile = await Item.findOne({
+      _id: req.body.item_id,
+    });
+
+    // If Fail
+    if (!verifyProfile) {
+      console.error("Item is missing.")
+      throw new Error("Item is missing.");
+    }
+
+    // Update Item
+    await Item.findByIdAndUpdate(req.body.item_id, {
+      published: true,
+      status: 2
+    });
+
+    return res.status(200).json({
+      message: "Updated Successfully"
+    })
+  } catch (error) {
+    console.error(error);
+    return res.status(400).json({
+      message: error && error.message ? error.message : "Failed to Published.",
+    })
+  }
+}
+
 module.exports = {
   newItem,
+  publishItem
 };

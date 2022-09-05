@@ -12,12 +12,12 @@ async function getItem(req, res) {
   try {
     const item = await Item.find({});
 
-    res.status(200).json({
+    return res.status(200).json({
       status: "ok",
       result: item,
     });
   } catch (error) {
-    res.status(400).json({
+    return res.status(400).json({
       message: "Ups Hubo un error!",
       error: error,
     });
@@ -104,7 +104,9 @@ async function getItems(req, res) {
     const { limit, offset } = getPagination(page, size);
     const sort = { item: 1 };
 
-    let condition = {};
+    let condition = {
+      published: true
+    };
 
     if (categoryId) {
       condition.category = categoryId;
