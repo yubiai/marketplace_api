@@ -28,7 +28,7 @@ const itemSchema = new Schema({
     type: Number,
     required: true
   },
-  pictures: {
+  files: {
     type: Array,
     required: true,
   },
@@ -43,8 +43,16 @@ const itemSchema = new Schema({
     default: 1,
   },
   status: {
-    type: String,
-    default: "review",
+    type: Number,
+    default: 0,
+  },
+  published: {
+    type: Boolean,
+    default: false
+  },
+  publishedDate: {
+    type: Date,
+    default: null
   },
   slug: {
     type: String,

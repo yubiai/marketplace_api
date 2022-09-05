@@ -1,16 +1,14 @@
-if (process.env.NODE_ENV === "PROD"){
+if (process.env.NODE_ENV === "PROD") {
   require('newrelic');
 }
-require('dotenv').config()
+require('dotenv').config();
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const path = require("path");
-const passport = require('passport')
-const fs = require("fs");
-const https = require("https");
-require('./utils/passport')(passport)
-const config = require("./db");
+const passport = require('passport');
+require('./utils/passport')(passport);
+require("./db");
 
 /* const ethers = require("ethers");
 const PaymentProcessor = require("./../../frontend/src/artifacts/contracts/PaymentProcessor.sol/PaymentProcessor.json");
@@ -27,6 +25,8 @@ const channel = require("./routes/channel/channel");
 const publish = require("./routes/publish/publish");
 const notification = require("./routes/notification/notification");
 const auth = require("./routes/auth/auth");
+const test = require("./routes/test/test");
+
 /* const user = require("./routes/user/user");
 const shipping = require("./routes/shipping/shipping");
 const question = require("./routes/question/question");
@@ -49,7 +49,7 @@ const corsOptions = {
 
 // Middlewares
 app.use(cors(corsOptions));
-app.use(passport.initialize())
+app.use(passport.initialize());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -59,16 +59,17 @@ app.get('/api/ping', function (req, res) {
 });
 
 //Routes
+//app.use("/api/test", test);
 app.use("/api/auth", auth);
-app.use("/api/items", item);  // security
-app.use("/api/categories", category)
-app.use("/api/subcategories", subcategory)
-app.use("/api/noti", notification)
-app.use("/api/prices", passport.authenticate('jwt', {session: false}), pricecoin);
-app.use("/api/orders", passport.authenticate('jwt', {session: false}), order);
-app.use("/api/profiles", passport.authenticate('jwt', {session: false}), profile);
-app.use("/api/channel", passport.authenticate('jwt', {session: false}), channel);
-app.use("/api/publish", passport.authenticate('jwt', {session: false}), publish);
+app.use("/api/items", item);
+app.use("/api/categories", category);
+app.use("/api/subcategories", subcategory);
+app.use("/api/noti", notification);
+app.use("/api/prices", passport.authenticate('jwt', { session: false }), pricecoin);
+app.use("/api/orders", passport.authenticate('jwt', { session: false }), order);
+app.use("/api/profiles", passport.authenticate('jwt', { session: false }), profile);
+app.use("/api/channel", passport.authenticate('jwt', { session: false }), channel);
+app.use("/api/publish", passport.authenticate('jwt', { session: false }), publish);
 //app.use("/api/user", user);
 //app.use("/api/items", passport.authenticate('jwt', {session: false}), item);
 //app.use("/api/questions", question);

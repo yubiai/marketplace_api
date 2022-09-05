@@ -23,6 +23,7 @@ mongoose
     console.log(mongodb_url)
   })
   .catch(function (err) {
+    console.log(err)
     console.log("Ups! Hubo un error al conectar con la base de datos!");
     console.log(err.message);
   });

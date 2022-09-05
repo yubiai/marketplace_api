@@ -2,17 +2,20 @@ const { Category } = require("../models/Category");
 const { Subcategory } = require("../models/Subcategory");
 const { Item } = require("../models/Item");
 const { Profile } = require("../models/Profile");
-const fleek = require("../utils/fleek");
-const fs = require("fs");
+const { removeFiles } = require("../utils/utils");
+const { uploadFile } = require("../utils/uploads");
+const { File } = require("../models/File");
+const { useImagesUpload } = require("../libs/useRabbit");
 
-// Publish Item
+// New Item
 async function newItem(req, res) {
-  const urls = [];
-  const files = req.files;
+  let newItem = req.body;
+  let filesUpload = req.files;
+  let files = [];
 
   try {
-    // Validates
-    const body = Object.keys(req.body);
+    // Step 1 - Validates
+    const body = Object.keys(newItem);
     const allowedCreates = [
       "title",
       "description",
@@ -31,107 +34,159 @@ async function newItem(req, res) {
 
     // If Fail
     if (!isValidOperation) {
-      // Deleted Images
-      for (const file of files) {
-        const { path } = file;
-        console.log(path);
-        fs.unlinkSync(path);
-      }
-      console.log("Data is missing ");
-      return res.status(400).json({
-        message: "Data is missing ",
-      });
+      console.error("Data is missing.")
+      throw new Error("Data is missing.");
     }
 
     // Verify Profile
-    const profileID = req.body.seller;
+    const profileID = newItem.seller;
     const verifyProfile = await Profile.findOne({
       _id: profileID,
     });
 
+    // If Fail
     if (!verifyProfile) {
-      return res.status(400).json({
-        message: "Profile is missing.",
-      });
+      console.error("Profile is missing.")
+      throw new Error("Profile is missing.");
     }
 
     // Verify Category
-    const categoryID = req.body.category;
+    const categoryID = newItem.category;
     const verifyCategory = await Category.findOne({
       _id: categoryID,
     });
 
+    // If Fail
     if (!verifyCategory) {
-      return res.status(400).json({
-        message: "Category is missing.",
-      });
+      console.error("Category is missing.")
+      throw new Error("Category is missing.");
     }
 
     // Verify Sub Category
-    const subCategoryID = req.body.subcategory;
+    const subCategoryID = newItem.subcategory;
     const verifySubCategory = await Subcategory.findOne({
       _id: subCategoryID,
     });
 
+    // If Fail
     if (!verifySubCategory) {
-      return res.status(400).json({
-        message: "SubCategory is missing.",
-      });
+      console.error("SubCategory is missing.")
+      throw new Error("SubCategory is missing.");
     }
 
-    const uploader = async (path) => await fleek.uploads(path);
-
-    for (const file of files) {
-      const { path } = file;
-      const newPath = await uploader(path);
-      urls.push(newPath.publicUrl);
-      fs.unlinkSync(path);
+    // Verify Files
+    if (!filesUpload || filesUpload.length < 1) {
+      console.error("Files is missing.");
+      throw new Error("Files is missing.")
     }
 
-    const item = new Item({
-      title: req.body.title,
-      description: req.body.description,
-      price: req.body.price,
-      seller: req.body.seller,
-      maxorders: req.body.maxorders,
-      category: req.body.category,
-      subcategory: req.body.subcategory,
-      ubiburningamount: req.body.ubiburningamount,
-      pictures: urls,
-      currencySymbolPrice: req.body.currencySymbolPrice || "ETH",
-    });
+    // Step 2 - Upload Files
+    for (const file of filesUpload) {
+      const result = await uploadFile(file, profileID);
+      files.push(result._id)
+    }
 
-    let savedItem = await item.save();
-    console.log(savedItem, "saveItem");
+    // Step 3 - Adding properties
+    newItem = {
+      ...newItem,
+      files: files,
+      currencySymbolPrice: newItem.currencySymbolPrice || "ETH",
+      status: 1
+    }
+
+    // Step 4 - Saving new item
+    const item = new Item(newItem)
+    const savedItem = await item.save();
+
+    // Step 5 - Adding your relationships
 
     // Update profile in items.
-    await Profile.findByIdAndUpdate(req.body.seller, {
+    await Profile.findByIdAndUpdate(newItem.seller, {
       items: [...verifyProfile.items, savedItem._id],
     });
 
     // Update category in items.
-    await Category.findByIdAndUpdate(req.body.category, {
+    await Category.findByIdAndUpdate(newItem.category, {
       items: [...verifyCategory.items, savedItem._id],
     });
 
     // Update sub category in items.
-    await Subcategory.findByIdAndUpdate(req.body.subcategory, {
+    await Subcategory.findByIdAndUpdate(newItem.subcategory, {
       items: [...verifySubCategory.items, savedItem._id],
     });
 
+    // Step 6 - Save files to other storage
+    for (const file of savedItem.files) {
+      const verifyFile = await File.findOne({
+        _id: file
+      });
+      if (!verifyFile) {
+        console.error("No exists")
+        continue
+      }
+      await File.findByIdAndUpdate(file, {
+        items: [...verifyFile.items, savedItem._id],
+      });
+      await useImagesUpload("images.upload", verifyFile)
+      continue
+    }
+
+    // Step 7 - Finish
     return res.status(200).json({
-      message: "Item agregado con éxito!",
-      result: savedItem,
+      message: "Item added successfully!",
+      result: savedItem
     });
   } catch (error) {
-    console.log(error);
-    res.status(400).json({
-      message: "Ups Hubo un error!",
-      error: error,
+    // if an error is caught the files are deleted
+    await removeFiles(files)
+
+    // Finish
+    return res.status(400).json({
+      message: error && error.message ? error.message : "Failed to post.",
     });
+  }
+}
+
+// New Item
+async function publishItem(req, res) {
+
+  try {
+
+    // Verify Code Security
+    if (req.body.code !== process.env.CODE_SECU) {
+      console.error("Command No valid")
+      throw new Error("Command No valid");
+    }
+
+    // Verify Item
+    const verifyProfile = await Item.findOne({
+      _id: req.body.item_id,
+    });
+
+    // If Fail
+    if (!verifyProfile) {
+      console.error("Item is missing.")
+      throw new Error("Item is missing.");
+    }
+
+    // Update Item
+    await Item.findByIdAndUpdate(req.body.item_id, {
+      published: true,
+      status: 2
+    });
+
+    return res.status(200).json({
+      message: "Updated Successfully"
+    })
+  } catch (error) {
+    console.error(error);
+    return res.status(400).json({
+      message: error && error.message ? error.message : "Failed to Published.",
+    })
   }
 }
 
 module.exports = {
   newItem,
+  publishItem
 };

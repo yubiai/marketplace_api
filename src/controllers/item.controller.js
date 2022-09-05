@@ -12,12 +12,12 @@ async function getItem(req, res) {
   try {
     const item = await Item.find({});
 
-    res.status(200).json({
+    return res.status(200).json({
       status: "ok",
       result: item,
     });
   } catch (error) {
-    res.status(400).json({
+    return res.status(400).json({
       message: "Ups Hubo un error!",
       error: error,
     });
@@ -30,7 +30,14 @@ async function getItemSlug(req, res) {
     const item = await Item.findOne({ slug: req.params.slug })
       .populate("seller", "first_name last_name photo eth_address")
       .populate("category", "title")
-      .populate("subcategory", "title");
+      .populate("subcategory", "title")
+      .populate({
+        path: 'files',
+        model: 'File',
+        select: { filename: 1, mimetype: 1 }
+      })
+
+    console.log(item, "itemitem")
 
     return res.status(200).json({
       status: "ok",
@@ -48,7 +55,7 @@ async function getItemSlug(req, res) {
 // Get Items All
 async function getItemsAll(req, res) {
   try {
-    const items = await Item.find({}, "_id title price pictures");
+    const items = await Item.find({}, "_id title price files");
 
     return res.status(200).json({
       status: "ok",
@@ -97,7 +104,9 @@ async function getItems(req, res) {
     const { limit, offset } = getPagination(page, size);
     const sort = { item: 1 };
 
-    let condition = {};
+    let condition = {
+      published: true
+    };
 
     if (categoryId) {
       condition.category = categoryId;
@@ -107,7 +116,13 @@ async function getItems(req, res) {
       condition.subcategory = subcategoryId;
     }
 
-    const data = await Item.paginate(condition, { offset, limit, sort });
+    const data = await Item.paginate(condition, {
+      offset, limit, sort, populate: {
+        path: 'files',
+        model: 'File',
+        select: { filename: 1, mimetype: 1 }
+      }
+    });
 
     return res.status(200).json({
       totalItems: data.totalDocs,
@@ -125,11 +140,11 @@ async function getItems(req, res) {
   }
 }
 
-// Items by Category
+// Items by Search
 async function search(req, res) {
   try {
     const query = req.query.q;
-    console.log(query);
+    console.log(query, "aca");
 
     const result = await Item.aggregate([
       {
@@ -145,11 +160,13 @@ async function search(req, res) {
         $project: {
           title: 1,
           slug: 1,
-          pictures: 1,
+          files: 1,
           price: 1,
         },
       },
     ]);
+
+    console.log("hola")
 
     console.log(result, "result");
 
