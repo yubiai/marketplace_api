@@ -20,7 +20,6 @@ function convertWebp(file) {
             let newFilename = file.filename;
             newFilename = newFilename.split(".");
             newFilename = newFilename[0] + ".webp"
-            console.log(newFilename, "newNameFile")
 
             await webp.cwebp(file.path, "./upload/" + newFilename, "-q 80", logging = "-v");
             console.log(`Image: ${file.filename} converted to webp, new name is ${newFilename}`)

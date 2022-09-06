@@ -5,7 +5,6 @@ const { Profile } = require("../models/Profile");
 const { removeFiles } = require("../utils/utils");
 const { uploadFile } = require("../utils/uploads");
 const { File } = require("../models/File");
-const { useImagesUpload } = require("../libs/useRabbit");
 
 // New Item
 async function newItem(req, res) {
@@ -131,6 +130,7 @@ async function newItem(req, res) {
     }
 
     // Step 7 - Finish
+    console.log("Item added successfully, ID:" + savedItem._id)
     return res.status(200).json({
       message: "Item added successfully!",
       result: savedItem
