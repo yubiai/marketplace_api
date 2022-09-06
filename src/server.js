@@ -50,8 +50,8 @@ const corsOptions = {
 // Middlewares
 app.use(cors(corsOptions));
 app.use(passport.initialize());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json({limit: "31mb", extended: true}))
+app.use(bodyParser.urlencoded({limit: "31mb", extended: true, parameterLimit: 50000}))
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/api/ping', function (req, res) {
