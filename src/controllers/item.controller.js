@@ -37,8 +37,6 @@ async function getItemSlug(req, res) {
         select: { filename: 1, mimetype: 1 }
       })
 
-    console.log(item, "itemitem")
-
     return res.status(200).json({
       status: "ok",
       result: item,

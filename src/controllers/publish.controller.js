@@ -127,7 +127,6 @@ async function newItem(req, res) {
       await File.findByIdAndUpdate(file, {
         items: [...verifyFile.items, savedItem._id],
       });
-      await useImagesUpload("images.upload", verifyFile)
       continue
     }
 

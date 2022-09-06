@@ -38,15 +38,15 @@ function convertWebp(file) {
 /**
  * Upload Fleek Storage
  */
-function upload_Fleek(file) {
-    return new Promise((resolve, reject) => {
+function upload_Fleek(file, idFile) {
+    return new Promise((resolve) => {
 
         try {
             fs.readFile("./upload/" + file.filename, async (error, fileData) => {
 
                 if (error) {
-                    console.log(error);
-                    reject(error);
+                    console.error(error);
+                    resolve();
                 }
                 let fileName = file.filename;
                 const uploadedFile = await fleek_Storage.upload({
@@ -59,11 +59,21 @@ function upload_Fleek(file) {
                         console.log(Math.round(event.loaded / event.total * 100) + '% done');
                     }
                 })
-                resolve(uploadedFile)
+
+                if (uploadedFile) {
+                    await File.findByIdAndUpdate(idFile, {
+                        storages: true
+                    });
+                    console.log("Saved file in fleek successfully.")
+                } else {
+                    console.log("File not saved on fleek.")
+                }
+
+                resolve()
             })
-        } catch(err){
+        } catch (err) {
             console.error(err);
-            reject(err)
+            resolve()
         }
     })
 }
@@ -88,6 +98,11 @@ function uploadFile(file, authorId) {
             });
 
             const result = await newItem.save();
+
+            await upload_Fleek(file, result._id)
+
+            fs.unlinkSync("./upload/" + file.filename);
+            console.log(`File old removed`)
 
             resolve(result)
         } catch (err) {

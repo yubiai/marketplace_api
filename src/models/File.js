@@ -25,7 +25,11 @@ const fileSchema = new Schema(
     items: [{
       type: Schema.Types.ObjectId,
       ref: "Item"
-    }]
+    }],
+    storages: {
+      type: Boolean,
+      default: false
+    },
   },
   {
     versionKey: false,

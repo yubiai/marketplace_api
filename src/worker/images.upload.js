@@ -24,8 +24,8 @@ async function subscriber() {
         console.error("No upload")
       }
 
-      fs.unlinkSync("./upload/" + file.filename);
-      console.log(`File old removed`)  
+/*       fs.unlinkSync("./upload/" + file.filename);
+      console.log(`File old removed`)   */
       channel.ack(message);
     });
   }
