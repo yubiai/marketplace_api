@@ -164,6 +164,12 @@ async function search(req, res) {
       },
     ]);
 
+    await Item.populate(result, {
+      path: 'files',
+      model: 'File',
+      select: { filename: 1, mimetype: 1 }
+    })
+
     console.log("hola")
 
     console.log(result, "result");
