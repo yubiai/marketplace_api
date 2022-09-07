@@ -30,14 +30,14 @@ async function createOrder(req, res) {
 
     // Noti seller
     await useNewNotiRabbit("notifications", userSeller, "Sale", transactionCreated.transactionHash)
-    .then((res) => {
-      console.log(res)
-      return
-    })
-    .catch((err) => {
-      console.log(err)
-      return
-    })
+      .then((res) => {
+        console.log(res)
+        return
+      })
+      .catch((err) => {
+        console.log(err)
+        return
+      })
 
     return res.status(200).json({ result: orderCreated });
   } catch (error) {
@@ -134,7 +134,11 @@ async function getOrderByTransaction(req, res) {
 
       const { itemId, userBuyer, userSeller, dateOrder, _id, status } = order;
       const { transactionHash, transactionIndex, to, disputeId, transactionPayedAmount } = transaction;
-      const item = await Item.findOne({ _id: itemId }).lean();
+      const item = await Item.findOne({ _id: itemId }).lean().populate({
+        path: 'files',
+        model: 'File',
+        select: { filename: 1, mimetype: 1 }
+      });
       const seller = await Profile.findOne({ eth_address: userSeller }).lean();
 
       result = {
