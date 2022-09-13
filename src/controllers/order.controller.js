@@ -188,7 +188,21 @@ async function getOrdersByBuyer(req, res) {
       userBuyer: { $regex: `${eth_address_buyer}$`, $options: "i" },
     };
 
-    const data = await Order.paginate(condition, { offset, limit, sort });
+    const data = await Order.paginate(condition, {
+      offset, limit, sort, populate: {
+        path: 'itemId',
+        model: 'Item',
+        select: 'title slug seller files',
+        populate: [
+          {
+            path: 'seller', model: 'Profile', select: 'first_name last_name'
+          },
+          {
+            path: 'files', model: 'File', select: 'filename'
+          }
+        ]
+      }
+    });
 
     return res.status(200).json({
       totalItems: data.totalDocs,
@@ -199,7 +213,8 @@ async function getOrdersByBuyer(req, res) {
       nextPage: data.nextPage - 1,
     });
   } catch (error) {
-    res.status(400).json({
+    console.error(error)
+    return res.status(400).json({
       message: "Error in orders",
       error: error,
     });
@@ -221,7 +236,18 @@ async function getOrdersBySeller(req, res) {
       userSeller: { $regex: `${eth_address_seller}$`, $options: "i" },
     };
 
-    const data = await Order.paginate(condition, { offset, limit, sort });
+    const data = await Order.paginate(condition, {
+      offset, limit, sort, populate: {
+        path: 'itemId',
+        model: 'Item',
+        select: 'title slug files',
+        populate: [
+          {
+            path: 'files', model: 'File', select: 'filename'
+          }
+        ]
+      }
+    });
 
     return res.status(200).json({
       totalItems: data.totalDocs,

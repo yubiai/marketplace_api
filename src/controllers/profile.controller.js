@@ -13,11 +13,13 @@ async function getProfile(req, res, _) {
 
   try {
     const profile = await Profile.findOne({
-      eth_address: eth_address,
-    });
-    res.status(200).json(profile);
+      eth_address: eth_address.toUpperCase(),
+    }).select('first_name last_name photo eth_address')
+
+    return res.status(200).json(profile);
   } catch (error) {
-    res.status(404).json(error);
+    console.error(error)
+    return res.status(404).json(error);
   }
 }
 

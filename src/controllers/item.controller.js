@@ -142,7 +142,6 @@ async function getItems(req, res) {
 async function search(req, res) {
   try {
     const query = req.query.q;
-    console.log(query, "aca");
 
     const result = await Item.aggregate([
       {
@@ -169,10 +168,6 @@ async function search(req, res) {
       model: 'File',
       select: { filename: 1, mimetype: 1 }
     })
-
-    console.log("hola")
-
-    console.log(result, "result");
 
     return res.status(200).json(result);
   } catch (error) {
