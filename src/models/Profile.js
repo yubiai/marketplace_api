@@ -64,7 +64,11 @@ const profileSchema = new Schema(
     favorites: [{
       type: Schema.Types.ObjectId,
       ref: "Item"
-    }]
+    }],
+    terms: {
+      type: Array,
+      default: []
+    }
   },
   {
     versionKey: false,
