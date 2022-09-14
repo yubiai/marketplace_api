@@ -25,6 +25,7 @@ const channel = require("./routes/channel/channel");
 const publish = require("./routes/publish/publish");
 const notification = require("./routes/notification/notification");
 const auth = require("./routes/auth/auth");
+const terms = require("./routes/terms/terms");
 const test = require("./routes/test/test");
 
 /* const user = require("./routes/user/user");
@@ -50,8 +51,8 @@ const corsOptions = {
 // Middlewares
 app.use(cors(corsOptions));
 app.use(passport.initialize());
-app.use(express.json({limit: "31mb", extended: true}))
-app.use(bodyParser.urlencoded({limit: "31mb", extended: true, parameterLimit: 50000}))
+app.use(express.json({ limit: "31mb", extended: true }))
+app.use(bodyParser.urlencoded({ limit: "31mb", extended: true, parameterLimit: 50000 }))
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/api/ping', function (req, res) {
@@ -70,6 +71,7 @@ app.use("/api/orders", passport.authenticate('jwt', { session: false }), order);
 app.use("/api/profiles", passport.authenticate('jwt', { session: false }), profile);
 app.use("/api/channel", passport.authenticate('jwt', { session: false }), channel);
 app.use("/api/publish", passport.authenticate('jwt', { session: false }), publish);
+app.use("/api/terms", passport.authenticate('jwt', { session: false }), terms);
 //app.use("/api/user", user);
 //app.use("/api/items", passport.authenticate('jwt', {session: false}), item);
 //app.use("/api/questions", question);

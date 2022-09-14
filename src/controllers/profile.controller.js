@@ -1,6 +1,7 @@
 const getPagination = require("../libs/getPagination");
 const { Item } = require("../models/Item");
 const { Profile } = require("../models/Profile");
+const { Terms } = require("../models/Terms");
 
 /**
  *
@@ -131,7 +132,7 @@ async function getFavorites(req, res) {
         items.push(item);
       }
     }
-      
+
     return res.status(200).json({
       totalItems: total_items,
       totalPages: total_pages,
@@ -287,6 +288,52 @@ async function getMyPublished(req, res) {
   }
 }
 
+// Update Profile Add Term Id and Date
+async function addTerms(req, res) {
+  const { userID } = req.params;
+
+  try {
+    // Check if it exists
+    const verifyUser = await Profile.findOne({
+      _id: userID
+    });
+
+    if (!verifyUser) {
+      return res.status(404).json({ message: "User id not exists" });
+    }
+
+    // Check if it exists
+    const verifyTerms = await Terms.findById(req.body._id);
+
+    if (!verifyTerms) {
+      return res.status(404).json({ message: "Terms Id not exists" });
+    }
+
+    const verifyTermExist = await verifyUser.terms && verifyUser.terms.find((term) => term.idTerm == verifyTerms._id);
+
+    if(verifyTermExist){
+      return res.status(404).json({ message: "Terms Id exists" });
+    }
+
+    // Update
+    await Profile.findByIdAndUpdate(userID, {
+      terms: [
+        ...verifyUser.terms,
+        {
+          idTerm: req.body._id,
+          date: new Date()
+        }
+      ]
+    });
+
+    return res.status(200).json({ message: "Successfully updated" });
+  } catch (error) {
+    console.log(error, "error")
+    return res.status(404).json({ message: "Update error" });
+  }
+}
+
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -294,6 +341,7 @@ module.exports = {
   getMyPurchases,
   getProfileFromId,
   getMyPublished,
+  addTerms,
   //Favorites
   getFavorites,
   updateFavorites,

@@ -19,5 +19,6 @@ router.route("/my_purchases/:userID").get(profileController.getMyPurchases);
 
 router.route("/my_published/:userID").get(profileController.getMyPublished);
 
+router.route("/terms/:userID").put(profileController.addTerms);
 
 module.exports = router;
