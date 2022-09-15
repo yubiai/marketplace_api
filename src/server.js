@@ -71,7 +71,7 @@ app.use("/api/orders", passport.authenticate('jwt', { session: false }), order);
 app.use("/api/profiles", passport.authenticate('jwt', { session: false }), profile);
 app.use("/api/channel", passport.authenticate('jwt', { session: false }), channel);
 app.use("/api/publish", passport.authenticate('jwt', { session: false }), publish);
-app.use("/api/terms", passport.authenticate('jwt', { session: false }), terms);
+app.use("/api/terms", terms);
 //app.use("/api/user", user);
 //app.use("/api/items", passport.authenticate('jwt', {session: false}), item);
 //app.use("/api/questions", question);
