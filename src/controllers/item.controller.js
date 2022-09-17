@@ -2,11 +2,6 @@ const { Item } = require("../models/Item");
 const fs = require("fs");
 const getPagination = require("../libs/getPagination");
 
-const items = {
-  1: { id: 1, url: "http://UrlToDownloadItem1" },
-  2: { id: 2, url: "http://UrlToDownloadItem2" },
-};
-
 // All get Products
 async function getItem(req, res) {
   try {
@@ -42,7 +37,34 @@ async function getItemSlug(req, res) {
       result: item,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    return res.status(400).json({
+      message: "Ups Hubo un error!",
+      error: error,
+    });
+  }
+}
+
+// One Product by Id
+async function getItemById(req, res) {
+  try {
+    const { id } = req.params;
+    
+    const item = await Item.findById(id)
+      .populate({
+        path: 'files',
+        model: 'File',
+        select: { filename: 1, mimetype: 1 }
+      }).select('title slug files price currencySymbolPrice')
+
+    if(!item){
+      console.error("Item is missing.")
+      throw new Error("Item is missing.");
+    }
+
+    return res.status(200).json(item);
+  } catch (error) {
+    console.error(error);
     return res.status(400).json({
       message: "Ups Hubo un error!",
       error: error,
@@ -181,8 +203,9 @@ module.exports = {
   // News
   getItems,
   getItemSlug,
+  getItemById,
   search,
   // Olds
-  getItem,
-  test,
+  getItem
+  //test
 };

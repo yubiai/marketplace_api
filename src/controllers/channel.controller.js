@@ -28,7 +28,12 @@ async function getChannelByOrderId(req, res) {
       order_id: id,
     })
       .populate("buyer", "first_name last_name photo eth_address")
-      .populate("seller", "first_name last_name photo eth_address");
+      .populate("seller", "first_name last_name photo eth_address")
+      .populate({
+        path: 'order_id',
+        model: 'Order',
+        select: { itemId: 1, transactionHash: 1, status: 1 }
+      })
 
     res.status(200).json(channel);
   } catch (error) {

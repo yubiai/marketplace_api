@@ -11,6 +11,8 @@ router
 
 router.route("/item/:slug").get(itemController.getItemSlug);
 
+router.route("/item/id/:id").get(itemController.getItemById);
+
 router.route("/search/").get(itemController.search);
 
 module.exports = router;
