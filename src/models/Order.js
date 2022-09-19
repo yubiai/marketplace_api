@@ -39,6 +39,14 @@ const transactionSchema = new Schema(
       type: String,
       default: ''
     },
+    transactionFeeAmount: {
+      type: String,
+      default: ''
+    },
+    transactionDate: {
+      type: Number,
+      default: 0
+    },
     disputeId: {
       type: Number,
       default: 0

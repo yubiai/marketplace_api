@@ -133,7 +133,16 @@ async function getOrderByTransaction(req, res) {
       });
 
       const { itemId, userBuyer, userSeller, dateOrder, _id, status } = order;
-      const { transactionHash, transactionIndex, to, disputeId, transactionPayedAmount } = transaction;
+      const {
+        transactionHash,
+        transactionIndex,
+        to,
+        disputeId,
+        transactionPayedAmount,
+        transactionFeeAmount,
+        transactionDate,
+        networkEnv
+      } = transaction;
       const item = await Item.findOne({ _id: itemId }).lean().populate({
         path: 'files',
         model: 'File',
@@ -156,7 +165,10 @@ async function getOrderByTransaction(req, res) {
           transactionIndex,
           to,
           disputeId,
-          transactionPayedAmount
+          transactionPayedAmount,
+          transactionFeeAmount,
+          transactionDate,
+          networkEnv
         },
       };
     }
