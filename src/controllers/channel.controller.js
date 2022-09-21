@@ -137,10 +137,8 @@ async function pushMsg(req, res) {
 }
 
 async function pushMsgWithFiles(req, res) {
-  console.log("Comienzo", req.body)
   const { id } = req.params;
   let filesUpload = req.files;
-  let files = [];
 
   try {
     const channel = await Channel.findById(id);
@@ -176,12 +174,8 @@ async function pushMsgWithFiles(req, res) {
       });
     }
 
-    return res.status(200).json("todo bien");
-
- 
-
     // Noti
-/*     await useNewNotiRabbit(
+    await useNewNotiRabbit(
       "notifications",
       user == buyer ? channel.seller : channel.buyer,
       "Channel",
@@ -194,9 +188,12 @@ async function pushMsgWithFiles(req, res) {
       .catch((err) => {
         console.log(err);
         return;
-      }); */
+      });
 
-    return res.status(200).json(result);
+    return res.status(200).json({
+      message: "Ok"
+    })
+
   } catch (error) {
     console.log(error);
     return res.status(400).json({
