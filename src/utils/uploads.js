@@ -37,7 +37,7 @@ function convertWebp(file) {
 /**
  * Upload Fleek Storage
  */
-function upload_Fleek(file, idFile) {
+function upload_Fleek(file, idFile, channel) {
     return new Promise((resolve) => {
 
         try {
@@ -53,19 +53,21 @@ function upload_Fleek(file, idFile) {
                     apiSecret: process.env.STORAGE_FLEEK_API_SECRET,
                     key: fileName,
                     data: fileData,
-                    bucket: process.env.STORAGE_FLLEK_API_BUCKET,
+                    bucket: channel == true ? process.env.STORAGE_FLLEK_API_BUCKET + "/channel" : process.env.STORAGE_FLLEK_API_BUCKET,
                     httpUploadProgressCallback: (event) => {
                         console.log(Math.round(event.loaded / event.total * 100) + '% done');
                     }
                 })
 
-                if (uploadedFile) {
+                if (uploadedFile && idFile && channel == false) {
                     await File.findByIdAndUpdate(idFile, {
                         storages: true
                     });
                     console.log("Saved file in fleek successfully.")
-                } else {
-                    console.log("File not saved on fleek.")
+                }
+                
+                if(!uploadFile){
+                    console.error("File not saved on fleek.")
                 }
 
                 resolve()
@@ -98,7 +100,7 @@ function uploadFile(file, authorId) {
 
             const result = await newItem.save();
 
-            await upload_Fleek(file, result._id)
+            await upload_Fleek(file, result._id, false)
 
             fs.unlinkSync("./upload/" + file.filename);
             console.log(`File old removed`)
@@ -111,9 +113,31 @@ function uploadFile(file, authorId) {
     })
 }
 
+function uploadFileChannel(file) {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            await gc_Storage.bucket(process.env.STORAGE_GC_BUCKET).upload("./upload/" + file.filename, {
+                destination: `${process.env.STORAGE_GC_FOLD}/channel/${file.filename}`
+            });
+
+            await upload_Fleek(file, null, true)
+
+            fs.unlinkSync("./upload/" + file.filename);
+            console.log(`File old removed`)
+
+            resolve(file.filename)
+        } catch (err) {
+            console.error(err);
+            reject(err)
+        }
+    })
+}
+
 
 module.exports = {
     uploadFile,
+    uploadFileChannel,
     convertWebp,
     upload_Fleek
 };

@@ -1,6 +1,7 @@
 const { Channel } = require("../models/Channel");
 const ObjectId = require("mongoose").Types.ObjectId;
 const { useNewNotiRabbit } = require("../libs/useRabbit");
+const { uploadFileChannel } = require("../utils/uploads");
 
 async function getChannel(req, res) {
   const { id } = req.params;
@@ -35,9 +36,9 @@ async function getChannelByOrderId(req, res) {
         select: { itemId: 1, transactionHash: 1, status: 1 }
       })
 
-    res.status(200).json(channel);
+    return res.status(200).json(channel);
   } catch (error) {
-    res.status(400).json({
+    return res.status(400).json({
       message: "Ups Hubo un error!",
       error: error,
     });
@@ -72,6 +73,8 @@ async function newChannel(req, res) {
 async function pushMsg(req, res) {
   const { id } = req.params;
   console.log("unicio push msg", req.body.user);
+  console.log("Channel", req.body);
+
   try {
     const channel = await Channel.findById(id);
     console.log(channel, "channel");
@@ -91,10 +94,12 @@ async function pushMsg(req, res) {
       });
     }
 
+
+
     let message = {
       date: new Date(),
       user: req.body.user,
-      text: req.body.text,
+      text: req.body.text
     };
 
     console.log(message);
@@ -131,9 +136,80 @@ async function pushMsg(req, res) {
   }
 }
 
+async function pushMsgWithFiles(req, res) {
+  console.log("Comienzo", req.body)
+  const { id } = req.params;
+  let filesUpload = req.files;
+  let files = [];
+
+  try {
+    const channel = await Channel.findById(id);
+
+    let user = JSON.stringify(req.body.user);
+    let buyer = JSON.stringify(channel.buyer);
+    let seller = JSON.stringify(channel.seller);
+    let verifyUser = false;
+
+    if (user == buyer || user == seller) {
+      verifyUser = true;
+    }
+
+    if (!verifyUser) {
+      console.error("User invalid.")
+      throw new Error("User invalid.");
+    }
+
+    for (const file of filesUpload) {
+      console.log(file, "file forr")
+      const result = await uploadFileChannel(file);
+      console.log(result)
+      let message = {
+        date: new Date(),
+        user: req.body.user,
+        text: null,
+        file: result
+      };
+      await Channel.findByIdAndUpdate(channel._id, {
+        $push: {
+          messages: message,
+        },
+      });
+    }
+
+    return res.status(200).json("todo bien");
+
+ 
+
+    // Noti
+/*     await useNewNotiRabbit(
+      "notifications",
+      user == buyer ? channel.seller : channel.buyer,
+      "Channel",
+      channel.order_id
+    )
+      .then((res) => {
+        console.log(res);
+        return;
+      })
+      .catch((err) => {
+        console.log(err);
+        return;
+      }); */
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({
+      message: "Ups Hubo un error!",
+      error: error,
+    });
+  }
+}
+
 module.exports = {
   getChannel,
   getChannelByOrderId,
   newChannel,
   pushMsg,
+  pushMsgWithFiles
 };

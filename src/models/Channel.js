@@ -30,7 +30,8 @@ const channelSchema = new Schema(
           ref: "Profile",
           required: true
         },
-        text: String
+        text: String,
+        file: String
       },
     ],
   },
