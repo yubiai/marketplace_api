@@ -16,14 +16,27 @@ const evidenceSchema = new Schema({
     required: true,
     default: "initial"
   },
-  text: {
-    type: String,
-    required: true
-  },
   author: {
     type: Schema.Types.ObjectId,
     ref: "Profile",
     required: true
+  },
+  author_address: {
+    type: String,
+    required: true
+  },
+  title: {
+    type: String,
+    required: true
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  files: {
+    type: Array,
+    required: true,
+    default: []
   }
 },
   {
