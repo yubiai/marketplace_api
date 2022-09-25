@@ -53,7 +53,7 @@ function upload_Fleek(file, idFile, channel) {
                     apiSecret: process.env.STORAGE_FLEEK_API_SECRET,
                     key: fileName,
                     data: fileData,
-                    bucket: channel == true ? process.env.STORAGE_FLLEK_API_BUCKET + "/channel" : process.env.STORAGE_FLLEK_API_BUCKET,
+                    bucket: channel == true ? process.env.STORAGE_FLLEK_API_BUCKET + "/evidences" : process.env.STORAGE_FLLEK_API_BUCKET,
                     httpUploadProgressCallback: (event) => {
                         console.log(Math.round(event.loaded / event.total * 100) + '% done');
                     }
@@ -118,7 +118,7 @@ function uploadFileChannel(file) {
         try {
 
             await gc_Storage.bucket(process.env.STORAGE_GC_BUCKET).upload("./upload/" + file.filename, {
-                destination: `${process.env.STORAGE_GC_FOLD}/channel/${file.filename}`
+                destination: `${process.env.STORAGE_GC_FOLD}/evidences/${file.filename}`
             });
 
             await upload_Fleek(file, null, true)
