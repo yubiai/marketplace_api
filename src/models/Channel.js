@@ -31,7 +31,10 @@ const channelSchema = new Schema(
           required: true
         },
         text: String,
-        file: String
+        file: {
+          type: Schema.Types.ObjectId,
+          ref: "Filevidence"
+        }
       },
     ],
   },

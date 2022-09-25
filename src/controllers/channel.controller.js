@@ -2,6 +2,7 @@ const { Channel } = require("../models/Channel");
 const ObjectId = require("mongoose").Types.ObjectId;
 const { useNewNotiRabbit } = require("../libs/useRabbit");
 const { uploadFileChannel } = require("../utils/uploads");
+const { Filevidence } = require("../models/Filevidence");
 
 async function getChannel(req, res) {
   const { id } = req.params;
@@ -34,10 +35,39 @@ async function getChannelByOrderId(req, res) {
         path: 'order_id',
         model: 'Order',
         select: { itemId: 1, transactionHash: 1, status: 1 }
-      })
+      });
+
+
+    if (channel.messages && channel.messages.length > 0) {
+      let messages = [];
+
+      await Promise.all(
+        channel.messages.map(async (message, i) => {
+          if (message.file && ObjectId.isValid(message.file)) {
+            const filevidenceVerify = await Filevidence.findById(message.file);
+            if (!filevidenceVerify) {
+              return
+            }
+            message.file = filevidenceVerify
+            messages.push(message)
+            return
+          } else {
+            messages.push(message)
+            return
+          }
+        })
+      )
+
+      const sortedMessages = messages.sort(
+        (objA, objB) => Number(objA.date) - Number(objB.date),
+      );
+
+      channel.messages = sortedMessages;
+    }
 
     return res.status(200).json(channel);
   } catch (error) {
+    console.error(error)
     return res.status(400).json({
       message: "Ups Hubo un error!",
       error: error,
@@ -62,8 +92,8 @@ async function newChannel(req, res) {
       result: result,
     });
   } catch (err) {
-    console.log(err);
-    res.status(400).json({
+
+    return res.status(400).json({
       message: "Ups Hubo un error!",
       error: err,
     });
@@ -72,12 +102,9 @@ async function newChannel(req, res) {
 
 async function pushMsg(req, res) {
   const { id } = req.params;
-  console.log("unicio push msg", req.body.user);
-  console.log("Channel", req.body);
 
   try {
     const channel = await Channel.findById(id);
-    console.log(channel, "channel");
 
     let user = JSON.stringify(req.body.user);
     let buyer = JSON.stringify(channel.buyer);
@@ -94,15 +121,11 @@ async function pushMsg(req, res) {
       });
     }
 
-
-
     let message = {
       date: new Date(),
       user: req.body.user,
       text: req.body.text
     };
-
-    console.log(message);
 
     let result = await Channel.findByIdAndUpdate(channel._id, {
       $push: {
@@ -116,20 +139,14 @@ async function pushMsg(req, res) {
       user == buyer ? channel.seller : channel.buyer,
       "Channel",
       channel.order_id
-    )
-      .then((res) => {
-        console.log(res);
-        return;
-      })
-      .catch((err) => {
+    ).catch((err) => {
         console.log(err);
         return;
       });
 
     return res.status(200).json(result);
   } catch (error) {
-    console.log(error);
-    res.status(400).json({
+    return res.status(400).json({
       message: "Ups Hubo un error!",
       error: error,
     });
@@ -158,15 +175,24 @@ async function pushMsgWithFiles(req, res) {
     }
 
     for (const file of filesUpload) {
-      console.log(file, "file forr")
       const result = await uploadFileChannel(file);
-      console.log(result)
-      let message = {
+
+      const newFilevidence = new Filevidence({
+        filename: result,
+        mimetype: file.mimetype,
+        author: req.body.user,
+        order_id: channel.order_id
+      })
+
+      const resultNewFilevidence = await newFilevidence.save();
+
+      const message = {
         date: new Date(),
         user: req.body.user,
         text: null,
-        file: result
+        file: resultNewFilevidence._id
       };
+
       await Channel.findByIdAndUpdate(channel._id, {
         $push: {
           messages: message,
@@ -180,13 +206,8 @@ async function pushMsgWithFiles(req, res) {
       user == buyer ? channel.seller : channel.buyer,
       "Channel",
       channel.order_id
-    )
-      .then((res) => {
-        console.log(res);
-        return;
-      })
-      .catch((err) => {
-        console.log(err);
+    ).catch((err) => {
+        console.error(err);
         return;
       });
 
@@ -195,7 +216,6 @@ async function pushMsgWithFiles(req, res) {
     })
 
   } catch (error) {
-    console.log(error);
     return res.status(400).json({
       message: "Ups Hubo un error!",
       error: error,
