@@ -30,6 +30,7 @@ const upload = multer({ storage: storage });
 
 router.route("/:id").get(evidenceController.getEvidenceById);
 router.route("/orderID/:id").get(evidenceController.getEvidenceByOrderId);
+router.route("/files/orderID/:id").get(evidenceController.getFilesEvidenceByOrderId);
 router.route("/new/:id").post(upload.array("files"), evidenceController.newEvidence);
 
 module.exports = router;
