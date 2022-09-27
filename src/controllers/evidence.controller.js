@@ -27,7 +27,13 @@ async function getEvidenceById(req, res) {
   const { id } = req.params;
 
   try {
-    const evidence = await Evidence.findById(id).populate("author", "first_name last_name photo eth_address")
+    const evidence = await Evidence.findById(id)
+      .populate("author", "first_name last_name photo eth_address")
+      .populate({
+        path: 'files',
+        model: 'Filevidence',
+        select: { filename: 1, mimetype: 1 }
+      })
 
     return res.status(200).json(evidence);
   } catch (error) {
@@ -46,6 +52,7 @@ async function getFilesEvidenceByOrderId(req, res) {
     const filesEvidence = await Filevidence.find({
       order_id: id,
     }).populate("author", "first_name last_name photo eth_address")
+
 
     if (!filesEvidence || filesEvidence.length === 0) {
       throw new Error("filesEvidence is missing.");
@@ -115,7 +122,7 @@ async function newEvidence(req, res) {
     // Step 2 - Files
     if (newItem.selectedfiles && newItem.selectedfiles.length > 0) {
       const selectedFiles = newItem.selectedfiles.split(',')
-      for(const file of selectedFiles){
+      for (const file of selectedFiles) {
         files.push(ObjectId(file));
       }
     }
