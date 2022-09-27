@@ -113,7 +113,7 @@ function uploadFile(file, authorId) {
     })
 }
 
-function uploadFileChannel(file) {
+function uploadFileEvidence(file) {
     return new Promise(async (resolve, reject) => {
         try {
 
@@ -137,7 +137,7 @@ function uploadFileChannel(file) {
 
 module.exports = {
     uploadFile,
-    uploadFileChannel,
+    uploadFileEvidence,
     convertWebp,
     upload_Fleek
 };

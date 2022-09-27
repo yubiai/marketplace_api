@@ -1,7 +1,7 @@
 const { Channel } = require("../models/Channel");
 const ObjectId = require("mongoose").Types.ObjectId;
 const { useNewNotiRabbit } = require("../libs/useRabbit");
-const { uploadFileChannel } = require("../utils/uploads");
+const { uploadFileEvidence } = require("../utils/uploads");
 const { Filevidence } = require("../models/Filevidence");
 
 async function getChannel(req, res) {
@@ -175,7 +175,7 @@ async function pushMsgWithFiles(req, res) {
     }
 
     for (const file of filesUpload) {
-      const result = await uploadFileChannel(file);
+      const result = await uploadFileEvidence(file);
 
       const newFilevidence = new Filevidence({
         filename: result,
