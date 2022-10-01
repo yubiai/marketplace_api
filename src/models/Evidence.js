@@ -33,9 +33,12 @@ const evidenceSchema = new Schema({
     type: String,
     required: true
   },
+  messages: {
+    type: Array,
+    default: []
+  },
   files: {
     type: Array,
-    required: true,
     default: []
   }
 },

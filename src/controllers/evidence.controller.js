@@ -1,6 +1,8 @@
 const { Evidence } = require("../models/Evidence");
 const { Profile } = require("../models/Profile");
 const { Order } = require("../models/Order");
+const { Channel } = require("../models/Channel");
+
 const { Filevidence } = require("../models/Filevidence");
 const { ObjectId } = require('mongodb');
 const { uploadFileEvidence } = require("../utils/uploads");
@@ -35,6 +37,25 @@ async function getEvidenceById(req, res) {
         select: { filename: 1, mimetype: 1 }
       })
 
+    let messages = [];
+
+    for (let msg of evidence.messages) {
+
+      if (msg.user) {
+        const user = await Profile.findById(msg.user, "first_name last_name")
+        msg.user = user ? user : null;
+      }
+
+      if (msg.file) {
+        const filevidence = await Filevidence.findById(msg.file);
+        msg.file = filevidence ? filevidence : null;
+      }
+
+      messages.push(msg);
+
+    }
+
+    evidence.messages = messages;
     return res.status(200).json(evidence);
   } catch (error) {
     console.error(error)
@@ -73,6 +94,7 @@ async function newEvidence(req, res) {
   const newItem = req.body;
   const filesUpload = req.files;
   let files = [];
+  let messages = [];
 
   try {
 
@@ -85,7 +107,7 @@ async function newEvidence(req, res) {
       "transactionHash",
       "author",
       "author_address",
-      "selectedfiles"
+      "selectedMsgs"
     ];
 
     const isValidOperation = body.every((elem) =>
@@ -119,13 +141,33 @@ async function newEvidence(req, res) {
       throw new Error("Order is missing.");
     }
 
-    // Step 2 - Files
-    if (newItem.selectedfiles && newItem.selectedfiles.length > 0) {
-      const selectedFiles = newItem.selectedfiles.split(',')
-      for (const file of selectedFiles) {
-        files.push(ObjectId(file));
+    // Verify TransactionHash
+    const verifyChannel = await Channel.findOne({
+      order_id: verifyOrder._id
+    })
+
+    // If Fail
+    if (!verifyChannel) {
+      console.error("Channel is missing.")
+      throw new Error("Channel is missing.");
+    }
+
+    console.log(newItem, "newItem")
+
+    // Step 2 - Selected Msgs save in messages
+    if (newItem.selectedMsgs && newItem.selectedMsgs.length > 0) {
+      const selectedMsgs = newItem.selectedMsgs.split(',')
+      for (const msg_id of selectedMsgs) {
+        let result = verifyChannel.messages.find((msg) => msg._id == msg_id)
+        if (result) {
+          messages.push(result)
+        } else {
+          console.error(msg_id + "is missing")
+          throw new Error("Msg is missing.");
+        }
       }
     }
+
 
     // Step 3 - Upload Files
     for (const file of filesUpload) {
@@ -143,6 +185,7 @@ async function newEvidence(req, res) {
     }
 
     // Step 4 - Saving new evidence
+    newItem.messages = messages;
     newItem.files = files;
     const item = new Evidence(newItem)
     const savedItem = await item.save();
