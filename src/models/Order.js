@@ -2,11 +2,8 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const mongoosePagination = require("mongoose-paginate-v2");
 
-const transactionSchema = new Schema(
+const transactionMetaSchema = new Schema(
   {
-    networkEnv: {
-      type: String
-    },
     blockHash: {
       type: String
     },
@@ -19,15 +16,42 @@ const transactionSchema = new Schema(
     effectiveGasPrice: {
       type: Number
     },
+    transactionHash: {
+      type: String,
+      required: true
+    },
+  }
+);
+
+const transactionSchema = new Schema(
+  {
+    transactionState: {
+      type: Number
+    },
+    claimCount: {
+      type: Number,
+      default: 0
+    },
+    timeForService: {
+      type: Number
+    },
+    timeForClaim: {
+      type: Number
+    },
+    currentClaim: {
+      type: Number
+    },
+    transactionMeta: {
+      type: transactionMetaSchema
+    },
+    networkEnv: {
+      type: String
+    },
     from: {
       type: String,
       required: true
     },
     to: {
-      type: String,
-      required: true
-    },
-    transactionHash: {
       type: String,
       required: true
     },
