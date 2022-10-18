@@ -23,8 +23,6 @@ async function login(req, res) {
             : null,
       });
 
-      console.log(userExists);
-
       const newResponse = {
         ...response,
         eth_address: response.eth_address.toUpperCase(),
@@ -51,8 +49,6 @@ async function login(req, res) {
       }
 
       let dataUser = await Profile.findById(userExists._id);
-
-      console.log(dataUser, "dataUser");
 
       token = signData({
         walletAddress: dataUser.eth_address,

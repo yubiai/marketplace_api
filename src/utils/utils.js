@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const got = require("got");
 const fs = require("fs");
+const { default: axios } = require("axios");
 
 const POH_API_URL = "https://api.poh.dev";
 const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY || "pepe";
@@ -9,7 +10,16 @@ const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY || "pepe";
  * Util functions
  */
 async function checkProfileOnPOH(walletAddress) {
-  return await got(`${POH_API_URL}/profiles/${walletAddress}`).json();
+  return new Promise(async(resolve, reject) => {
+    await axios.get(`${POH_API_URL}/profiles/${walletAddress}`)
+      .then((res) => {
+        return resolve(res.data)
+      })
+      .catch((err) => {
+        console.log(err, "err")
+        reject(null)
+      })
+  })
 }
 
 function signData(rawData = {}) {

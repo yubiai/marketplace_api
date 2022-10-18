@@ -288,7 +288,7 @@ async function getMyPublished(req, res) {
   }
 }
 
-// Update Profile Add Term Id and Date
+// Updated Profile Add Term Id and Date
 async function addTerms(req, res) {
   const { userID } = req.params;
 
@@ -311,7 +311,7 @@ async function addTerms(req, res) {
 
     const verifyTermExist = await verifyUser.terms && verifyUser.terms.find((term) => term.idTerm == verifyTerms._id);
 
-    if(verifyTermExist){
+    if (verifyTermExist) {
       return res.status(404).json({ message: "Terms Id exists" });
     }
 
@@ -333,6 +333,30 @@ async function addTerms(req, res) {
   }
 }
 
+// Updated Profile Accepted Tour guide
+async function tourAccepted(req, res) {
+  const { userID } = req.params;
+
+  try {
+    // Check if it exists
+    const verifyUser = await Profile.findById(userID);
+
+    if (!verifyUser) {
+      return res.status(404).json({ message: "User id not exists" });
+    }
+
+    // Update Permission 2
+    await Profile.findByIdAndUpdate(userID, {
+      permission: 2
+    });
+
+    return res.status(200).json({ message: "Successfully updated" });
+  } catch (error) {
+    console.log(error, "error")
+    return res.status(404).json({ message: "Update error" });
+  }
+}
+
 
 module.exports = {
   getProfile,
@@ -342,6 +366,7 @@ module.exports = {
   getProfileFromId,
   getMyPublished,
   addTerms,
+  tourAccepted,
   //Favorites
   getFavorites,
   updateFavorites,

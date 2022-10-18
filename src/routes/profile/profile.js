@@ -21,4 +21,6 @@ router.route("/my_published/:userID").get(profileController.getMyPublished);
 
 router.route("/terms/:userID").put(profileController.addTerms);
 
+router.route("/touraccepted/:userID").put(profileController.tourAccepted);
+
 module.exports = router;
