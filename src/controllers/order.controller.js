@@ -142,7 +142,8 @@ async function getOrderByTransaction(req, res) {
         transactionFeeAmount,
         transactionDate,
         networkEnv,
-        transactionMeta
+        transactionMeta,
+        timeForClaim
       } = transaction;
       const item = await Item.findOne({ _id: itemId }).lean().populate({
         path: 'files',
@@ -170,6 +171,7 @@ async function getOrderByTransaction(req, res) {
           transactionFeeAmount,
           transactionDate,
           networkEnv,
+          timeForClaim,
           transactionMeta
         },
       };
