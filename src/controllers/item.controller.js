@@ -23,7 +23,7 @@ async function getItem(req, res) {
 async function getItemSlug(req, res) {
   try {
     const item = await Item.findOne({ slug: req.params.slug })
-      .populate("seller", "first_name last_name photo eth_address")
+      .populate("seller", "first_name last_name photo eth_address permission")
       .populate("category", "title")
       .populate("subcategory", "title")
       .populate({

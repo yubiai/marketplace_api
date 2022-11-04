@@ -43,7 +43,7 @@ async function getNotiByUserId(req, res) {
 
 async function updateSeenById(req, res) {
   const { notiID } = req.params;
-  console.log(notiID, "arranco")
+
   try {
     await useSeenNotiRabbit("notifications", notiID)
     .catch((err) => {

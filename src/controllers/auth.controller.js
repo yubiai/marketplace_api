@@ -5,10 +5,33 @@ const jwtService = require("jsonwebtoken");
 // Login
 async function login(req, res) {
   const { walletAddress } = { ...req.body };
-  //const walletAddress = '0x245Bd6B5D8f494df8256Ae44737A1e5D59769aB4';
 
   try {
+    if (process.env.NODE_ENV === "DEV") {
+
+      const userExists = await Profile.findOne({
+        eth_address: walletAddress ? walletAddress.toUpperCase() : null
+      });
+
+      if (userExists && userExists.permission === 6) {
+
+        const token = signData({
+          walletAddress: userExists.eth_address,
+          id: userExists._id,
+        });
+
+        return res.status(200).json({
+          token: token,
+          data: {
+            ...userExists._doc,
+            token,
+          },
+        });
+      }
+    }
+
     const response = await checkProfileOnPOH(walletAddress);
+    
     if (response) {
       // If it is not validated in Poh
       // Falta Validacion si existe una orden activa para dejarlo pasar.
@@ -64,7 +87,6 @@ async function login(req, res) {
       });
     }
   } catch (error) {
-    console.log("ERROR: ", error);
     return res.status(401).json({ error: "Unauthorized" });
   }
 }

@@ -15,7 +15,7 @@ async function getProfile(req, res, _) {
   try {
     const profile = await Profile.findOne({
       eth_address: eth_address.toUpperCase(),
-    }).select('first_name last_name photo eth_address')
+    }).select('first_name last_name photo eth_address permission')
 
     return res.status(200).json(profile);
   } catch (error) {
@@ -26,8 +26,6 @@ async function getProfile(req, res, _) {
 
 async function getProfileFromId(req, res) {
   const { userID } = { ...req.params };
-  console.log(userID, "Arranco");
-
   try {
     const profile = await Profile.findById(userID);
     return res.status(200).json(profile);
