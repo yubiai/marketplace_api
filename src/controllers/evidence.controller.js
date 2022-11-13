@@ -94,6 +94,7 @@ async function newEvidence(req, res) {
   const newItem = req.body;
   const filesUpload = req.files;
   let files = [];
+  let fileDataList = [];
   let messages = [];
 
   try {
@@ -181,6 +182,7 @@ async function newEvidence(req, res) {
       })
 
       const resultNewFilevidence = await newFilevidence.save();
+      fileDataList.push(resultNewFilevidence);
       files.push(resultNewFilevidence._id);
     }
 
@@ -194,7 +196,10 @@ async function newEvidence(req, res) {
     console.log("Evidence added successfully, ID:" + savedItem._id)
     return res.status(200).json({
       message: "Item added successfully!",
-      result: savedItem
+      result: {
+        ...savedItem,
+        files: [...fileDataList]
+      }
     });
 
   } catch (error) {
