@@ -23,13 +23,13 @@ async function createOrder(req, res) {
       userBuyer,
       userSeller,
       status,
-      transactionHash: transactionCreated.transactionHash,
+      transactionHash: transactionCreated.transactionMeta.transactionHash,
     });
 
     await orderCreated.save();
 
     // Noti seller
-    await useNewNotiRabbit("notifications", userSeller, "Sale", transactionCreated.transactionHash)
+    await useNewNotiRabbit("notifications", userSeller, "Sale", transactionCreated.transactionMeta.transactionHash)
       .then((res) => {
         console.log(res)
         return
@@ -129,7 +129,7 @@ async function getOrderByTransaction(req, res) {
         transactionHash: req.params.transactionId,
       });
       transaction = await Transaction.findOne({
-        transactionHash: req.params.transactionId,
+        'transactionMeta.transactionHash': req.params.transactionId,
       });
 
       const { itemId, userBuyer, userSeller, dateOrder, _id, status } = order;
@@ -141,7 +141,9 @@ async function getOrderByTransaction(req, res) {
         transactionPayedAmount,
         transactionFeeAmount,
         transactionDate,
-        networkEnv
+        networkEnv,
+        transactionMeta,
+        timeForClaim
       } = transaction;
       const item = await Item.findOne({ _id: itemId }).lean().populate({
         path: 'files',
@@ -168,7 +170,9 @@ async function getOrderByTransaction(req, res) {
           transactionPayedAmount,
           transactionFeeAmount,
           transactionDate,
-          networkEnv
+          networkEnv,
+          timeForClaim,
+          transactionMeta
         },
       };
     }
