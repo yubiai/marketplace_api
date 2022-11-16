@@ -16,7 +16,7 @@ async function checkProfileOnPOH(walletAddress) {
         return resolve(res.data)
       })
       .catch(() => {
-        return reject({error: "User not found in POH", info: "Not Found"})
+        return reject({error: "Are you using your poh address ?", info: "Not Found"})
       })
   })
 }

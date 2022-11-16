@@ -36,7 +36,7 @@ async function login(req, res) {
       // If it is not validated in Poh
       // Falta Validacion si existe una orden activa para dejarlo pasar.
       if (!response.registered && response.status !== "EXPIRED") {
-        return res.status(404).json({ error: "User not validated in Poh", info: "Not Validated" });
+        return res.status(404).json({ error: "Your status needs to be as Registered on Poh", info: "Not Validated" });
       }
 
       let userExists = await Profile.findOne({
