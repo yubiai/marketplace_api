@@ -261,7 +261,8 @@ async function getMyPublished(req, res) {
         price: 1,
         slug: 1,
         published: 1,
-        status: 1
+        status: 1,
+        currencySymbolPrice: 1
       }).populate({
         path: 'files',
         model: 'File',
