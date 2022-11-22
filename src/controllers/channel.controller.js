@@ -106,7 +106,6 @@ async function pushMsg(req, res) {
 
   try {
     const channel = await Channel.findById(id);
-    console.log("asdasd", "newNotification")
 
     let user = JSON.stringify(req.body.user);
     let buyer = JSON.stringify(channel.buyer);
