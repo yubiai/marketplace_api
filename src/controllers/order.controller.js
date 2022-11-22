@@ -73,16 +73,74 @@ async function updateOrderStatus(req, res) {
         { status }
       );
 
-      if (status === "ORDER_PAID") {
-        // Get User Seller
-        const profile = await Profile.findOne({
-          eth_address: result.userSeller.toUpperCase()
-        })
+      // Get User Seller
+      const profileSeller = await Profile.findOne({
+        eth_address: result.userSeller.toUpperCase()
+      })
 
+      // Get User Seller
+      const profileBuyer = await Profile.findOne({
+        eth_address: result.userBuyer.toUpperCase()
+      })
+
+      if (status === "ORDER_PAID") {
+        // Noti seller Order Paid
+        const newNotification = new Notification({
+          user_id: profileSeller._id,
+          type: status,
+          reference: result.transactionHash
+        });
+
+        await newNotification.save();
+      }
+
+      if (status === "ORDER_DISPUTE_RECEIVER_FEE_PENDING") {
         // Noti seller
         const newNotification = new Notification({
-          user_id: profile._id,
-          type: "Paid",
+          user_id: profileSeller._id,
+          type: status,
+          reference: result.transactionHash
+        });
+
+        await newNotification.save();
+      }
+
+      if (status === "ORDER_DISPUTE_IN_PROGRESS") {
+        // Noti seller
+        const newNotification = new Notification({
+          user_id: profileBuyer._id,
+          type: status,
+          reference: result.transactionHash
+        });
+
+        await newNotification.save();
+      }
+
+      if (status === "ORDER_DISPUTE_FINISHED") {
+        // Noti Buyer
+        const newNotiBuyer = new Notification({
+          user_id: profileBuyer._id,
+          type: "ORDER_DISPUTE_IN_PROGRESS_BUYER",
+          reference: result.transactionHash
+        });
+
+        await newNotiBuyer.save();
+
+        // Noti Seller
+        const newNotiSeller = new Notification({
+          user_id: profileSeller._id,
+          type: "ORDER_DISPUTE_FINISHED_SELLER",
+          reference: result.transactionHash
+        });
+
+        await newNotiSeller.save();
+      }
+
+      if (status === "ORDER_DISPUTE_APPEALABLE") {
+        // Noti seller
+        const newNotification = new Notification({
+          user_id: profileSeller._id,
+          type: status,
           reference: result.transactionHash
         });
 
@@ -100,6 +158,7 @@ async function updateOrderStatus(req, res) {
       });
     }
   } catch (error) {
+    console.error(error)
     return res.status(400).json({
       message: "Error on order",
       error: error,
