@@ -1,6 +1,7 @@
 const getPagination = require("../libs/getPagination");
 const { useSeenNotiRabbit } = require("../libs/useRabbit");
 const { Notification } = require("../models/Notifications");
+const { Profile } = require("../models/Profile");
 const ObjectId = require("mongoose").Types.ObjectId;
 
 // Noti by user id
@@ -34,6 +35,7 @@ async function getNotiByUserId(req, res) {
       nextPage: data.nextPage - 1,
     });
   } catch (error) {
+    console.error(error)
     return res.status(400).json({
       message: "Ups hubo un error!",
       error: JSON.stringify(error.message),
@@ -46,10 +48,10 @@ async function updateSeenById(req, res) {
 
   try {
     await useSeenNotiRabbit("notifications", notiID)
-    .catch((err) => {
-      console.log(err)
-    })
-      
+      .catch((err) => {
+        console.log(err)
+      })
+
     return res.status(200).json();
   } catch (error) {
     return res.status(400).json({
@@ -58,7 +60,67 @@ async function updateSeenById(req, res) {
     });
   }
 }
+
+
+async function updateSeenAllByUserId(req, res) {
+  const { userID } = req.params;
+
+  try {
+
+    // Verify Profile
+    const verifyProfile = await Profile.findById(userID);
+
+    // If Fail
+    if (!verifyProfile) {
+      console.error("Profile is missing.")
+      throw new Error("Profile is missing.");
+    }
+
+    const result = await Notification.updateMany({ user_id: verifyProfile._id }, { seen: true });
+    return res.status(200).json("Ok");
+  } catch (error) {
+    console.error(error)
+    return res.status(400).json({
+      message: "Ups hubo un error!",
+      error: JSON.stringify(error.message),
+    });
+  }
+}
+
+async function getNotiSeenFalse(req, res) {
+  const { userID } = req.params;
+
+  try {
+
+    // Verify Profile
+    const verifyProfile = await Profile.findById(userID);
+
+    // If Fail
+    if (!verifyProfile) {
+      console.error("Profile is missing.")
+      throw new Error("Profile is missing.");
+    }
+
+    const notifications = await Notification.find({
+      user_id: verifyProfile._id,
+      seen: false
+    });
+
+    return res.status(200).json(notifications);
+  } catch (error) {
+    console.error(error)
+    return res.status(400).json({
+      message: "Ups hubo un error!",
+      error: JSON.stringify(error.message),
+    });
+  }
+}
+
+
+
 module.exports = {
   getNotiByUserId,
   updateSeenById,
+  updateSeenAllByUserId,
+  getNotiSeenFalse
 };
