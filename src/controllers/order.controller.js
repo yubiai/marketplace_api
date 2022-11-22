@@ -3,7 +3,7 @@ const { Order, Transaction } = require("../models/Order");
 const { Item } = require("../models/Item");
 const { Profile } = require("../models/Profile");
 const ObjectId = require("mongoose").Types.ObjectId;
-const { useNewNotiRabbit } = require("../libs/useRabbit");
+const { Notification } = require("../models/Notifications");
 
 async function createTransaction(transactionData) {
   const transaction = new Transaction({
@@ -28,20 +28,23 @@ async function createOrder(req, res) {
 
     await orderCreated.save();
 
+    // Get User Seller
+    const profile = await Profile.findOne({
+      eth_address: userSeller.toUpperCase()
+    })
+
     // Noti seller
-    await useNewNotiRabbit("notifications", userSeller, "Sale", transactionCreated.transactionMeta.transactionHash)
-      .then((res) => {
-        console.log(res)
-        return
-      })
-      .catch((err) => {
-        console.log(err)
-        return
-      })
+    const newNotification = new Notification({
+      user_id: profile._id,
+      type: "Sale",
+      reference: transactionCreated.transactionMeta.transactionHash
+    });
+
+    await newNotification.save();
 
     return res.status(200).json({ result: orderCreated });
   } catch (error) {
-    console.log(error);
+    console.log(error, "error");
     return res.status(400).json({
       message: "Ups Hubo un error!",
       error: error,
@@ -70,18 +73,34 @@ async function updateOrderStatus(req, res) {
         { status }
       );
 
-      res.status(200).json({
+      if (status === "ORDER_PAID") {
+        // Get User Seller
+        const profile = await Profile.findOne({
+          eth_address: result.userSeller.toUpperCase()
+        })
+
+        // Noti seller
+        const newNotification = new Notification({
+          user_id: profile._id,
+          type: "Paid",
+          reference: result.transactionHash
+        });
+
+        await newNotification.save();
+      }
+
+      return res.status(200).json({
         status: "ok",
         result,
       });
     } else {
-      res.status(404).json({
+      return res.status(404).json({
         message: "Order not found",
         error: error,
       });
     }
   } catch (error) {
-    res.status(400).json({
+    return res.status(400).json({
       message: "Error on order",
       error: error,
     });
