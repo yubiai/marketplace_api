@@ -1,8 +1,9 @@
 const { Channel } = require("../models/Channel");
 const ObjectId = require("mongoose").Types.ObjectId;
-const { useNewNotiRabbit } = require("../libs/useRabbit");
 const { uploadFileEvidence } = require("../utils/uploads");
 const { Filevidence } = require("../models/Filevidence");
+const { Profile } = require("../models/Profile");
+const { Notification } = require("../models/Notifications");
 
 async function getChannel(req, res) {
   const { id } = req.params;
@@ -105,6 +106,7 @@ async function pushMsg(req, res) {
 
   try {
     const channel = await Channel.findById(id);
+    console.log("asdasd", "newNotification")
 
     let user = JSON.stringify(req.body.user);
     let buyer = JSON.stringify(channel.buyer);
@@ -133,19 +135,25 @@ async function pushMsg(req, res) {
       },
     });
 
-    // Noti
-    await useNewNotiRabbit(
-      "notifications",
-      user == buyer ? channel.seller : channel.buyer,
-      "Channel",
-      channel.order_id
-    ).catch((err) => {
-        console.log(err);
-        return;
-      });
+    let userSelected = user == buyer ? seller : buyer;
+
+    // Get User Seller
+    const profile = await Profile.findOne({
+      _id: JSON.parse(userSelected)
+    })
+
+    // Noti seller
+    const newNotification = new Notification({
+      user_id: profile._id,
+      type: "Channel",
+      reference: channel.order_id
+    });
+
+    await newNotification.save();
 
     return res.status(200).json(result);
   } catch (error) {
+    console.log(error)
     return res.status(400).json({
       message: "Ups Hubo un error!",
       error: error,
@@ -200,16 +208,21 @@ async function pushMsgWithFiles(req, res) {
       });
     }
 
-    // Noti
-    await useNewNotiRabbit(
-      "notifications",
-      user == buyer ? channel.seller : channel.buyer,
-      "Channel",
-      channel.order_id
-    ).catch((err) => {
-        console.error(err);
-        return;
-      });
+    let userSelected = user == buyer ? seller : buyer;
+
+    // Get User Seller
+    const profile = await Profile.findOne({
+      _id: JSON.parse(userSelected)
+    })
+
+    // Noti seller
+    const newNotification = new Notification({
+      user_id: profile._id,
+      type: "Channel",
+      reference: channel.order_id
+    });
+
+    await newNotification.save();
 
     return res.status(200).json({
       message: "Ok"
