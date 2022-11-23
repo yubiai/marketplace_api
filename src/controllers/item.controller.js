@@ -122,7 +122,7 @@ async function getItems(req, res) {
   try {
     const { size, page, categoryId, subcategoryId } = req.query;
     const { limit, offset } = getPagination(page, size);
-    const sort = { item: 1 };
+    const sort = { updatedAt: -1 };
 
     let condition = {
       published: true
