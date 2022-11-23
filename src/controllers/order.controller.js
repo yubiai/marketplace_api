@@ -150,13 +150,15 @@ async function getOrderByTransaction(req, res) {
         model: 'File',
         select: { filename: 1, mimetype: 1 }
       });
-      const seller = await Profile.findOne({ eth_address: userSeller }).lean();
+      const seller = await Profile.findOne({ eth_address: userSeller.toUpperCase() }).lean();
+      const buyer = await Profile.findOne({ eth_address: userBuyer.toUpperCase() }).lean();
 
       result = {
         _id,
         item: {
           ...item,
           seller,
+          buyer,
         },
         userBuyer,
         userSeller,
