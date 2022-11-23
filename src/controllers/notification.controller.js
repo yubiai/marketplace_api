@@ -76,7 +76,7 @@ async function updateSeenAllByUserId(req, res) {
       throw new Error("Profile is missing.");
     }
 
-    const result = await Notification.updateMany({ user_id: verifyProfile._id }, { seen: true });
+    await Notification.updateMany({ user_id: verifyProfile._id }, { seen: true });
     return res.status(200).json("Ok");
   } catch (error) {
     console.error(error)
@@ -104,7 +104,9 @@ async function getNotiSeenFalse(req, res) {
     const notifications = await Notification.find({
       user_id: verifyProfile._id,
       seen: false
-    });
+    }).sort({
+      createdAt: -1
+    })
 
     return res.status(200).json(notifications);
   } catch (error) {
