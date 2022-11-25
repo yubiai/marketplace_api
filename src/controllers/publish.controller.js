@@ -146,46 +146,6 @@ async function newItem(req, res) {
   }
 }
 
-// New Item
-async function publishItem(req, res) {
-
-  try {
-
-    // Verify Code Security
-    if (req.body.code !== process.env.CODE_SECU) {
-      console.error("Command No valid")
-      throw new Error("Command No valid");
-    }
-
-    // Verify Item
-    const verifyProfile = await Item.findOne({
-      _id: req.body.item_id,
-    });
-
-    // If Fail
-    if (!verifyProfile) {
-      console.error("Item is missing.")
-      throw new Error("Item is missing.");
-    }
-
-    // Update Item
-    await Item.findByIdAndUpdate(req.body.item_id, {
-      published: true,
-      status: 2
-    });
-
-    return res.status(200).json({
-      message: "Updated Successfully"
-    })
-  } catch (error) {
-    console.error(error);
-    return res.status(400).json({
-      message: error && error.message ? error.message : "Failed to Published.",
-    })
-  }
-}
-
 module.exports = {
-  newItem,
-  publishItem
+  newItem
 };

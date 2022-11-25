@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 mongoose.Promise = global.Promise;
 
-const mongodb_url = process.env.NODE_ENV === "PROD" ? process.env.MONGODB_URL_PREPRO : process.env.MONGODB_URL_TEST
+const mongodb_url = process.env.MONGODB_URL;
 
 if (!mongodb_url) {
   console.log(
