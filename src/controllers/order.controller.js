@@ -191,6 +191,77 @@ async function getOrderByTransaction(req, res) {
   }
 }
 
+async function getOrderByOrderId(req, res) {
+  try {
+    let order = {};
+    let transaction;
+    let result = {};
+
+    if (req.params.orderId) {
+      order = await Order.findById(req.params.orderId);
+      transaction = await Transaction.findOne({
+        'transactionMeta.transactionHash': order.transactionHash,
+      });
+
+      const { itemId, userBuyer, userSeller, dateOrder, _id, status } = order;
+      const {
+        transactionHash,
+        transactionIndex,
+        to,
+        disputeId,
+        transactionPayedAmount,
+        transactionFeeAmount,
+        transactionDate,
+        networkEnv,
+        transactionMeta,
+        timeForClaim
+      } = transaction;
+      const item = await Item.findOne({ _id: itemId }).lean().populate({
+        path: 'files',
+        model: 'File',
+        select: { filename: 1, mimetype: 1 }
+      });
+      const seller = await Profile.findOne({ eth_address: userSeller.toUpperCase() }).lean();
+      const buyer = await Profile.findOne({ eth_address: userBuyer.toUpperCase() }).lean();
+
+      result = {
+        _id,
+        item: {
+          ...item,
+          seller,
+          buyer,
+        },
+        userBuyer,
+        userSeller,
+        dateOrder,
+        status,
+        transaction: {
+          transactionHash,
+          transactionIndex,
+          to,
+          disputeId,
+          transactionPayedAmount,
+          transactionFeeAmount,
+          transactionDate,
+          networkEnv,
+          timeForClaim,
+          transactionMeta
+        },
+      };
+    }
+
+    res.status(200).json({
+      status: "ok",
+      result,
+    });
+  } catch (error) {
+    res.status(404).json({
+      message: "Order not found",
+      error: error,
+    });
+  }
+}
+
 async function getOrdersByBuyer(req, res) {
   const { eth_address_buyer } = req.params;
   const { size, page } = req.query;
@@ -206,7 +277,7 @@ async function getOrdersByBuyer(req, res) {
       userBuyer: { $regex: `${eth_address_buyer}$`, $options: "i" },
     };
 
-    const data = await Order.paginate(condition, {
+    let data = await Order.paginate(condition, {
       offset, limit, sort, populate: {
         path: 'itemId',
         model: 'Item',
@@ -221,10 +292,38 @@ async function getOrdersByBuyer(req, res) {
         ]
       }
     });
+    const newData = [];
+    for (let item of data.docs) {
+      const transaction = await Transaction.findOne({
+        'transactionMeta.transactionHash': item.transactionHash,
+      }).lean();
+
+      const {
+        _id,
+        itemId,
+        userBuyer,
+        userSeller,
+        status,
+        dateOrder,
+        createdAt,
+      } = item;
+      
+      newData.push({
+        _id,
+        itemId,
+        userBuyer,
+        userSeller,
+        status,
+        dateOrder,
+        createdAt,
+        transaction,
+        transactionHash: item.transactionHash
+      });
+    }
 
     return res.status(200).json({
       totalItems: data.totalDocs,
-      items: data.docs,
+      items: newData,
       totalPages: data.totalPages,
       currentPage: data.page - 1,
       prevPage: data.prevPage - 1,
@@ -254,7 +353,7 @@ async function getOrdersBySeller(req, res) {
       userSeller: { $regex: `${eth_address_seller}$`, $options: "i" },
     };
 
-    const data = await Order.paginate(condition, {
+    let data = await Order.paginate(condition, {
       offset, limit, sort, populate: {
         path: 'itemId',
         model: 'Item',
@@ -267,9 +366,38 @@ async function getOrdersBySeller(req, res) {
       }
     });
 
+    const newData = [];
+    for (let item of data.docs) {
+      const transaction = await Transaction.findOne({
+        'transactionMeta.transactionHash': item.transactionHash,
+      }).lean();
+
+      const {
+        _id,
+        itemId,
+        userBuyer,
+        userSeller,
+        status,
+        dateOrder,
+        createdAt,
+      } = item;
+      
+      newData.push({
+        _id,
+        itemId,
+        userBuyer,
+        userSeller,
+        status,
+        dateOrder,
+        createdAt,
+        transaction,
+        transactionHash: item.transactionHash
+      });
+    }
+
     return res.status(200).json({
       totalItems: data.totalDocs,
-      items: data.docs,
+      items: newData,
       totalPages: data.totalPages,
       currentPage: data.page - 1,
       prevPage: data.prevPage - 1,
@@ -287,6 +415,7 @@ async function getOrdersBySeller(req, res) {
 module.exports = {
   createOrder,
   getOrderByTransaction,
+  getOrderByOrderId,
   updateOrderStatus,
   getOrdersByBuyer,
   getOrdersBySeller,
