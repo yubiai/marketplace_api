@@ -146,6 +146,37 @@ async function newItem(req, res) {
   }
 }
 
+const updateStatusItem = async (req, res) => {
+  const { status } = req.body;
+  const id = req.params.id;
+  console.log(id, status)
+
+  try {
+
+    const item = await Item.findById(id);
+
+    if (!item) {
+      throw new Error("Item is missing.");
+    }
+
+    await Item.findByIdAndUpdate(id, {
+      status: status,
+      published: status == 2 ? true : false
+    })
+
+    return res.status(200).json({
+      status: "ok"
+    });
+  } catch (error) {
+    console.error(error)
+    return res.status(400).json({
+      message: 'Ups Hubo un error!',
+      error: error,
+    })
+  }
+}
+
 module.exports = {
-  newItem
+  newItem,
+  updateStatusItem
 };
