@@ -38,8 +38,8 @@ const cart = require("./routes/cart/cart");
  */
 
 // Options Cors
-const whitelist = process.env.WHITELISTED_DOMAINS ? process.env.WHITELISTED_DOMAINS.split(",") : [];
-const corsOptions = {
+/*const whitelist = process.env.WHITELISTED_DOMAINS ? process.env.WHITELISTED_DOMAINS.split(",") : [];
+ const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || whitelist.indexOf(origin) !== -1) {
       callback(null, true)
@@ -49,10 +49,10 @@ const corsOptions = {
   },
   credentials: true,
   optionsSuccessStatus: 200,
-}
+} */
 
 // Middlewares
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(passport.initialize());
 app.use(express.json({ limit: "31mb", extended: true }))
 app.use(bodyParser.urlencoded({ limit: "31mb", extended: true, parameterLimit: 50000 }))
