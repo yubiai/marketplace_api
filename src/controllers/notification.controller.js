@@ -1,5 +1,4 @@
 const getPagination = require("../libs/getPagination");
-const { useSeenNotiRabbit } = require("../libs/useRabbit");
 const { Notification } = require("../models/Notifications");
 const { Profile } = require("../models/Profile");
 const ObjectId = require("mongoose").Types.ObjectId;
@@ -47,10 +46,13 @@ async function updateSeenById(req, res) {
   const { notiID } = req.params;
 
   try {
-    await useSeenNotiRabbit("notifications", notiID)
-      .catch((err) => {
-        console.log(err)
-      })
+
+    if(!notiID){
+      console.error("Notification is missing.")
+      throw new Error("Notification is missing.");
+    }
+
+    await Notification.findByIdAndUpdate(notiID, { seen: true });
 
     return res.status(200).json();
   } catch (error) {
