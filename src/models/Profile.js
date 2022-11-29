@@ -68,6 +68,10 @@ const profileSchema = new Schema(
     terms: {
       type: Array,
       default: []
+    },
+    disputespolicy: {
+      type: Array,
+      default: []
     }
   },
   {
