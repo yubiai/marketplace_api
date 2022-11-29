@@ -91,9 +91,9 @@ async function updateSeenAllByUserId(req, res) {
 
 async function getNotiSeenFalse(req, res) {
   const { userID } = req.params;
+  const limit = req.query.limit ? req.query.limit : null;
 
   try {
-
     // Verify Profile
     const verifyProfile = await Profile.findById(userID);
 
@@ -103,12 +103,16 @@ async function getNotiSeenFalse(req, res) {
       throw new Error("Profile is missing.");
     }
 
-    const notifications = await Notification.find({
+    let notifications = await Notification.find({
       user_id: verifyProfile._id,
       seen: false
     }).sort({
       createdAt: -1
     })
+
+    if(limit){
+      notifications = notifications.slice(0, limit);
+    }
 
     return res.status(200).json(notifications);
   } catch (error) {
