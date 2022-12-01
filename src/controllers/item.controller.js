@@ -49,15 +49,16 @@ async function getItemSlug(req, res) {
 async function getItemById(req, res) {
   try {
     const { id } = req.params;
-    
-    const item = await Item.findById(id)
+
+    const item = await Item.findById(id).populate("category", "_id title")
+      .populate("subcategory", "_id title")
       .populate({
         path: 'files',
         model: 'File',
         select: { filename: 1, mimetype: 1 }
-      }).select('title slug files price currencySymbolPrice')
+      })
 
-    if(!item){
+    if (!item) {
       console.error("Item is missing.")
       throw new Error("Item is missing.");
     }
