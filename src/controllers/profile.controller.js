@@ -115,6 +115,7 @@ async function getFavorites(req, res) {
         title: 1,
         files: 1,
         price: 1,
+        currencySymbolPrice: 1,
         category: 1,
         subcategory: 1,
         slug: 1,
@@ -239,7 +240,7 @@ async function getMyPublished(req, res) {
       return res.status(404).json({ error: "User id not exists" });
     }
 
-    let published = user.items;
+    let published = user.items.reverse();
 
     if (published.length === 0) {
       return res

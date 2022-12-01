@@ -15,6 +15,24 @@ async function getSubCategories(req, res) {
   }
 }
 
+// Sub Categories
+async function getSubCategoryId(req, res) {
+  try {
+    const subCategory = await Subcategory.findById(req.params.id)
+
+    return res.status(200).json({
+      status: "ok",
+      response: subCategory
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(400).json({
+      message: "Ups Hubo un error!",
+      error: error,
+    });
+  }
+}
+
 // New Sub Category
 async function postSubCategory(req, res) {
   try {
@@ -41,5 +59,6 @@ async function postSubCategory(req, res) {
 
 module.exports = {
   getSubCategories,
-  postSubCategory
+  postSubCategory,
+  getSubCategoryId
 }

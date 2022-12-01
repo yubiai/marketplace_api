@@ -4,9 +4,10 @@ async function getCategory(req, res) {
   try {
     const categories = await Category.find({}).populate("items");
 
-    res.status(200).json(categories);
+    return res.status(200).json(categories);
   } catch (error) {
-    res.status(400).json({
+    console.error(error)
+    return res.status(400).json({
       message: "Ups Hubo un error!",
       error: error,
     });
