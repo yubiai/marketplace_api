@@ -149,7 +149,6 @@ async function newItem(req, res) {
 const updateStatusItem = async (req, res) => {
   const { status } = req.body;
   const id = req.params.id;
-  console.log(id, status)
 
   try {
 
@@ -176,7 +175,62 @@ const updateStatusItem = async (req, res) => {
   }
 }
 
+const updateItemFiles = async (req, res) => {
+
+  const id = req.params.id;
+  const { filespos } = req.body;
+  let filesUpload = req.files;
+  let files = [];
+
+  console.log(filespos)
+
+  if (filespos[0] == "false" && filespos[1] == "false" && filespos[2] == "false") {
+    return res.status(200).json({
+      status: "ok"
+    });
+  }
+
+  try {
+
+    const item = await Item.findById(id);
+
+    if (!item) {
+      console.error("Item is missing.");
+      throw new Error("Item is missing.");
+    }
+
+    for (let i = 0; i < filespos.length; i++) {
+      if (filespos[i] == "false") {
+        files[i] = item.files[i];
+      } else {
+        const findFile = filesUpload.find((file) => file.originalname === filespos[i]);
+        if (!findFile) {
+          continue;
+        }
+        const result = await uploadFile(findFile, item.seller);
+        files[i] = result._id;
+        continue;
+      }
+    }
+
+    await Item.findByIdAndUpdate(id, {
+      files: files
+    });
+
+    return res.status(200).json({
+      status: "ok"
+    });
+  } catch (error) {
+    console.error(error)
+    return res.status(400).json({
+      message: 'Ups Hubo un error!',
+      error: error,
+    })
+  }
+}
+
 module.exports = {
   newItem,
-  updateStatusItem
+  updateStatusItem,
+  updateItemFiles
 };

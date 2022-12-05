@@ -90,31 +90,35 @@ async function getItemsAll(req, res) {
   }
 }
 
-async function test(req, res) {
+async function updateItem(req, res) {
+
+  const { title, description, category, subcategory, currencySymbolPrice, price, ubiburningamount } = req.body;
+  const { id } = req.params;
+  
   try {
-    const uploader = async (path) => await cloudinary.uploads(path, "Images");
 
-    if (req.method === "POST") {
-      const urls = [];
-      const files = req.files;
-      for (const file of files) {
-        const { path } = file;
-        const newPath = await uploader(path);
-        urls.push(newPath);
-        fs.unlinkSync(path);
+    if( title || description || category || subcategory || currencySymbolPrice || price || ubiburningamount ){
+      const verifyItem = await Item.findById(id);
+
+      if(!verifyItem){
+        throw new Error("Item is missing."); 
       }
+  
+      await Item.findByIdAndUpdate(id, req.body);
+  
+      return res.status(200).json({
+        status: "ok"
+      });
 
-      res.status(200).json({
-        message: "images uploaded successfully",
-        data: urls,
-      });
     } else {
-      res.status(405).json({
-        err: `${req.method} method not allowed`,
-      });
+      throw new Error("Data is missing."); 
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    return res.status(400).json({
+      message: "Ups hubo un error!",
+      error: JSON.stringify(error)
+    });
   }
 }
 
@@ -206,6 +210,7 @@ module.exports = {
   getItemSlug,
   getItemById,
   search,
+  updateItem,
   // Olds
   getItem
   //test
