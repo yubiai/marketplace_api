@@ -12,6 +12,8 @@ router
 router.route("/item/:slug").get(itemController.getItemSlug);
 
 router.route("/item/id/:id").get(itemController.getItemById);
+router.route("/item/id/:id").put(itemController.updateItem);
+
 
 router.route("/search/").get(itemController.search);
 

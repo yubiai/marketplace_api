@@ -12,7 +12,7 @@ const storage = multer.diskStorage({
     );
   },
   filename: (req, file, cb) => {
-    const match = ["image/png", "image/jpg", "image/jpeg", "video/mp4", "audio/mpeg"];
+    const match = ["image/png", "image/jpg", "image/jpeg", "image/webp", "video/mp4", "audio/mpeg"];
     console.log(file.mimetype, "file.mimetype")
     if (match.indexOf(file.mimetype) === -1) {
       const message = `<strong>${file.originalname}</strong> is invalid. Only accept png/jpeg/jpg/mp3/mp4.`;
@@ -29,6 +29,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 router.route("/").post(upload.array("files"), publishController.newItem);
+router.route("/edititemfiles/:id").put(upload.array("files"), publishController.updateItemFiles);
 router.route("/status/:id").put(publishController.updateStatusItem);
 
 module.exports = router;
