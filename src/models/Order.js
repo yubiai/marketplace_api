@@ -20,6 +20,9 @@ const transactionMetaSchema = new Schema(
       type: String,
       required: true
     },
+    contractAddressURI: {
+      type: String,
+    }
   }
 );
 
