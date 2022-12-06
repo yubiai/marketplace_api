@@ -1,6 +1,8 @@
 const { Item } = require("../models/Item");
+const { File } = require("../models/File");
 const fs = require("fs");
 const getPagination = require("../libs/getPagination");
+const { removeFile } = require("../utils/uploads");
 
 // All get Products
 async function getItem(req, res) {
@@ -94,24 +96,24 @@ async function updateItem(req, res) {
 
   const { title, description, category, subcategory, currencySymbolPrice, price, ubiburningamount } = req.body;
   const { id } = req.params;
-  
+
   try {
 
-    if( title || description || category || subcategory || currencySymbolPrice || price || ubiburningamount ){
+    if (title || description || category || subcategory || currencySymbolPrice || price || ubiburningamount) {
       const verifyItem = await Item.findById(id);
 
-      if(!verifyItem){
-        throw new Error("Item is missing."); 
+      if (!verifyItem) {
+        throw new Error("Item is missing.");
       }
-  
+
       await Item.findByIdAndUpdate(id, req.body);
-  
+
       return res.status(200).json({
         status: "ok"
       });
 
     } else {
-      throw new Error("Data is missing."); 
+      throw new Error("Data is missing.");
     }
   } catch (error) {
     console.error(error);
@@ -204,6 +206,51 @@ async function search(req, res) {
   }
 }
 
+async function deleteFileById(req, res) {
+
+  const { file_id } = req.body;
+  const { id } = req.params;
+
+  try {
+
+    if (file_id) {
+      const verifyItem = await Item.findById(id);
+
+      if (!verifyItem) {
+        throw new Error("Item is missing.");
+      }
+
+      const verifyFile = await File.findById(file_id);
+
+      const filterFile = verifyFile && verifyItem.files && verifyItem.files.length > 0 && verifyItem.files.filter((file) => file != file_id);
+
+      if (!filterFile) {
+        throw new Error("Error deleting file.");
+      }
+
+      await removeFile(verifyFile);
+
+      await Item.findByIdAndUpdate(id, {
+        files: filterFile
+      });
+
+      return res.status(200).json({
+        status: "ok"
+      });
+
+    } else {
+      throw new Error("Data is missing.");
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(400).json({
+      message: "Ups hubo un error!",
+      error: JSON.stringify(error)
+    });
+  }
+}
+
+
 module.exports = {
   // News
   getItems,
@@ -211,6 +258,7 @@ module.exports = {
   getItemById,
   search,
   updateItem,
+  deleteFileById,
   // Olds
   getItem
   //test

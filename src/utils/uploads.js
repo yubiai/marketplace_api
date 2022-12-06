@@ -53,7 +53,7 @@ function upload_Fleek(file, idFile, channel) {
                     apiSecret: process.env.STORAGE_FLEEK_API_SECRET,
                     key: fileName,
                     data: fileData,
-                    bucket: channel == true ? process.env.STORAGE_FLLEK_API_BUCKET + "/evidences" : process.env.STORAGE_FLLEK_API_BUCKET,
+                    bucket: channel == true ? process.env.STORAGE_FLEEK_API_BUCKET + "/evidences" : process.env.STORAGE_FLEEK_API_BUCKET,
                     httpUploadProgressCallback: (event) => {
                         console.log(Math.round(event.loaded / event.total * 100) + '% done');
                     }
@@ -65,8 +65,8 @@ function upload_Fleek(file, idFile, channel) {
                     });
                     console.log("Saved file in fleek successfully.")
                 }
-                
-                if(!uploadFile){
+
+                if (!uploadFile) {
                     console.error("File not saved on fleek.")
                 }
 
@@ -134,10 +134,42 @@ function uploadFileEvidence(file) {
     })
 }
 
+// Remove File BD and storages
+function removeFile(file) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!file || !file._id || !file.filename) {
+                reject("Data file is missing.")
+            }
+
+            // Delete Google Cloud
+            await gc_Storage.bucket(process.env.STORAGE_GC_BUCKET).file("test/" + file.filename).delete();
+            
+            console.log(`gs://${process.env.STORAGE_GC_BUCKET}/test/${file.filename} deleted`);
+
+            // Delete Fleek Storage
+            await fleek_Storage.deleteFile({
+                apiKey: process.env.STORAGE_FLEEK_API_KEY,
+                apiSecret: process.env.STORAGE_FLEEK_API_SECRET,
+                key: file.filename,
+                bucket: process.env.STORAGE_FLEEK_API_BUCKET
+            });
+
+            console.log(`${process.env.STORAGE_FLEEK_API_BUCKET}/${file.filename} deleted`);
+
+            resolve(true)
+        } catch (err) {
+            console.error(err);
+            reject(err)
+        }
+    })
+}
+
 
 module.exports = {
     uploadFile,
     uploadFileEvidence,
     convertWebp,
-    upload_Fleek
+    upload_Fleek,
+    removeFile
 };
