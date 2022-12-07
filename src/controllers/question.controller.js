@@ -5,6 +5,7 @@
 const ObjectId = require("mongoose").Types.ObjectId;
 const { Question } = require("../models/Question");
 const { Item } = require("../models/Item");
+const { Notification } = require("../models/Notifications");
 const getPagination = require("../libs/getPagination");
 
 // Get Question for Item id
@@ -73,7 +74,15 @@ async function newQuestion(req, res) {
 
   try {
     const addQuestion = new Question(data);
-    await addQuestion.save();
+    const result = await addQuestion.save();
+
+    const newNotification = new Notification({
+      user_id: data.seller,
+      type: "NewQuestion",
+      reference: result._id
+    });
+
+    await newNotification.save();
 
     return res.status(200).json({
       status: "ok"
@@ -224,7 +233,16 @@ async function addAnswerByIdQuestion(req, res) {
       dateanswer: new Date()
     };
 
-    await Question.findByIdAndUpdate(question_id, question);
+    const result = await Question.findByIdAndUpdate(question_id, question);
+
+    const newNotification = new Notification({
+      user_id: result.buyer,
+      type: "NewAnswer",
+      reference: result._id
+    });
+
+    await newNotification.save();
+
     return res.status(200).json({ message: "Successfully updated" });
   } catch (error) {
     console.error(error);
