@@ -4,24 +4,33 @@ const Schema = mongoose.Schema;
 const questionSchema = new Schema(
   {
     seller: {
-      type: String,
-      required: true,
-      trim: true,
+      type: Schema.Types.ObjectId,
+      ref: "Profile",
+      required: true
     },
-    text: {
+    buyer: {
+      type: Schema.Types.ObjectId,
+      ref: "Profile",
+      required: true
+    },
+    itemId: {
+      type: Schema.Types.ObjectId,
+      ref: "Item",
+      required: true
+    },
+    question: {
       type: String,
       required: true
+    },
+    response: {
+      type: String
+    },
+    dateresponse: {
+      type: Date
     },
     status: {
-      type: String,
-      required: true
-    },
-    product: {
-      type: String,
-      required: true
-    },
-    answer: {
-      type: Object
+      type: Number,
+      default: 0,
     }
   },
   {

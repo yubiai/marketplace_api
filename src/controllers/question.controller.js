@@ -4,6 +4,7 @@
  */
 const ObjectId = require("mongoose").Types.ObjectId;
 const { Question } = require("../models/Question");
+const { Item } = require("../models/Item");
 
 // TODO: Implement secure request with token
 // Get Question for id
@@ -13,7 +14,7 @@ async function getQuestion(req, res) {
   if (!ObjectId.isValid(questionID)) {
     return res.status(404).json({ error: "Not Object ID" });
   }
-  
+
   try {
     const question = await Question.findById(questionID);
     return res.status(200).json(question);
@@ -22,16 +23,54 @@ async function getQuestion(req, res) {
   }
 }
 
-// Get Question for product id
-async function getQuestionsByProduct(req, res) {
-  const { productID } = req.params;
+// Get Question for Item id
+async function getQuestionsByItemId(req, res) {
+  const { itemId } = req.params;
+  const { limit } = req.query;
 
   try {
+    const verifyItem = await Item.exists({
+      _id: itemId
+    })
+
+    if(!verifyItem){
+      throw new Error("Item not exist");
+    }
+
     const questions = await Question.find({
-      item_id: productID,
-    });
+      itemId: itemId
+    }).populate("buyer", "first_name last_name photo eth_address")
+      .populate("seller", "first_name last_name photo eth_address")
+      .populate("itemId", "title slug")
+      .limit(Number(limit))
+
     return res.status(200).json(questions);
   } catch (error) {
+    console.error(error);
+    return res.status(404).json(error);
+  }
+}
+
+// Get Question for product id
+async function getQuestionsCountByItemId(req, res) {
+  const { itemId } = req.params;
+
+  try {
+    const verifyItem = await Item.exists({
+      _id: itemId
+    })
+
+    if(!verifyItem){
+      throw new Error("Item not exist");
+    }
+
+    const questions = await Question.countDocuments({
+      itemId: itemId
+    });
+
+    return res.status(200).json(questions);
+  } catch (error) {
+    console.error(error);
     return res.status(404).json(error);
   }
 }
@@ -40,16 +79,23 @@ async function getQuestionsByProduct(req, res) {
 async function newQuestion(req, res) {
   const data = req.body;
 
-  if (!data.seller) {
-    return res.status(404).json("No seller");
+  if (!data.seller || !data.buyer || !data.itemId || !data.question) {
+    return res.status(404).json("Data is missing.");
+  }
+
+  if (data.seller == data.buyer) {
+    return res.status(404).json("It is the same seller who wants to ask a question.");
   }
 
   try {
-    let addQuestion = new Question(data);
-    let result = await addQuestion.save();
+    const addQuestion = new Question(data);
+    await addQuestion.save();
 
-    return res.status(200).json(result);
+    return res.status(200).json({
+      status: "ok"
+    });
   } catch (error) {
+    console.error(error);
     return res.status(404).json(error);
   }
 }
@@ -116,7 +162,8 @@ async function addAnswerByIdQuestion(req, res) {
 
 module.exports = {
   getQuestion,
-  getQuestionsByProduct,
+  getQuestionsByItemId,
+  getQuestionsCountByItemId,
   newQuestion,
   deleteQuestion,
   addAnswerByIdQuestion,

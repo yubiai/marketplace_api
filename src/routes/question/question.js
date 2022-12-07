@@ -2,7 +2,6 @@ const express = require("express");
 const {
   getQuestion,
   newQuestion,
-  getQuestionsByProduct,
   deleteQuestion,
   addAnswerByIdQuestion,
 } = require("../../controllers/question.controller");
@@ -16,9 +15,6 @@ router.route("/:questionID").get(getQuestion);
 
 // Delete question by id
 router.route("/:questionID").delete(deleteQuestion);
-
-// Get questions for the product id
-router.route("/product/:productID").get(getQuestionsByProduct);
 
 // Adding answer to the question
 router.route("/answer/:questionID").put(addAnswerByIdQuestion);
