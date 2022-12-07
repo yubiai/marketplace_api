@@ -143,9 +143,9 @@ function removeFile(file) {
             }
 
             // Delete Google Cloud
-            await gc_Storage.bucket(process.env.STORAGE_GC_BUCKET).file("test/" + file.filename).delete();
+            await gc_Storage.bucket(process.env.STORAGE_GC_BUCKET).file(process.env.STORAGE_GC_FOLD + "/" + file.filename).delete();
             
-            console.log(`gs://${process.env.STORAGE_GC_BUCKET}/test/${file.filename} deleted`);
+            console.log(`gs://${process.env.STORAGE_GC_BUCKET}/${process.env.STORAGE_GC_FOLD}/${file.filename} deleted`);
 
             // Delete Fleek Storage
             await fleek_Storage.deleteFile({

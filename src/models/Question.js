@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const mongoosePagination = require("mongoose-paginate-v2");
 
 const questionSchema = new Schema(
   {
@@ -22,10 +23,10 @@ const questionSchema = new Schema(
       type: String,
       required: true
     },
-    response: {
+    answer: {
       type: String
     },
-    dateresponse: {
+    dateanswer: {
       type: Date
     },
     status: {
@@ -38,6 +39,8 @@ const questionSchema = new Schema(
     timestamps: true,
   }
 );
+
+questionSchema.plugin(mongoosePagination)
 
 const Question = mongoose.model("Question", questionSchema);
 
