@@ -1,27 +1,37 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const mongoosePagination = require("mongoose-paginate-v2");
 
 const questionSchema = new Schema(
   {
     seller: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    text: {
-      type: String,
+      type: Schema.Types.ObjectId,
+      ref: "Profile",
       required: true
     },
-    status: {
-      type: String,
+    buyer: {
+      type: Schema.Types.ObjectId,
+      ref: "Profile",
       required: true
     },
-    product: {
+    itemId: {
+      type: Schema.Types.ObjectId,
+      ref: "Item",
+      required: true
+    },
+    question: {
       type: String,
       required: true
     },
     answer: {
-      type: Object
+      type: String
+    },
+    dateanswer: {
+      type: Date
+    },
+    status: {
+      type: Number,
+      default: 0,
     }
   },
   {
@@ -29,6 +39,8 @@ const questionSchema = new Schema(
     timestamps: true,
   }
 );
+
+questionSchema.plugin(mongoosePagination)
 
 const Question = mongoose.model("Question", questionSchema);
 
