@@ -144,11 +144,17 @@ async function getItems(req, res) {
     }
 
     const data = await Item.paginate(condition, {
-      offset, limit, sort, populate: {
-        path: 'files',
-        model: 'File',
-        select: { filename: 1, mimetype: 1 }
-      }
+      offset, limit, sort, populate: [
+        {
+          path: 'files',
+          model: 'File',
+          select: { filename: 1, mimetype: 1 }
+        }, {
+          path: 'seller',
+          model: 'Profile',
+          select: { first_name: 1, last_name: 1 }
+        }
+      ]
     });
 
     return res.status(200).json({
