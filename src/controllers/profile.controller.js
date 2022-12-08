@@ -125,6 +125,10 @@ async function getFavorites(req, res) {
         path: 'files',
         model: 'File',
         select: { filename: 1, mimetype: 1 }
+      }).populate({
+        path: 'seller',
+        model: 'Profile',
+        select: { first_name: 1, last_name: 1 }
       })
 
       if (item) {
