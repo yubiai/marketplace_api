@@ -21,10 +21,12 @@ const questionSchema = new Schema(
     },
     question: {
       type: String,
-      required: true
+      required: true,
+      trim: true
     },
     answer: {
-      type: String
+      type: String,
+      trim: true
     },
     dateanswer: {
       type: Date
