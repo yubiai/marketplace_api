@@ -29,6 +29,7 @@ const auth = require("./routes/auth/auth");
 const terms = require("./routes/terms/terms");
 const disputespolicy = require("./routes/disputespolicy/disputespolicy");
 const question = require("./routes/question/question");
+const report = require("./routes/report/report");
 
 /* const user = require("./routes/user/user");
 const shipping = require("./routes/shipping/shipping");
@@ -75,6 +76,7 @@ app.use("/api/profiles", passport.authenticate('jwt', { session: false }), profi
 app.use("/api/channel", passport.authenticate('jwt', { session: false }), channel);
 app.use("/api/publish", passport.authenticate('jwt', { session: false }), publish);
 app.use("/api/questions", passport.authenticate('jwt', { session: false }), question);
+app.use("/api/report", passport.authenticate('jwt', { session: false }), report);
 app.use("/api/evidences", evidence);
 app.use("/api/terms", terms);
 app.use("/api/disputespolicy", passport.authenticate('jwt', { session: false }), disputespolicy);
