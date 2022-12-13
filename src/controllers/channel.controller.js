@@ -11,12 +11,13 @@ async function getChannel(req, res) {
   try {
     const channel = await Channel.findById(id);
 
-    res.status(200).json({
+    return res.status(200).json({
       status: "ok",
       result: channel,
     });
   } catch (error) {
-    res.status(400).json({
+    console.error(error);
+    return res.status(400).json({
       message: "Ups Hubo un error!",
       error: error,
     });
@@ -38,6 +39,11 @@ async function getChannelByOrderId(req, res) {
         select: { itemId: 1, transactionHash: 1, status: 1 }
       });
 
+    console.log(channel, "channel")
+
+    if(!channel){
+      throw new Error("Channel not exist.");
+    }
 
     if (channel.messages && channel.messages.length > 0) {
       let messages = [];
@@ -70,8 +76,7 @@ async function getChannelByOrderId(req, res) {
   } catch (error) {
     console.error(error)
     return res.status(400).json({
-      message: "Ups Hubo un error!",
-      error: error,
+      message: "Ups Hubo un error!"
     });
   }
 }
