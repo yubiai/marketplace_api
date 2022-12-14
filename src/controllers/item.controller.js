@@ -194,15 +194,23 @@ async function search(req, res) {
           slug: 1,
           files: 1,
           price: 1,
+          seller: 1
         },
       },
     ]);
 
-    await Item.populate(result, {
-      path: 'files',
-      model: 'File',
-      select: { filename: 1, mimetype: 1 }
-    })
+    await Item.populate(result, [
+      {
+        path: 'files',
+        model: 'File',
+        select: { filename: 1, mimetype: 1 }
+      },
+      {
+        path: 'seller',
+        model: 'Profile',
+        select: { first_name: 1, last_name: 1 }
+      }
+    ])
 
     return res.status(200).json(result);
   } catch (error) {
