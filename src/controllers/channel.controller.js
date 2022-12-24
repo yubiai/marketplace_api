@@ -39,8 +39,6 @@ async function getChannelByOrderId(req, res) {
         select: { itemId: 1, transactionHash: 1, status: 1 }
       });
 
-    console.log(channel, "channel")
-
     if(!channel){
       throw new Error("Channel not exist.");
     }

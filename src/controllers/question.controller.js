@@ -23,7 +23,8 @@ async function getQuestionsByItemId(req, res) {
     }
 
     const questions = await Question.find({
-      itemId: itemId
+      itemId: itemId,
+      status: 2
     }).populate("buyer", "first_name last_name photo eth_address")
       .populate("seller", "first_name last_name photo eth_address")
       .populate("itemId", "title slug")
@@ -50,7 +51,8 @@ async function getQuestionsCountByItemId(req, res) {
     }
 
     const questions = await Question.countDocuments({
-      itemId: itemId
+      itemId: itemId,
+      status: 2
     });
 
     return res.status(200).json(questions);
@@ -97,12 +99,13 @@ async function newQuestion(req, res) {
 async function getQuestionsByBuyer(req, res) {
   try {
     const { profile_id } = req.params;
-    const { size, page } = req.query;
+    const { size, page, status } = req.query;
     const { limit, offset } = getPagination(page, size);
     const sort = { createdAt: -1 };
 
     let condition = {
-      buyer: profile_id
+      buyer: profile_id,
+      status: status | 2
     };
 
     const data = await Question.paginate(condition, {
@@ -133,12 +136,13 @@ async function getQuestionsByBuyer(req, res) {
 async function getQuestionsBySeller(req, res) {
   try {
     const { profile_id } = req.params;
-    const { size, page } = req.query;
+    const { size, page, status } = req.query;
     const { limit, offset } = getPagination(page, size);
     const sort = { createdAt: -1 };
 
     let condition = {
-      seller: profile_id
+      seller: profile_id,
+      status: status | 2
     };
 
     const data = await Question.paginate(condition, {
@@ -174,7 +178,11 @@ async function getQuestionById(req, res) {
       .populate("itemId", "title slug price currencySymbolPrice")
 
     if (!question) {
-      return res.status(404).json({ error: "Question id not exists" });
+      return res.status(404).json({ message: "Question id not exists." });
+    }
+
+    if(question.status && question.status === 6){
+      return res.status(404).json({ message: "Question id was removed." });
     }
 
     return res.status(200).json(question);
