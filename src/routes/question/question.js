@@ -2,7 +2,6 @@ const express = require("express");
 const {
   getQuestionsByBuyer,
   newQuestion,
-  deleteQuestion,
   addAnswerByIdQuestion,
   getQuestionById,
   getQuestionsBySeller,
@@ -22,10 +21,5 @@ router.route("/answer/:question_id").put(addAnswerByIdQuestion);
 
 // Get Question by Id
 router.route("/:question_id").get(getQuestionById);
-
-// Delete question by id
-router.route("/:question_id").delete(deleteQuestion);
-
-
 
 module.exports = router;
