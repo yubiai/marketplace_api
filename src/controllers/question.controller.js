@@ -195,30 +195,6 @@ async function getQuestionById(req, res) {
 
 }
 
-// Delete Question
-async function deleteQuestion(req, res) {
-  const { question_id } = req.params;
-
-  if (!ObjectId.isValid(question_id)) {
-    return res.status(404).json({ error: "Not Object ID" });
-  }
-
-  let verify = await Question.exists({
-    _id: question_id,
-  });
-
-  if (!verify) {
-    return res.status(404).json({ error: "Question id not exists" });
-  }
-
-  try {
-    await Question.findByIdAndRemove(question_id);
-    return res.status(200).json({ message: "Successfully removed" });
-  } catch (error) {
-    return res.status(404).json(error);
-  }
-}
-
 // Adding answer to the question
 async function addAnswerByIdQuestion(req, res) {
   const { question_id } = req.params;
@@ -259,7 +235,6 @@ async function addAnswerByIdQuestion(req, res) {
 }
 
 module.exports = {
-  // new
   getQuestionsByItemId,
   getQuestionsCountByItemId,
   newQuestion,
@@ -267,6 +242,4 @@ module.exports = {
   getQuestionsBySeller,
   getQuestionById,
   addAnswerByIdQuestion,
-  // Old
-  deleteQuestion,
 };
