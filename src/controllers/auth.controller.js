@@ -1,6 +1,33 @@
 const { Profile } = require("../models/Profile");
 const { checkProfileOnPOH, signData } = require("../utils/utils");
 const jwtService = require("jsonwebtoken");
+const { generateNonce, SiweMessage } = require('siwe');
+
+
+// Generate Nonce
+async function nonce(req, res) {
+  try {
+    res.setHeader('Content-Type', 'text/plain');
+    res.send(generateNonce());
+    return
+  } catch(err){
+    console.error(err);
+    return res.status(403).json({ error: "Error generating nonce for signature." });
+  }
+}
+
+// Verify 
+async function verifySignature(req, res){
+  const { message, signature } = req.body;
+  const siweMessage = new SiweMessage(message);
+  try {
+      await siweMessage.validate(signature);
+      return res.status(200).send(true)
+  } catch(err) {
+    console.log("Error Auth:", err)
+    return res.status(401).send(false)
+  }
+}
 
 // Login
 async function login(req, res) {
@@ -117,7 +144,11 @@ async function authToken(req, res) {
   }
 }
 
+
+
 module.exports = {
   login,
-  authToken
+  authToken,
+  nonce,
+  verifySignature
 };
