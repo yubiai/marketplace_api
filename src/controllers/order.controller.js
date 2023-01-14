@@ -422,8 +422,11 @@ async function getOrdersBySeller(req, res) {
   const { limit, offset } = getPagination(page, size);
   const sort = { createdAt: -1 };
 
+  console.log(eth_address_seller, "eth_address_seller")
+
   try {
     if (!eth_address_seller) {
+      console.error("Eth address seller is missing.")
       return res.status(404).json({ error: "Data not exists" });
     }
 
@@ -473,6 +476,8 @@ async function getOrdersBySeller(req, res) {
       });
     }
 
+    console.log(data.totalDocs, "data.totalDocs orders sales")
+
     return res.status(200).json({
       totalItems: data.totalDocs,
       items: newData,
@@ -482,8 +487,8 @@ async function getOrdersBySeller(req, res) {
       nextPage: data.nextPage - 1,
     });
   } catch (error) {
-    console.log(error);
-    res.status(400).json({
+    console.error(error);
+    return res.status(400).json({
       message: "Error in orders",
       error: error,
     });
