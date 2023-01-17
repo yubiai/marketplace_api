@@ -106,6 +106,10 @@ const orderSchema = new Schema(
     },
     status: {
       type: String
+    },
+    orderCompletedBySeller: {
+      type: Boolean,
+      default: false
     }
   },
   {

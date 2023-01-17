@@ -166,6 +166,62 @@ async function updateOrderStatus(req, res) {
   }
 }
 
+async function updateOrderCompletedBySeller(req, res) {
+  try {
+    const { orderCompletedBySeller } = req.body;
+
+    if (!req.params.transactionId) {
+      return res.status(404).json({
+        message: "Transaction Id is missing."
+      });
+    }
+
+    const verifyOrder = await Order.findOne(
+      {
+        transactionHash: req.params.transactionId,
+      }
+    );
+
+    if (!verifyOrder) {
+      return res.status(400).json({
+        message: "Order is missing."
+      });
+    };
+
+    const buyer = await Profile.findOne({ eth_address: verifyOrder.userBuyer.toUpperCase() }).lean();
+
+    const result = await Order.findOneAndUpdate(
+      {
+        transactionHash: req.params.transactionId
+      },
+      { orderCompletedBySeller: orderCompletedBySeller }
+    );
+
+    if (result) {
+      // Noti Buyer
+      const newNotification = new Notification({
+        user_id: buyer._id,
+        type: "ORDER_COMPLETED_BY_SELLER",
+        reference: verifyOrder.transactionHash
+      });
+
+      await newNotification.save();
+    }
+
+    return res.status(200).json({
+      status: "ok",
+      result
+    });
+  } catch (error) {
+    console.error(error)
+    return res.status(400).json({
+      message: "Error on order",
+      error: error,
+    });
+  }
+}
+
+
 async function setDisputeOnOrderTransaction(req, res) {
   try {
     const { disputeId } = req.body;
@@ -210,7 +266,7 @@ async function getOrderByTransaction(req, res) {
         'transactionMeta.transactionHash': req.params.transactionId,
       });
 
-      const { itemId, userBuyer, userSeller, dateOrder, _id, status } = order;
+      const { itemId, userBuyer, userSeller, dateOrder, _id, status, orderCompletedBySeller } = order;
       const {
         transactionHash,
         transactionIndex,
@@ -242,6 +298,7 @@ async function getOrderByTransaction(req, res) {
         userSeller,
         dateOrder,
         status,
+        orderCompletedBySeller,
         transaction: {
           transactionHash,
           transactionIndex,
@@ -385,7 +442,7 @@ async function getOrdersByBuyer(req, res) {
         dateOrder,
         createdAt,
       } = item;
-      
+
       newData.push({
         _id,
         itemId,
@@ -462,7 +519,7 @@ async function getOrdersBySeller(req, res) {
         dateOrder,
         createdAt,
       } = item;
-      
+
       newData.push({
         _id,
         itemId,
@@ -500,6 +557,7 @@ module.exports = {
   getOrderByTransaction,
   getOrderByOrderId,
   updateOrderStatus,
+  updateOrderCompletedBySeller,
   getOrdersByBuyer,
   getOrdersBySeller,
   setDisputeOnOrderTransaction,
