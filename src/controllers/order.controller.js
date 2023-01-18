@@ -416,7 +416,7 @@ async function getOrdersByBuyer(req, res) {
       offset, limit, sort, populate: {
         path: 'itemId',
         model: 'Item',
-        select: 'title slug seller files',
+        select: 'title slug seller files orderCompletedBySeller',
         populate: [
           {
             path: 'seller', model: 'Profile', select: 'first_name last_name'
@@ -439,6 +439,7 @@ async function getOrdersByBuyer(req, res) {
         userBuyer,
         userSeller,
         status,
+        orderCompletedBySeller,
         dateOrder,
         createdAt,
       } = item;
@@ -449,6 +450,7 @@ async function getOrdersByBuyer(req, res) {
         userBuyer,
         userSeller,
         status,
+        orderCompletedBySeller,
         dateOrder,
         createdAt,
         transaction,
