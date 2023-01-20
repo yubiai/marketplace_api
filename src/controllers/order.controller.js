@@ -108,7 +108,7 @@ async function updateOrderStatus(req, res) {
       if (status === "ORDER_DISPUTE_IN_PROGRESS") {
         // Noti seller
         const newNotification = new Notification({
-          user_id: profileBuyer._id,
+          user_id: profileSeller._id,
           type: status,
           reference: result.transactionHash
         });
