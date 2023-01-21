@@ -36,6 +36,8 @@ router.route("/pushmsgwithfiles/:id").post(upload.array("files"), channelControl
 
 router.route("/orderID/:id").get(channelController.getChannelByOrderId);
 
+router.route("/messagesbyorder/:id").get(channelController.getMessagesByOrderId);
+
 router.route("/:id").get(channelController.getChannel);
 
 module.exports = router;

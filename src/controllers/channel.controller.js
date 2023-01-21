@@ -23,6 +23,31 @@ async function getChannel(req, res) {
     });
   }
 }
+async function getMessagesByOrderId(req, res) {
+  const { id } = req.params;
+
+  try {
+    const channel = await Channel.findOne({
+      order_id: id,
+    })
+
+    if(!channel){
+      throw new Error("Channel not exist.");
+    }
+
+    if(channel.messages.length > 0){
+      return res.status(200).json(true);
+    } else {
+      return res.status(200).json(false);
+    }
+
+  } catch (err){
+    console.error(err)
+    return res.status(400).json({
+      message: "Ups Hubo un error!"
+    });
+  }
+}
 
 async function getChannelByOrderId(req, res) {
   const { id } = req.params;
@@ -241,6 +266,7 @@ async function pushMsgWithFiles(req, res) {
 module.exports = {
   getChannel,
   getChannelByOrderId,
+  getMessagesByOrderId,
   newChannel,
   pushMsg,
   pushMsgWithFiles

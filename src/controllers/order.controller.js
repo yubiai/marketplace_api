@@ -481,8 +481,6 @@ async function getOrdersBySeller(req, res) {
   const { limit, offset } = getPagination(page, size);
   const sort = { createdAt: -1 };
 
-  console.log(eth_address_seller, "eth_address_seller")
-
   try {
     if (!eth_address_seller) {
       console.error("Eth address seller is missing.")
@@ -534,8 +532,6 @@ async function getOrdersBySeller(req, res) {
         transactionHash: item.transactionHash
       });
     }
-
-    console.log(data.totalDocs, "data.totalDocs orders sales")
 
     return res.status(200).json({
       totalItems: data.totalDocs,
