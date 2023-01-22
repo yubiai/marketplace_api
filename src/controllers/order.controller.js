@@ -94,6 +94,17 @@ async function updateOrderStatus(req, res) {
         await newNotification.save();
       }
 
+      if (status === "ORDER_REFUNDED") {
+        // Noti buyer Order Refunded
+        const newNotification = new Notification({
+          user_id: profileBuyer._id,
+          type: status,
+          reference: result.transactionHash
+        });
+
+        await newNotification.save();
+      }
+
       if (status === "ORDER_DISPUTE_RECEIVER_FEE_PENDING") {
         // Noti seller
         const newNotification = new Notification({
