@@ -86,6 +86,10 @@ app.use("/api/disputespolicy", passport.authenticate('jwt', { session: false }),
 //app.use("/api/carts", cart);
 //app.use("/api/shipping", shipping);
 
+// Cron jobs
+const orderJob = require('./worker/checkUnpaidOrders');
+orderJob();
+
 app.listen(process.env.PORT || 4000, () => {
   console.log("Server running on port", process.env.PORT);
 });
