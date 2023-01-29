@@ -60,7 +60,8 @@ app.use(bodyParser.urlencoded({ limit: "31mb", extended: true, parameterLimit: 5
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/api/ping', function (req, res) {
-  res.json("pong")
+  console.log("Pong")
+  return res.json("pong")
 });
 
 //Routes
