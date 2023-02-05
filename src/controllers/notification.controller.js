@@ -110,11 +110,16 @@ async function getNotiSeenFalse(req, res) {
       createdAt: -1
     })
 
+    let quantity  = notifications.length;
+
     if(limit){
       notifications = notifications.slice(0, limit);
     }
-
-    return res.status(200).json(notifications);
+    
+    return res.status(200).json({
+      quantity: quantity,
+      notifications: notifications
+    });
   } catch (error) {
     console.error(error)
     return res.status(400).json({
