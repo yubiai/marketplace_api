@@ -17,10 +17,7 @@ const runCheckUnpaidOrdersJob = async () => {
         updatedAt: { $lt: maxDate }
     });
 
-    const provider = ethers.getDefaultProvider(process.env.NETWORK_ID);
-
-    const account = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
-    const yubiaiArbitrableInstance = new YubiaiPaymentArbitrable(account);
+    const yubiaiArbitrableInstance = new YubiaiPaymentArbitrable();
     await yubiaiArbitrableInstance.initContract();
 
     unpaidOrders.forEach(async (order) => {
