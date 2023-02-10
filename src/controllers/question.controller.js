@@ -112,7 +112,10 @@ async function getQuestionsByBuyer(req, res) {
       offset, limit, sort, populate: {
         path: 'itemId',
         model: 'Item',
-        select: { title: 1, slug: 1, price: 1, currencySymbolPrice: 1 }
+        select: { title: 1, slug: 1, price: 1, currencySymbolPrice: 1, files: 1 },
+        populate: {
+          path: 'files', model: 'File', select: 'filename'
+        }
       }
     });
 
