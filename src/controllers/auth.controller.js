@@ -10,20 +10,20 @@ async function nonce(req, res) {
     res.setHeader('Content-Type', 'text/plain');
     res.send(generateNonce());
     return
-  } catch(err){
+  } catch (err) {
     console.error(err);
     return res.status(403).json({ error: "Error generating nonce for signature." });
   }
 }
 
 // Verify 
-async function verifySignature(req, res){
+async function verifySignature(req, res) {
   const { message, signature } = req.body;
   const siweMessage = new SiweMessage(message);
   try {
-      await siweMessage.validate(signature);
-      return res.status(200).send(true)
-  } catch(err) {
+    await siweMessage.validate(signature);
+    return res.status(200).send(true)
+  } catch (err) {
     console.log("Error Auth:", err)
     return res.status(401).send(false)
   }
@@ -34,30 +34,35 @@ async function login(req, res) {
   const { walletAddress } = { ...req.body };
 
   try {
-    if (process.env.NODE_ENV === "DEV") {
+    const userExists = await Profile.findOne({
+      eth_address: walletAddress ? walletAddress.toUpperCase() : null
+    });
 
-      const userExists = await Profile.findOne({
-        eth_address: walletAddress ? walletAddress.toUpperCase() : null
-      });
+    const token = signData({
+      walletAddress: userExists.eth_address,
+      id: userExists._id,
+    });
 
-      if (userExists && userExists.permission === 6) {
+    return res.status(200).json({
+      token: token,
+      data: {
+        ...userExists._doc,
+        token,
+      },
+    });
 
-        const token = signData({
-          walletAddress: userExists.eth_address,
-          id: userExists._id,
-        });
 
-        return res.status(200).json({
-          token: token,
-          data: {
-            ...userExists._doc,
-            token,
-          },
-        });
-      }
+    /*  
+        if (userExists && userExists.permission === 6) {
+
+
     }
+    if (process.env.NODE_ENV === "DEV") {
+    
+    
+        } */
 
-    const response = await checkProfileOnPOH(walletAddress);
+    /* const response = await checkProfileOnPOH(walletAddress);
     
     if (response) {
       // If it is not validated in Poh
@@ -112,7 +117,7 @@ async function login(req, res) {
           token,
         },
       });
-    }
+    } */
   } catch (error) {
     console.log("Error Auth:", error)
     return res.status(401).json(error ? error : {
