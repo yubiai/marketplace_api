@@ -10,13 +10,78 @@ const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY || "pepe";
  * Util functions
  */
 async function checkProfileOnPOH(walletAddress) {
-  return new Promise(async(resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     await axios.get(`${POH_API_URL}/profiles/${walletAddress}`)
       .then((res) => {
         return resolve(res.data)
       })
       .catch(() => {
-        return reject({error: "Are you using your poh address ?", info: "Not Found"})
+        return reject({ error: "Are you using your poh address ?", info: "Not Found" })
+      })
+  })
+}
+
+
+/**
+ * Get Info Profile
+*/
+async function getProfilePOH(path) {
+  return new Promise(async (resolve, reject) => {
+    const url = process.env.KLEROS_IPFS + path;
+
+    await axios.get(url)
+      .then(async (res) => {
+        if (res.data && res.data.fileURI) {
+          const result = await axios.get(process.env.KLEROS_IPFS + res.data.fileURI);
+          resolve(result.data)
+        }
+      })
+      .catch((err) => {
+        console.error(err, "error")
+        reject(null);
+      })
+
+  })
+}
+
+/**
+ * Check Profile POH
+*/
+async function checkProfileOnPOHGraph(walletAddress) {
+  console.log(walletAddress)
+  return new Promise(async (resolve, reject) => {
+    const query = `
+                  {
+                    submission(id: "${walletAddress.toLowerCase()}") {
+                      status
+                      registered
+                      name
+                      requests  { 
+                        evidence {
+                          URI
+                        }
+                      }
+                    }
+                  }
+                  `
+
+    await axios.post("https://api.thegraph.com/subgraphs/name/andreimvp/pohv1-test", JSON.stringify({ query }))
+      .then(async (res) => {
+        console.log(res.data.data.submission.requests[0].evidence[0].URI);
+        const pathPOH = res.data.data.submission && res.data.data.submission.requests[0].evidence[0].URI ? res.data.data.submission.requests[0].evidence[0].URI : null;
+        const resultProfile = await getProfilePOH(pathPOH);
+
+        const dataProfile = {
+          registered: res.data.data.submission.registered ? res.data.data.submission.registered : false,
+          profile: resultProfile
+        }
+
+        console.log(dataProfile, "dataProfile")
+        return resolve(dataProfile);
+      })
+      .catch((err) => {
+        console.error(err)
+        return reject({ error: "Are you using your poh address ?", info: "Not Found" })
       })
   })
 }
@@ -86,6 +151,7 @@ async function changeNameFileRandom(file, type) {
 
 module.exports = {
   checkProfileOnPOH,
+  checkProfileOnPOHGraph,
   signData,
   removeFiles,
   getRandomName,

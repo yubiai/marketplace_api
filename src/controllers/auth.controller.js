@@ -1,5 +1,5 @@
 const { Profile } = require("../models/Profile");
-const { checkProfileOnPOH, signData } = require("../utils/utils");
+const { checkProfileOnPOH, signData, checkProfileOnPOHGraph } = require("../utils/utils");
 const jwtService = require("jsonwebtoken");
 const { generateNonce, SiweMessage } = require('siwe');
 
@@ -34,53 +34,32 @@ async function login(req, res) {
   const { walletAddress } = { ...req.body };
 
   try {
-    const userExists = await Profile.findOne({
-      eth_address: walletAddress ? walletAddress.toUpperCase() : null
-    });
 
-    const token = signData({
-      walletAddress: userExists.eth_address,
-      id: userExists._id,
-    });
-
-    return res.status(200).json({
-      token: token,
-      data: {
-        ...userExists._doc,
-        token,
-      },
-    });
-
-
-    /*  
-        if (userExists && userExists.permission === 6) {
-
-
+    if (!walletAddress) {
+      return res.status(404).json({ error: "The wallet does not exist", info: "Not Validated" });
     }
-    if (process.env.NODE_ENV === "DEV") {
-    
-    
-        } */
 
-    /* const response = await checkProfileOnPOH(walletAddress);
-    
-    if (response) {
+    const response = await checkProfileOnPOHGraph(walletAddress);
+
+    if (!response || response.registered != true) {
+      return res.status(404).json({ error: "Your status needs to be as Registered on Poh", info: "Not Validated" });
+    }
+
+    if (response && response.registered == true && response.profile) {
       // If it is not validated in Poh
       // Falta Validacion si existe una orden activa para dejarlo pasar.
-      if (!response.registered && response.status !== "EXPIRED") {
-        return res.status(404).json({ error: "Your status needs to be as Registered on Poh", info: "Not Validated" });
-      }
 
       let userExists = await Profile.findOne({
-        eth_address:
-          response && response.eth_address
-            ? response.eth_address.toUpperCase()
-            : null,
+        eth_address: walletAddress.toUpperCase()
       });
 
       const newResponse = {
-        ...response,
-        eth_address: response.eth_address.toUpperCase(),
+        realname: response.profile.name || "",
+        first_name: response.profile.firstName || "",
+        last_name: response.profile.lastName || "",
+        photo: process.env.KLEROS_IPFS + response.profile.photo || "",
+        registered_time: "",
+        eth_address: walletAddress.toUpperCase(),
       };
 
       // If the registration time is different in poh update the data
@@ -95,19 +74,19 @@ async function login(req, res) {
       let token = null;
 
       // If it does not exist, save it as a new user
-      if (!userExists) {
-        let newUser = new Profile(newResponse);
-        let result = await newUser.save();
-        userExists = {
-          _id: result._id,
-        };
-      }
+      /*       if (!userExists) {
+              let newUser = new Profile(newResponse);
+              let result = await newUser.save();
+              userExists = {
+                _id: result._id,
+              };
+            } */
 
       let dataUser = await Profile.findById(userExists._id);
 
       token = signData({
         walletAddress: dataUser.eth_address,
-        id: dataUser._id,
+        id: dataUser._id
       });
 
       return res.status(200).json({
@@ -117,7 +96,7 @@ async function login(req, res) {
           token,
         },
       });
-    } */
+    }
   } catch (error) {
     console.log("Error Auth:", error)
     return res.status(401).json(error ? error : {
