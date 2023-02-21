@@ -75,6 +75,18 @@ async function newReport(req, res) {
   }
   
   try {
+
+    const verifyExist = await Report.findOne({
+      reference: reference,
+      user_id: user_id
+    })
+
+    if(verifyExist){
+      return res.status(200).json({
+        exist: true
+      });
+    };
+
     const newReport = new Report(req.body);
     await newReport.save();
 
