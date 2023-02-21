@@ -48,7 +48,6 @@ async function getProfilePOH(path) {
  * Check Profile POH
 */
 async function checkProfileOnPOHGraph(walletAddress) {
-  console.log(walletAddress)
   return new Promise(async (resolve, reject) => {
     const query = `
                   {
@@ -67,7 +66,6 @@ async function checkProfileOnPOHGraph(walletAddress) {
 
     await axios.post("https://api.thegraph.com/subgraphs/name/andreimvp/pohv1-test", JSON.stringify({ query }))
       .then(async (res) => {
-        console.log(res.data.data.submission.requests[0].evidence[0].URI);
         const pathPOH = res.data.data.submission && res.data.data.submission.requests[0].evidence[0].URI ? res.data.data.submission.requests[0].evidence[0].URI : null;
         const resultProfile = await getProfilePOH(pathPOH);
 
@@ -76,7 +74,6 @@ async function checkProfileOnPOHGraph(walletAddress) {
           profile: resultProfile
         }
 
-        console.log(dataProfile, "dataProfile")
         return resolve(dataProfile);
       })
       .catch((err) => {

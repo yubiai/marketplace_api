@@ -39,6 +39,29 @@ async function login(req, res) {
       return res.status(404).json({ error: "The wallet does not exist", info: "Not Validated" });
     }
 
+    if (process.env.NODE_ENV === "DEV") {
+
+      const userExists = await Profile.findOne({
+        eth_address: walletAddress ? walletAddress.toUpperCase() : null
+      });
+
+      if (userExists && userExists.permission === 6) {
+
+        const token = signData({
+          walletAddress: userExists.eth_address,
+          id: userExists._id,
+        });
+
+        return res.status(200).json({
+          token: token,
+          data: {
+            ...userExists._doc,
+            token,
+          }
+        });
+      }
+    }
+
     const response = await checkProfileOnPOHGraph(walletAddress);
 
     if (!response || response.registered != true) {
