@@ -5,6 +5,7 @@ const { Profile } = require("../models/Profile");
 const { removeFiles } = require("../utils/utils");
 const { uploadFile } = require("../utils/uploads");
 const { File } = require("../models/File");
+const { sendMsgBot } = require("../worker/botAlert.worker");
 
 // New Item
 async function newItem(req, res) {
@@ -129,6 +130,8 @@ async function newItem(req, res) {
       continue
     }
 
+    sendMsgBot("newItem", savedItem._id);
+
     // Step 7 - Finish
     console.log("Item added successfully, ID:" + savedItem._id)
     return res.status(200).json({
@@ -150,6 +153,8 @@ const updateStatusItem = async (req, res) => {
   const { status } = req.body;
   const id = req.params.id;
 
+  console.log(status, "activo")
+
   try {
 
     const item = await Item.findById(id);
@@ -162,6 +167,10 @@ const updateStatusItem = async (req, res) => {
       status: status,
       published: status == 2 ? true : false
     })
+
+    if(status == 1){
+      sendMsgBot("updateItem", id);
+    }
 
     return res.status(200).json({
       status: "ok"

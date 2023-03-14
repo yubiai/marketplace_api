@@ -30,6 +30,7 @@ const terms = require("./routes/terms/terms");
 const disputespolicy = require("./routes/disputespolicy/disputespolicy");
 const question = require("./routes/question/question");
 const report = require("./routes/report/report");
+const { botAlertWorker } = require('./worker/botAlert.worker');
 
 /* const user = require("./routes/user/user");
 const shipping = require("./routes/shipping/shipping");
@@ -86,6 +87,11 @@ app.use("/api/disputespolicy", passport.authenticate('jwt', { session: false }),
 //app.use("/api/items", passport.authenticate('jwt', {session: false}), item);
 //app.use("/api/carts", cart);
 //app.use("/api/shipping", shipping);
+
+// Bot Telegram
+if (process.env.NODE_ENV === "PROD") {
+  botAlertWorker();
+}
 
 app.listen(process.env.PORT || 4000, () => {
   console.log("Server running on port", process.env.PORT);
