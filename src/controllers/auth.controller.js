@@ -97,13 +97,13 @@ async function login(req, res) {
       let token = null;
 
       // If it does not exist, save it as a new user
-      /*       if (!userExists) {
-              let newUser = new Profile(newResponse);
-              let result = await newUser.save();
-              userExists = {
-                _id: result._id,
-              };
-            } */
+      if (!userExists) {
+        let newUser = new Profile(newResponse);
+        let result = await newUser.save();
+        userExists = {
+          _id: result._id,
+        };
+      }
 
       let dataUser = await Profile.findById(userExists._id);
 
