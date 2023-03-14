@@ -10,7 +10,7 @@ const profileSchema = new Schema(
     },
     registered_time: {
       type: String,
-      required: true,
+      required: false,
       trim: true
     },
     realname: {
