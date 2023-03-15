@@ -3,6 +3,7 @@ const { checkProfileOnPOH, signData, checkProfileOnPOHGraph } = require("../util
 const jwtService = require("jsonwebtoken");
 const { generateNonce, SiweMessage } = require('siwe');
 
+const WhiteList = process.env.WHITELIST;
 
 // Generate Nonce
 async function nonce(req, res) {
@@ -39,7 +40,7 @@ async function login(req, res) {
       return res.status(404).json({ error: "The wallet does not exist", info: "Not Validated" });
     }
 
-    if (process.env.NODE_ENV === "DEV") {
+    if(WhiteList.includes(walletAddress)){
 
       const userExists = await Profile.findOne({
         eth_address: walletAddress ? walletAddress.toUpperCase() : null
