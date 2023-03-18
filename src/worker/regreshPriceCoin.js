@@ -87,7 +87,7 @@ const priceRefreshARG = () => {
 
 const refreshPriceCoin = async () => {
 
-    cron.schedule(`*/1 * * * *`, async () => {
+    cron.schedule(`*/5 * * * *`, async () => {
         console.log("Arranco cron Prices")
         await priceRefreshUbi();
         await priceRefreshARG();

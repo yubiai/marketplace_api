@@ -127,6 +127,17 @@ async function updateOrderStatus(req, res) {
         await newNotification.save();
       }
 
+      if (status === "ORDER_CLOSE_DEAL") {
+        // Noti buyer close deal
+        const newNotification = new Notification({
+          user_id: profileBuyer._id,
+          type: status,
+          reference: result.transactionHash
+        });
+
+        await newNotification.save();
+      }
+
       if (status === "ORDER_DISPUTE_FINISHED") {
         // Noti Buyer
         const newNotiBuyer = new Notification({
