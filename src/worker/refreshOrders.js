@@ -6,12 +6,11 @@ const { statusDescMap } = require("../utils/statusOrder");
 const { Profile } = require("../models/Profile");
 const { Notification } = require("../models/Notifications");
 const { Order, Transaction } = require("../models/Order");
+const { logger } = require("../utils/logger"); 
 
 const contractAddress = process.env.CONTRACT_ADDRESS;
 
 const refreshOrders = async () => {
-    console.log("Inicia Refresh Orders")
-
     try {
         // Initial Contact
         const provider = new ethers.providers.JsonRpcProvider(process.env.PROVIDER_INFURA);
@@ -90,6 +89,8 @@ const refreshOrders = async () => {
                         console.log("- Update Data Transaction ID:", transaction._id);
                         console.log("- Update Data Order ID:", order._id);
                         console.log("- Update Status Old: ", order.status, "- New: ", newStatus);
+                        logger.info(`Update Order ${order._id} - Old: ${order.status} - New: ${newStatus}`);
+
 
                         // Get User Seller
                         const profileSeller = await Profile.findOne({
@@ -124,13 +125,12 @@ const refreshOrders = async () => {
                 }
                 continue
             } catch (err) {
+                logger.error(`Error Order ID: ${order._id}`)
                 console.error("Error Order ID: ", order._id);
                 console.error(err);
                 continue
             }
         }
-
-        console.log("Finish Refresh Orders")
         return
     } catch (err) {
         console.error("Error Refresh Orders")

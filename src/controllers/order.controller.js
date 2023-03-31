@@ -4,6 +4,7 @@ const { Item } = require("../models/Item");
 const { Profile } = require("../models/Profile");
 const ObjectId = require("mongoose").Types.ObjectId;
 const { Notification } = require("../models/Notifications");
+const { logger } = require("../utils/logger");
 
 async function createTransaction(transactionData) {
   const transaction = new Transaction({
@@ -41,6 +42,8 @@ async function createOrder(req, res) {
     });
 
     await newNotification.save();
+
+    logger.info(`New Order: ${orderCreated._id} - By ID: ${userBuyer}`)
 
     return res.status(200).json({ result: orderCreated });
   } catch (error) {

@@ -34,7 +34,6 @@ const { botAlertWorker } = require('./worker/botAlert.worker');
 const { refreshOrdersCron } = require('./worker/refreshOrders');
 
 /* const user = require("./routes/user/user");
-const shipping = require("./routes/shipping/shipping");
 const cart = require("./routes/cart/cart");
 const msgfeedback = require("./routes/msgfeedback/msgfeedback");
 const test = require("./routes/test/test");
@@ -72,7 +71,7 @@ app.use("/api/auth", auth);
 app.use("/api/items", item);
 app.use("/api/categories", category);
 app.use("/api/subcategories", subcategory);
-app.use("/api/noti", notification);
+app.use("/api/noti", passport.authenticate('jwt', { session: false }), notification);
 app.use("/api/prices", passport.authenticate('jwt', { session: false }), pricecoin);
 app.use("/api/orders", passport.authenticate('jwt', { session: false }), order);
 app.use("/api/profiles", passport.authenticate('jwt', { session: false }), profile);
@@ -80,14 +79,9 @@ app.use("/api/channel", passport.authenticate('jwt', { session: false }), channe
 app.use("/api/publish", passport.authenticate('jwt', { session: false }), publish);
 app.use("/api/questions", passport.authenticate('jwt', { session: false }), question);
 app.use("/api/report", passport.authenticate('jwt', { session: false }), report);
-app.use("/api/evidences", evidence);
-app.use("/api/terms", terms);
+app.use("/api/evidences", passport.authenticate('jwt', { session: false }), evidence);
 app.use("/api/disputespolicy", passport.authenticate('jwt', { session: false }), disputespolicy);
-//app.use("/api/user", user);
-//app.use("/api/msgfeedback", passport.authenticate('jwt', { session: false }), msgfeedback); 
-//app.use("/api/items", passport.authenticate('jwt', {session: false}), item);
-//app.use("/api/carts", cart);
-//app.use("/api/shipping", shipping);
+app.use("/api/terms", terms);
 
 // Bot Telegram
 if (process.env.NODE_ENV === "PROD") {

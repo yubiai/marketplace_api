@@ -1,8 +1,8 @@
 const { Item } = require("../models/Item");
 const { File } = require("../models/File");
-const fs = require("fs");
 const getPagination = require("../libs/getPagination");
 const { removeFile } = require("../utils/uploads");
+const { logger } = require("../utils/logger");
 
 // All get Products
 async function getItem(req, res) {
@@ -14,6 +14,7 @@ async function getItem(req, res) {
       result: item,
     });
   } catch (error) {
+    console.error(error);
     return res.status(400).json({
       message: "Ups Hubo un error!",
       error: error,
@@ -39,6 +40,7 @@ async function getItemSlug(req, res) {
       result: item,
     });
   } catch (error) {
+    logger.error(`Error getting item from this slug: ${req.params.slug ? req.params.slug : "No data"}`)
     console.error(error);
     return res.status(400).json({
       message: "Ups Hubo un error!",
@@ -67,6 +69,7 @@ async function getItemById(req, res) {
 
     return res.status(200).json(item);
   } catch (error) {
+    logger.error(`Error getting item from this id: ${id ? id : "No data"}`)
     console.error(error);
     return res.status(400).json({
       message: "Ups Hubo un error!",
@@ -166,6 +169,7 @@ async function getItems(req, res) {
       nextPage: data.nextPage - 1,
     });
   } catch (error) {
+    console.error(error);
     return res.status(400).json({
       message: "Ups hubo un error!",
       error: JSON.stringify(error.message)
@@ -214,6 +218,7 @@ async function search(req, res) {
 
     return res.status(200).json(result);
   } catch (error) {
+    console.error(error);
     return res.status(400).json({
       message: "Ups hubo un error!",
     });

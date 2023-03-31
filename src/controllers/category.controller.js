@@ -24,12 +24,12 @@ async function postCategory(req, res) {
 
     await item.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "Categoria agregado con éxito!",
     });
   } catch (error) {
-    console.log(error);
-    res.status(400).json({
+    console.error(error);
+    return res.status(400).json({
       message: "Ups Hubo un error!",
       error: error,
     });
@@ -41,12 +41,13 @@ async function getCategoryId(req, res) {
     const categories = await Category.findById({ _id: req.params.id }).populate(
       "items"
     );
-    res.status(200).json({
+    return res.status(200).json({
       status: "ok",
       response: categories,
     });
   } catch (error) {
-    res.status(400).json({
+    console.error(error);
+    return res.status(400).json({
       message: "Ups Hubo un error!",
       error: error,
     });
@@ -62,11 +63,12 @@ async function getCategoryBySlug(req, res) {
       });
     }
     const category = await Category.findOne({ slug: slug });
-    res.status(200).json({
+    return res.status(200).json({
       status: "ok",
       result: category
     });
   } catch (error) {
+    console.error(error);
     return res.status(400).json({
       message: "Ups Hubo un error!",
       error: error,

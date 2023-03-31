@@ -1,7 +1,8 @@
 const { Profile } = require("../models/Profile");
-const { checkProfileOnPOH, signData, checkProfileOnPOHGraph } = require("../utils/utils");
+const { signData, checkProfileOnPOHGraph } = require("../utils/utils");
 const jwtService = require("jsonwebtoken");
 const { generateNonce, SiweMessage } = require('siwe');
+const { logger } = require("../utils/logger");
 
 const WhiteList = process.env.WHITELIST;
 
@@ -52,6 +53,8 @@ async function login(req, res) {
           walletAddress: userExists.eth_address,
           id: userExists._id,
         });
+
+        logger.info(`Login: ${walletAddress}`);
 
         return res.status(200).json({
           token: token,
@@ -113,6 +116,8 @@ async function login(req, res) {
         id: dataUser._id
       });
 
+      logger.info(`Login: ${walletAddress}`);
+
       return res.status(200).json({
         token: token,
         data: {
@@ -122,7 +127,8 @@ async function login(req, res) {
       });
     }
   } catch (error) {
-    console.log("Error Auth:", error)
+    console.error("Error Auth:", error)
+    logger.error(`The following wallet tried to connect but couldn't ${walletAddress}`)
     return res.status(401).json(error ? error : {
       error: "Unauthorized"
     });

@@ -4,7 +4,6 @@ const { Order } = require("../models/Order");
 const { Channel } = require("../models/Channel");
 
 const { Filevidence } = require("../models/Filevidence");
-const { ObjectId } = require('mongodb');
 const { uploadFileEvidence } = require("../utils/uploads");
 
 async function getEvidenceByOrderId(req, res) {
@@ -152,8 +151,6 @@ async function newEvidence(req, res) {
       console.error("Channel is missing.")
       throw new Error("Channel is missing.");
     }
-
-    console.log(newItem, "newItem")
 
     // Step 2 - Selected Msgs save in messages
     if (newItem.selectedMsgs && newItem.selectedMsgs.length > 0) {

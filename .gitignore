@@ -6,6 +6,7 @@ node_modules
 /src/public
 package-lock.json
 upload
+/logs
 
 newrelic.js
 newrelic_agent.log

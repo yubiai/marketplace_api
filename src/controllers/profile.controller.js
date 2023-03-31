@@ -58,6 +58,7 @@ async function updateProfile(req, res) {
     });
     return res.status(200).json({ message: "Successfully updated" });
   } catch (error) {
+    console.error(error)
     return res.status(404).json({ message: "Update error" });
   }
 }
@@ -78,6 +79,7 @@ async function deleteProfile(req, res) {
     await Profile.findByIdAndRemove(userID);
     return res.status(200).json({ message: "Successfully removed" });
   } catch (error) {
+    console.error(error);
     return res.status(404).json({ message: "Delete error" });
   }
 }

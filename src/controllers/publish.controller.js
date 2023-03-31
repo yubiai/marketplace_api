@@ -6,6 +6,7 @@ const { removeFiles } = require("../utils/utils");
 const { uploadFile } = require("../utils/uploads");
 const { File } = require("../models/File");
 const { sendMsgBot } = require("../worker/botAlert.worker");
+const { logger } = require("../utils/logger");
 
 // New Item
 async function newItem(req, res) {
@@ -133,7 +134,8 @@ async function newItem(req, res) {
     sendMsgBot("newItem", savedItem._id);
 
     // Step 7 - Finish
-    console.log("Item added successfully, ID:" + savedItem._id)
+    logger.info(`Item added successfully, ID: ${savedItem._id} - By Id: ${profileID}`)
+    console.log(`Item added successfully, ID: ${savedItem._id} - By Id: ${profileID}`)
     return res.status(200).json({
       message: "Item added successfully!",
       result: savedItem
@@ -190,8 +192,6 @@ const updateItemFiles = async (req, res) => {
   const { filespos } = req.body;
   let filesUpload = req.files;
   let files = [];
-
-  console.log(filespos)
 
   if (filespos[0] == "false" && filespos[1] == "false" && filespos[2] == "false") {
     return res.status(200).json({
