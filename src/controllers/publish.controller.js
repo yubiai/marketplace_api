@@ -82,16 +82,23 @@ async function newItem(req, res) {
     }
 
     // Step 2 - Upload Files
-    for (const file of filesUpload) {
-      const result = await uploadFile(file, profileID);
-      files.push(result._id)
+    async function uploadFiles(filesUpload, profileID) {
+    
+      for (const file of filesUpload) {
+        const result = await uploadFile(file, profileID);
+        files.push(result._id)
+      }
+    
+      return;
     }
+
+    await uploadFiles(filesUpload, profileID);
 
     // Step 3 - Adding properties
     newItem = {
       ...newItem,
       files: files,
-      currencySymbolPrice: newItem.currencySymbolPrice || "ETH",
+      currencySymbolPrice: newItem.currencySymbolPrice,
       status: 1
     }
 
@@ -116,26 +123,25 @@ async function newItem(req, res) {
       items: [...verifySubCategory.items, savedItem._id],
     });
 
-    // Step 6 - Save files to other storage
-    for (const file of savedItem.files) {
-      const verifyFile = await File.findOne({
-        _id: file
-      });
-      if (!verifyFile) {
-        console.error("No exists")
-        continue
-      }
-      await File.findByIdAndUpdate(file, {
-        items: [...verifyFile.items, savedItem._id],
-      });
-      continue
+    // Step 6 - Save files items
+    async function updateFiles(savedItem) {
+      await Promise.all(savedItem.files.map(async (file) => {
+        const verifyFile = await File.findOne({ _id: file });
+        if (!verifyFile) {
+          console.error(`File ${file} does not exist`);
+          return;
+        }
+        await File.findByIdAndUpdate(file, { items: [...verifyFile.items, savedItem._id] });
+      }));
     }
 
+    await updateFiles(savedItem);
+
+
+    // Step 7 - Finish and Notifications
     sendMsgBot("newItem", savedItem._id);
 
-    // Step 7 - Finish
     logger.info(`Item added successfully, ID: ${savedItem._id} - By Id: ${profileID}`)
-    console.log(`Item added successfully, ID: ${savedItem._id} - By Id: ${profileID}`)
     return res.status(200).json({
       message: "Item added successfully!",
       result: savedItem
@@ -170,7 +176,7 @@ const updateStatusItem = async (req, res) => {
       published: status == 2 ? true : false
     })
 
-    if(status == 1){
+    if (status == 1) {
       sendMsgBot("updateItem", id);
     }
 

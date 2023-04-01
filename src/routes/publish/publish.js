@@ -13,7 +13,6 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const match = ["image/png", "image/jpg", "image/jpeg", "image/webp", "video/mp4", "audio/mpeg"];
-    console.log(file.mimetype, "file.mimetype")
     if (match.indexOf(file.mimetype) === -1) {
       const message = `<strong>${file.originalname}</strong> is invalid. Only accept png/jpeg/jpg/mp3/mp4.`;
       console.error(message)

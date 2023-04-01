@@ -2,10 +2,13 @@ const fs = require("fs");
 const webp = require('webp-converter');
 
 const { Storage } = require("@google-cloud/storage");
-const gc_Storage = new Storage({ keyFilename: './yubiai-78689dd071d6.json' });
+const gc_Storage = new Storage({keyFilename: `./${process.env.STORAGE_GC_KEY_FILENAME}`});
 
 const fleek_Storage = require('@fleekhq/fleek-storage-js');
 const { File } = require("../models/File");
+
+
+const { logger } = require("../utils/logger");
 
 
 /**
@@ -22,10 +25,9 @@ function convertWebp(file) {
             newFilename = newFilename[0] + ".webp"
 
             await webp.cwebp(file.path, "./upload/" + newFilename, "-q 80", logging = "-v");
-            console.log(`Image: ${file.filename} converted to webp, new name is ${newFilename}`)
+            //console.log(`Image: ${file.filename} converted to webp, new name is ${newFilename}`)
 
             fs.unlinkSync(file.path);
-            console.log(`File old removed`)
             return resolve(newFilename)
         } catch (err) {
             console.error(err)
@@ -53,21 +55,22 @@ function upload_Fleek(file, idFile, channel) {
                     apiSecret: process.env.STORAGE_FLEEK_API_SECRET,
                     key: fileName,
                     data: fileData,
-                    bucket: channel == true ? process.env.STORAGE_FLEEK_API_BUCKET + "/evidences" : process.env.STORAGE_FLEEK_API_BUCKET,
-                    httpUploadProgressCallback: (event) => {
+                    bucket: channel == true ? process.env.STORAGE_FLEEK_API_BUCKET + "/evidences" : process.env.STORAGE_FLEEK_API_BUCKET
+                    /* httpUploadProgressCallback: (event) => {
                         console.log(Math.round(event.loaded / event.total * 100) + '% done');
-                    }
+                    } */
                 })
 
                 if (uploadedFile && idFile && channel == false) {
                     await File.findByIdAndUpdate(idFile, {
                         storages: true
                     });
-                    console.log("Saved file in fleek successfully.")
+                    logger.info("Saved file in fleek successfully " + fileName);
                 }
 
                 if (!uploadFile) {
                     console.error("File not saved on fleek.")
+                    logger.error("File not saved on fleek.")
                 }
 
                 resolve()
@@ -92,6 +95,8 @@ function uploadFile(file, authorId) {
                 destination: `${process.env.STORAGE_GC_FOLD}/${file.filename}`
             });
 
+            logger.info("Saved file in GC Storage successfully " + file.filename);
+
             const newItem = new File({
                 filename: file.filename,
                 mimetype: file.mimetype,
@@ -103,7 +108,6 @@ function uploadFile(file, authorId) {
             await upload_Fleek(file, result._id, false)
 
             fs.unlinkSync("./upload/" + file.filename);
-            console.log(`File old removed`)
 
             resolve(result)
         } catch (err) {
@@ -124,7 +128,6 @@ function uploadFileEvidence(file) {
             await upload_Fleek(file, null, true)
 
             fs.unlinkSync("./upload/" + file.filename);
-            console.log(`File old removed`)
 
             resolve(file.filename)
         } catch (err) {

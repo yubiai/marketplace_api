@@ -12,6 +12,7 @@ COPY ./ /dist
 
 ## docker build -t test:latest .
 ## docker build -t prepro:latest .
+## docker build -t prod:latest .
 
 ## docker build -t yb/api-0.5.0 .
 ## docker build -t test:latest .
