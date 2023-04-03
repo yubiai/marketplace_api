@@ -43,16 +43,16 @@ async function getNotiByUserId(req, res) {
 }
 
 async function updateSeenById(req, res) {
-  const { notiID } = req.params;
+  const { noti_id } = req.body;
 
   try {
 
-    if(!notiID){
+    if(!noti_id){
       console.error("Notification is missing.")
       throw new Error("Notification is missing.");
     }
 
-    await Notification.findByIdAndUpdate(notiID, { seen: true });
+    await Notification.findByIdAndUpdate(noti_id, { seen: true });
 
     return res.status(200).json();
   } catch (error) {
@@ -66,7 +66,6 @@ async function updateSeenById(req, res) {
 
 async function updateSeenAllByUserId(req, res) {
   const { userID } = req.params;
-
   try {
 
     // Verify Profile

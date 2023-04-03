@@ -3,9 +3,9 @@ const router = express.Router();
 
 const notiController = require("../../controllers/notification.controller");
 
-router.route("/:userID").get(notiController.getNotiByUserId);
-router.route("/seen/:notiID").get(notiController.updateSeenById);
+router.route("/all/:userID").get(notiController.updateSeenAllByUserId);
+router.route("/seen/true").put(notiController.updateSeenById);
 router.route("/seen/false/:userID").get(notiController.getNotiSeenFalse);
-router.route("/seen/all/:userID").put(notiController.updateSeenAllByUserId);
+router.route("/:userID").get(notiController.getNotiByUserId);
 
 module.exports = router;

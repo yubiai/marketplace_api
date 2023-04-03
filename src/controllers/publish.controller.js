@@ -161,8 +161,6 @@ const updateStatusItem = async (req, res) => {
   const { status } = req.body;
   const id = req.params.id;
 
-  console.log(status, "activo")
-
   try {
 
     const item = await Item.findById(id);
