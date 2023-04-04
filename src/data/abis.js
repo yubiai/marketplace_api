@@ -1,5 +1,5 @@
 
-const abi2 = [
+const abis = [
     {
         inputs: [
           {
@@ -227,4 +227,4 @@ const abi2 = [
       }
 ];
 
-module.exports = abi2;
+module.exports = abis;

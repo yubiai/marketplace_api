@@ -15,9 +15,10 @@ const refreshOrders = async () => {
         // Initial Contact
         const provider = new ethers.providers.JsonRpcProvider(process.env.PROVIDER_INFURA);
         const contract = new ethers.Contract(contractAddress, abis, provider);
+        //console.log(contract,"contract")
 
         // Settings
-        const settings = await contract.settings();
+        //const settings = await contract.settings();
 
         // Variables
         const listOrders = await Order.find();
@@ -53,7 +54,7 @@ const refreshOrders = async () => {
                                 claimCount: parseInt(dealInfo.claimCount, 10),
                                 disputeId: parseInt(disputeId, 10),
                                 timeForClaim: parseInt(dealInfo.timeForClaim, 10),
-                                maxClaimsAllowed: parseInt(settings.maxClaims, 10),
+                                maxClaimsAllowed: 3,
                             };
                         }
 
@@ -89,7 +90,7 @@ const refreshOrders = async () => {
                         console.log("- Update Data Transaction ID:", transaction._id);
                         console.log("- Update Data Order ID:", order._id);
                         console.log("- Update Status Old: ", order.status, "- New: ", newStatus);
-                        logger.info(`Update Order ${order._id} - Old: ${order.status} - New: ${newStatus}`);
+                        //logger.info(`Update Order ${order._id} - Old: ${order.status} - New: ${newStatus}`);
 
 
                         // Get User Seller
