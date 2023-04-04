@@ -142,7 +142,7 @@ const refreshOrders = async () => {
 
 const refreshOrdersCron = async () => {
 
-    cron.schedule(`*/1 * * * *`, async () => {
+    cron.schedule(`*/5 * * * *`, async () => {
         await refreshOrders()
     });
 
