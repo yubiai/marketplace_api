@@ -17,6 +17,7 @@ const { Payment } = require("./models/Payment"); */
 const app = express();
 const category = require("./routes/category/category");
 const subcategory = require("./routes/subcategory/subcategory");
+const deal = require("./routes/deal/deal");
 const item = require("./routes/item/item");
 const profile = require("./routes/profile/profile");
 const pricecoin = require("./routes/pricecoin/pricecoin");
@@ -71,6 +72,7 @@ app.use("/api/auth", auth);
 app.use("/api/items", item);
 app.use("/api/categories", category);
 app.use("/api/subcategories", subcategory);
+app.use("/api/deal", deal);
 app.use("/api/prices", passport.authenticate('jwt', { session: false }), pricecoin);
 app.use("/api/orders", passport.authenticate('jwt', { session: false }), order);
 app.use("/api/profiles", passport.authenticate('jwt', { session: false }), profile);
