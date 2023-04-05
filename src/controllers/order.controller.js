@@ -73,7 +73,7 @@ async function updateOrderStatus(req, res) {
         {
           transactionHash: req.params.transactionId,
         },
-        { status }
+        { status: status }
       );
 
       // Get User Seller
