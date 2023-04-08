@@ -36,7 +36,6 @@ async function acceptDPolicyByTransactionHash(req, res) {
 
     // Get User Seller
     const profile = await Profile.findById(user_id);
-    console.log(profile);
 
     if (!profile) {
       throw new Error("User not exist");

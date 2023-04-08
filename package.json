@@ -31,6 +31,7 @@
     "nodemon": "^2.0.12",
     "passport": "^0.5.0",
     "passport-jwt": "^4.0.0",
+    "pdfkit": "^0.13.0",
     "siwe": "^1.1.6",
     "telegraf": "^4.12.2",
     "webp-converter": "^2.3.3",

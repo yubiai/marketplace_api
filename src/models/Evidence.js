@@ -16,6 +16,10 @@ const evidenceSchema = new Schema({
     required: true,
     default: "initial"
   },
+  value_to_claim: {
+    type: Number,
+    required: true
+  },
   author: {
     type: Schema.Types.ObjectId,
     ref: "Profile",

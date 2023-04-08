@@ -1,10 +1,12 @@
 const { Evidence } = require("../models/Evidence");
 const { Profile } = require("../models/Profile");
-const { Order } = require("../models/Order");
+const { Order, Transaction } = require("../models/Order");
 const { Channel } = require("../models/Channel");
 
 const { Filevidence } = require("../models/Filevidence");
 const { uploadFileEvidence } = require("../utils/uploads");
+const { getTransactionUrl } = require("../utils/utils");
+const { pdfGenerator } = require("../utils/evidenceGenerator");
 
 async function getEvidenceByOrderId(req, res) {
   const { id } = req.params;
@@ -105,6 +107,7 @@ async function newEvidence(req, res) {
       "description",
       "order_id",
       "transactionHash",
+      "value_to_claim",
       "author",
       "author_address",
       "selectedMsgs"
@@ -133,7 +136,10 @@ async function newEvidence(req, res) {
     // Verify TransactionHash
     const verifyOrder = await Order.findOne({
       transactionHash: id
-    })
+    }).lean().populate({
+      path: 'itemId',
+      model: 'Item',
+    });
 
     // If Fail
     if (!verifyOrder) {
@@ -141,10 +147,19 @@ async function newEvidence(req, res) {
       throw new Error("Order is missing.");
     }
 
+    const verifyTransaction = await Transaction.findOne({
+      "transactionMeta.transactionHash": verifyOrder.transactionHash
+    })
+
+    if (!verifyTransaction) {
+      console.error("Transaction is missing.")
+      throw new Error("Transaction is missing.");
+    }
+    
     // Verify TransactionHash
     const verifyChannel = await Channel.findOne({
       order_id: verifyOrder._id
-    })
+    });
 
     // If Fail
     if (!verifyChannel) {
@@ -156,13 +171,18 @@ async function newEvidence(req, res) {
     if (newItem.selectedMsgs && newItem.selectedMsgs.length > 0) {
       const selectedMsgs = newItem.selectedMsgs.split(',')
       for (const msg_id of selectedMsgs) {
-        let result = verifyChannel.messages.find((msg) => msg._id == msg_id)
-        if (result) {
-          messages.push(result)
+        let resultSelected = verifyChannel.messages.find((msg) => msg._id == msg_id);
+        if(resultSelected && resultSelected.file){
+          let resultFile = await Filevidence.findById(resultSelected.file);
+          resultSelected = {
+            ...resultSelected._doc,
+            file: resultFile
+          }
+          messages.push(resultSelected);
         } else {
-          console.error(msg_id + "is missing")
-          throw new Error("Msg is missing.");
+          messages.push(resultSelected);
         }
+
       }
     }
 
@@ -186,11 +206,39 @@ async function newEvidence(req, res) {
     // Step 4 - Saving new evidence
     newItem.messages = messages;
     newItem.files = files;
-    const item = new Evidence(newItem)
-    const savedItem = await item.save();
+    //const item = new Evidence(newItem);
+    //const savedItem = await item.save();
+    //console.log("Evidence added successfully, ID:" + savedItem._id);
 
-    // Step 5 - Finish
-    console.log("Evidence added successfully, ID:" + savedItem._id)
+    // Step 5 - Generate PDF
+    const dataToGenerateThePDF = {
+      item: {
+        title: verifyOrder.itemId.title,
+        url: `${process.env.FRONT_URL}/item/${verifyOrder.itemId.slug}`
+      },
+      order: {
+        date: verifyOrder.dateOrder,
+        transactionHash: verifyOrder.transactionHash,
+        transactionHashURL: getTransactionUrl(verifyTransaction.networkEnv, verifyOrder.transactionHash),
+        red: verifyTransaction.networkEnv,
+        seller: verifyOrder.userSeller.toLowerCase(),
+        buyer: verifyOrder.userBuyer.toLowerCase(),
+      },
+      evidence: {
+        value_to_claim: newItem.value_to_claim,
+        title: newItem.title,
+        description: newItem.description,
+        author_id: newItem.author,
+        author_address: newItem.author_address.toLowerCase(),
+        messages: newItem.messages,
+        files: fileDataList
+      }
+    }
+
+    await pdfGenerator(dataToGenerateThePDF);
+    throw "error al submit"
+
+    // Step X - Finish
     return res.status(200).json({
       message: "Item added successfully!",
       result: {

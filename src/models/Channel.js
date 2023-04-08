@@ -30,7 +30,14 @@ const channelSchema = new Schema(
           ref: "Profile",
           required: true
         },
-        text: String,
+        user_eth_address: {
+          type: String,
+          required: true
+        },
+        text: {
+          type: String,
+          required: true
+        },
         file: {
           type: Schema.Types.ObjectId,
           ref: "Filevidence"
