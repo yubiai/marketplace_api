@@ -2,6 +2,8 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const axios = require('axios');
 
+const matchImage = ["image/png", "image/jpg", "image/jpeg"];
+
 /**
  * PDF Generator
  */
@@ -93,6 +95,7 @@ async function pdfGenerator(dataToGenerateThePDF) {
 
             for (let i = 0; i < dataToGenerateThePDF.evidence.messages.length; i++) {
                 const message = dataToGenerateThePDF.evidence.messages[i];
+
                 if (message.user_eth_address && message.text) {
                     doc.moveDown(0.2);
                     doc.font('Helvetica').fontSize(10).text('Author: ' + message.user_eth_address);
@@ -107,18 +110,21 @@ async function pdfGenerator(dataToGenerateThePDF) {
                 }
 
                 if (message.user_eth_address && message.file && message.file.filename) {
-                    let filename = message.file.filename;
-                    let imageURL = process.env.STORAGE_FLEEK_LINK + "evidences/" + filename;
-                    console.log(imageURL)
+                    const filename = message.file.filename;
+                    const fileUrl = process.env.STORAGE_FLEEK_LINK + "evidences/" + filename;
 
                     try {
-                        const response = await axios.get(imageURL, { responseType: 'arraybuffer' });
-                        const image = Buffer.from(response.data, 'binary');
                         doc.moveDown(0.2);
                         doc.font('Helvetica').fontSize(10).text('Author: ' + message.user_eth_address);
                         doc.moveDown(0.2);
                         doc.font('Helvetica').fontSize(10).text('Attachment sent by message / Archivo adjunto enviado por mensaje: ');
-                        doc.moveDown(0.5).image(image, { fit: [250, 250], keepAspectRatio: true });
+                        if (matchImage.indexOf(message.file.mimetype) === -1) {
+                            doc.font('Helvetica').fontSize(10).text('* It is a non-image file, you need to download it from the urls. / Es un archivo no imagen, se necesita descargar por las urls');
+                        } else {
+                            const response = await axios.get(fileUrl, { responseType: 'arraybuffer' });
+                            const image = Buffer.from(response.data, 'binary');
+                            doc.moveDown(0.5).image(image, { fit: [250, 250], keepAspectRatio: true });
+                        }
                         doc.moveDown(0.2);
                         doc.font('Helvetica').fontSize(8).text(`URL 1: ${process.env.STORAGE_FLEEK_LINK + "evidences/" + filename}`, { link: process.env.STORAGE_FLEEK_LINK + "evidences/" + filename });
                         doc.font('Helvetica').fontSize(8).text(`URL 2: ${process.env.STORAGE_GC_LINK + "evidences/" + filename} `, { link: process.env.STORAGE_GC_LINK + "evidences/" + filename });
@@ -152,8 +158,13 @@ async function pdfGenerator(dataToGenerateThePDF) {
 
             for (let i = 0; i < files.length; i++) {
                 doc.moveDown(0.4);
-                doc.font('Helvetica').fontSize(8).text('- File: ');
-                doc.image(`./upload/${files[i].filename}`, { fit: [250, 250], keepAspectRatio: true });
+                doc.font('Helvetica').fontSize(10).text('*****************');
+                console.log(files[i], "files[i]")
+                if (matchImage.indexOf(files[i].mimetype) === -1) {
+                    doc.font('Helvetica').fontSize(10).text('* It is a non-image file, you need to download it from the urls. / Es un archivo no imagen, se necesita descargar por las urls');
+                } else {
+                    doc.image(`./upload/${files[i].filename}`, { fit: [250, 250], keepAspectRatio: true });
+                }
                 doc.moveDown(0.2);
                 doc.font('Helvetica').fontSize(8).text(`URL 1: ${process.env.STORAGE_FLEEK_LINK + "evidences/" + files[i].filename}`, { link: process.env.STORAGE_FLEEK_LINK + "evidences/" + files[i].filename });
                 doc.font('Helvetica').fontSize(8).text(`URL 2: ${process.env.STORAGE_GC_LINK + "evidences/" + files[i].filename} `, { link: process.env.STORAGE_GC_LINK + "evidences/" + files[i].filename });
