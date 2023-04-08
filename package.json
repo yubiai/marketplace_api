@@ -13,6 +13,7 @@
   "dependencies": {
     "@fleekhq/fleek-storage-js": "^1.0.20",
     "@google-cloud/storage": "^6.4.1",
+    "@kleros/file-to-ipfs": "^0.3.2",
     "axios": "^0.23.0",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
@@ -20,6 +21,8 @@
     "ethers": "^5.5.1",
     "express": "^4.17.1",
     "got": "^11.8.2",
+    "ipfs-core": "^0.18.0",
+    "ipfs-http-client": "^56.0.2",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.29.1",
     "mongoose": "^5.13.9",

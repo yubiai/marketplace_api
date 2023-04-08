@@ -44,7 +44,15 @@ const evidenceSchema = new Schema({
   files: {
     type: Array,
     default: []
-  }
+  },
+  url_ipfs_pdf: {
+    type: String,
+    required: true
+  },
+  url_ipfs_json: {
+    type: String,
+    required: true
+  },
 },
   {
     versionKey: false,

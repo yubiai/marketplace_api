@@ -2,11 +2,12 @@ const { Evidence } = require("../models/Evidence");
 const { Profile } = require("../models/Profile");
 const { Order, Transaction } = require("../models/Order");
 const { Channel } = require("../models/Channel");
+const ObjectId = require("mongoose").Types.ObjectId;
 
 const { Filevidence } = require("../models/Filevidence");
 const { uploadFileEvidence } = require("../utils/uploads");
 const { getTransactionUrl } = require("../utils/utils");
-const { pdfGenerator } = require("../utils/evidenceGenerator");
+const { pdfGenerator, uploadPDFEvidenceIPFS, generatorJSONandUploadIPFS } = require("../utils/evidenceGenerator");
 
 async function getEvidenceByOrderId(req, res) {
   const { id } = req.params;
@@ -97,6 +98,7 @@ async function newEvidence(req, res) {
   let files = [];
   let fileDataList = [];
   let messages = [];
+  let messages_all = [];
 
   try {
 
@@ -203,18 +205,36 @@ async function newEvidence(req, res) {
       files.push(resultNewFilevidence._id);
     }
 
-    // Step 4 - Saving new evidence
+    // Step 4 - Saving Variables
     newItem.messages = messages;
     newItem.files = files;
-    //const item = new Evidence(newItem);
-    //const savedItem = await item.save();
-    //console.log("Evidence added successfully, ID:" + savedItem._id);
 
-    // Step 5 - Generate PDF
+    // Step 5 - Files messages in channel
+    await Promise.all(
+      verifyChannel.messages.map(async (message, i) => {
+        if (message.file && ObjectId.isValid(message.file)) {
+          const filevidenceVerify = await Filevidence.findById(message.file);
+          if (!filevidenceVerify) {
+            return
+          }
+          message.file = filevidenceVerify
+          messages_all.push(message)
+          return
+        } else {
+          messages_all.push(message)
+          return
+        }
+      })
+    )
+
+    // Step 6 - Generate PDF
     const dataToGenerateThePDF = {
       item: {
         title: verifyOrder.itemId.title,
-        url: `${process.env.FRONT_URL}/item/${verifyOrder.itemId.slug}`
+        url: `${process.env.FRONT_URL}/item/${verifyOrder.itemId.slug}`,
+        description: verifyOrder.itemId.description,
+        price: verifyOrder.itemId.price,
+        currencySymbolPrice: verifyOrder.itemId.currencySymbolPrice
       },
       order: {
         date: verifyOrder.dateOrder,
@@ -223,6 +243,7 @@ async function newEvidence(req, res) {
         red: verifyTransaction.networkEnv,
         seller: verifyOrder.userSeller.toLowerCase(),
         buyer: verifyOrder.userBuyer.toLowerCase(),
+        claim_count: verifyTransaction.claimCount
       },
       evidence: {
         value_to_claim: newItem.value_to_claim,
@@ -230,13 +251,35 @@ async function newEvidence(req, res) {
         description: newItem.description,
         author_id: newItem.author,
         author_address: newItem.author_address.toLowerCase(),
-        messages: newItem.messages,
+        messages_all: messages_all,
+        messages_selected: newItem.messages,
         files: fileDataList
       }
     }
 
-    await pdfGenerator(dataToGenerateThePDF);
+    // Step Generator PDF
+    const evidencePdfPath = await pdfGenerator(dataToGenerateThePDF);
+    console.log(evidencePdfPath, "evidencePdfPath")
+
+    // Step Upload IPFS KLEROS THE PDF
+    const ipfsURLPDF = await uploadPDFEvidenceIPFS(evidencePdfPath);
+    console.log(ipfsURLPDF, "ipfsURLPDF")
+
+    // Step Generator de PDF UPLOAD
+    const ipfsURLJSON = await generatorJSONandUploadIPFS(ipfsURLPDF, dataToGenerateThePDF);
+    console.log(ipfsURLJSON, "ipfsURLJSON")
+
+    newItem.url_ipfs_pdf = process.env.KLEROS_IPFS + ipfsURLPDF;
+    newItem.url_ipfs_json = process.env.KLEROS_IPFS + ipfsURLJSON;
+
+    console.log(newItem, "newItem")
+
     throw "error al submit"
+
+    // Step - Saving data
+    //const item = new Evidence(newItem);
+    //const savedItem = await item.save();
+    //console.log("Evidence added successfully, ID:" + savedItem._id);
 
     // Step X - Finish
     return res.status(200).json({
