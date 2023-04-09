@@ -7,7 +7,7 @@ const ObjectId = require("mongoose").Types.ObjectId;
 const { Filevidence } = require("../models/Filevidence");
 const { uploadFileEvidence } = require("../utils/uploads");
 const { getTransactionUrl } = require("../utils/utils");
-const { pdfGenerator, uploadPDFEvidenceIPFS, generatorJSONandUploadIPFS } = require("../utils/evidenceGenerator");
+const { pdfGenerator, uploadPDFEvidenceIPFS, generatorJSONandUploadIPFS, uploadEvidenceInIPFSKleros } = require("../utils/evidenceGenerator");
 
 async function getEvidenceByOrderId(req, res) {
   const { id } = req.params;
@@ -258,34 +258,23 @@ async function newEvidence(req, res) {
     }
 
     // Step Generator PDF
-    const evidencePdfPath = await pdfGenerator(dataToGenerateThePDF);
-    console.log(evidencePdfPath, "evidencePdfPath")
+    const pathFilePDF = await pdfGenerator(dataToGenerateThePDF);
+    const resultUploadIPFS = await uploadEvidenceInIPFSKleros(pathFilePDF, dataToGenerateThePDF);
 
-    // Step Upload IPFS KLEROS THE PDF
-    const ipfsURLPDF = await uploadPDFEvidenceIPFS(evidencePdfPath);
-    console.log(ipfsURLPDF, "ipfsURLPDF")
-
-    // Step Generator de PDF UPLOAD
-    const ipfsURLJSON = await generatorJSONandUploadIPFS(ipfsURLPDF, dataToGenerateThePDF);
-    console.log(ipfsURLJSON, "ipfsURLJSON")
-
-    newItem.url_ipfs_pdf = process.env.KLEROS_IPFS + ipfsURLPDF;
-    newItem.url_ipfs_json = process.env.KLEROS_IPFS + ipfsURLJSON;
-
-    console.log(newItem, "newItem")
-
-    throw "error al submit"
+    newItem.url_ipfs_pdf = process.env.KLEROS_IPFS + resultUploadIPFS.pathPDFIpfs;
+    newItem.url_ipfs_json = process.env.KLEROS_IPFS + resultUploadIPFS.pathJSONIpfs
 
     // Step - Saving data
-    //const item = new Evidence(newItem);
-    //const savedItem = await item.save();
-    //console.log("Evidence added successfully, ID:" + savedItem._id);
+    const item = new Evidence(newItem);
+    const savedItem = await item.save();
+    console.log("Evidence added successfully, ID:" + savedItem._id);
 
     // Step X - Finish
     return res.status(200).json({
       message: "Item added successfully!",
       result: {
-        ...savedItem,
+        ...savedItem._doc,
+        _id: savedItem._id,
         files: [...fileDataList]
       }
     });
@@ -299,9 +288,51 @@ async function newEvidence(req, res) {
   }
 }
 
+// Update Status Evidence
+async function updateStatus(req, res) {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  try {
+
+    if(!id || !status){
+      throw "id or status missing."
+    }
+
+    const verifyEvidence = await Evidence.findById(id);
+
+    if(!verifyEvidence){
+      throw "Evidence is missing."
+    }
+
+    await Evidence.findByIdAndUpdate(id, {
+      status: status
+    });
+
+    // Clear Evidences status 0, falta eliminar los archivos.
+    const evidencesFail = await Evidence.find({
+      transactionHash: verifyEvidence.transactionHash,
+      status: 0
+    })
+
+    for(const evidence of evidencesFail){
+      await Evidence.findByIdAndRemove(evidence._id)
+    }
+
+    return res.status(200).json("ok");
+  } catch (error) {
+    console.error(error)
+    return res.status(400).json({
+      message: "Ups Hubo un error!",
+      error: error,
+    });
+  }
+}
+
 module.exports = {
   getEvidenceByOrderId,
   getEvidenceById,
   getFilesEvidenceByOrderId,
-  newEvidence
+  newEvidence,
+  updateStatus
 };

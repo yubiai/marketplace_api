@@ -204,12 +204,18 @@ async function pdfGenerator(dataToGenerateThePDF) {
             doc.font('Helvetica-Bold').fontSize(12).text(' ');
             doc.font('Helvetica-Bold').fontSize(12).text('PDF generated from Yubiai Marketplace - PDF generado desde Yubiai Marketplace');
 
-            // Guarda el archivo PDF en el disco
-            const res = doc.pipe(fs.createWriteStream(`./upload/evidence-${dataToGenerateThePDF.order.transactionHash}-${dataToGenerateThePDF.order.claim_count}.pdf`));
+            // Guarda el archivo PDF en el disco;
+            const filePath = `./upload/evidence-${dataToGenerateThePDF.order.transactionHash}-${dataToGenerateThePDF.order.claim_count}.pdf`;
+            const writeStream = fs.createWriteStream(filePath);
+
+            doc.pipe(writeStream);
+
+            // Escucha el evento "finish" del stream de escritura
+            writeStream.on('finish', () => {
+                return resolve(writeStream.path);
+            });
 
             doc.end();
-
-            return resolve(res.path)
         } catch (err) {
             console.error(err);
             return reject(false)
@@ -218,53 +224,55 @@ async function pdfGenerator(dataToGenerateThePDF) {
 }
 
 /**
-* Upload IPFS KLEROS PDF EVIDENCE
+* Upload Evidence in IPFS Kleros
 */
 
-async function uploadPDFEvidenceIPFS(pathfile) {
+async function uploadEvidenceInIPFSKleros(pathFilePDF, dataToGenerateThePDF) {
     return new Promise(async (resolve, reject) => {
         try {
-            const ipfsPath = await fileToIpfs(pathfile);
-            return resolve(ipfsPath)
+            const pathPDFIpfs = await fileToIpfs(pathFilePDF);
+            const pathJSON = `./upload/evidence-${dataToGenerateThePDF.order.transactionHash}-${dataToGenerateThePDF.order.claim_count}.json`;
+
+            const jsonEvidence = {
+                "name": dataToGenerateThePDF.evidence.title,
+                "description": dataToGenerateThePDF.evidence.description,
+                "fileURI": pathPDFIpfs,
+                "fileTypeExtension": "pdf"
+            }
+
+            fs.writeFile(pathJSON, JSON.stringify(jsonEvidence), async (res, err) => {
+
+                if (err) {
+                    console.error(err, "error Write File")
+                    fs.unlinkSync(pathFilePDF)
+                    fs.unlinkSync(pathJSON)
+                    return reject()
+                };
+
+                const pathJSONIpfs = await fileToIpfs(pathJSON);
+
+                const resultUploadIPFS = {
+                    pathPDFIpfs,
+                    pathJSONIpfs
+                }
+
+                // Eliminar archivos
+                fs.unlinkSync(pathFilePDF)
+                fs.unlinkSync(pathJSON)
+
+                return resolve(resultUploadIPFS);
+            });
         } catch (err) {
             console.error(err);
-            fs.unlinkSync(pathfile)
+            fs.unlinkSync(pathFilePDF)
+            fs.unlinkSync(pathJSON)
             return reject();
         }
     })
 }
 
-/**
-* Gnerator JSON AND Upload IPFS KLEROS EVIDENCE
-*/
-async function generatorJSONandUploadIPFS(ipfsURLPDF, dataToGenerateThePDF) {
-    return new Promise(async (resolve, reject) => {
-
-        let pathJSON = `./upload/evidence-${dataToGenerateThePDF.order.transactionHash}-${dataToGenerateThePDF.order.claim_count}.json`;
-
-        let jsonEvidence = {
-            "name": dataToGenerateThePDF.evidence.title,
-            "description": dataToGenerateThePDF.evidence.description,
-            "fileURI": ipfsURLPDF,
-            "fileTypeExtension": "pdf"
-        }
-
-        fs.writeFile(pathJSON, JSON.stringify(jsonEvidence), async(res, err) => {
-
-            if (err){
-                return reject()
-            };
-
-            const ipfsURLJSON = await fileToIpfs(pathJSON);
-
-            return resolve(ipfsURLJSON);
-        });
-
-    })
-}
 
 module.exports = {
     pdfGenerator,
-    uploadPDFEvidenceIPFS,
-    generatorJSONandUploadIPFS
+    uploadEvidenceInIPFSKleros
 };

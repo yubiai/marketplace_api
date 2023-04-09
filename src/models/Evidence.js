@@ -12,9 +12,9 @@ const evidenceSchema = new Schema({
     required: true
   },
   status: {
-    type: String,
+    type: Number,
     required: true,
-    default: "initial"
+    default: 0
   },
   value_to_claim: {
     type: Number,
