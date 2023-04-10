@@ -12,9 +12,13 @@ const evidenceSchema = new Schema({
     required: true
   },
   status: {
-    type: String,
+    type: Number,
     required: true,
-    default: "initial"
+    default: 0
+  },
+  value_to_claim: {
+    type: Number,
+    required: true
   },
   author: {
     type: Schema.Types.ObjectId,
@@ -40,7 +44,15 @@ const evidenceSchema = new Schema({
   files: {
     type: Array,
     default: []
-  }
+  },
+  url_ipfs_pdf: {
+    type: String,
+    required: true
+  },
+  url_ipfs_json: {
+    type: String,
+    required: true
+  },
 },
   {
     versionKey: false,

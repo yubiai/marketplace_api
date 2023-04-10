@@ -127,7 +127,7 @@ function uploadFileEvidence(file) {
 
             await upload_Fleek(file, null, true)
 
-            fs.unlinkSync("./upload/" + file.filename);
+            //fs.unlinkSync("./upload/" + file.filename);
 
             resolve(file.filename)
         } catch (err) {

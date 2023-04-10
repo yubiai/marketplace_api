@@ -146,11 +146,25 @@ async function changeNameFileRandom(file, type) {
   })
 }
 
+function getTransactionUrl(network, transactionHash){
+
+  if(network === "gnosis"){
+    return `https://gnosisscan.io/tx/${transactionHash}`;
+  }
+
+  if(network === "sepolia"){
+    return `https://sepolia.etherscan.io/tx/${transactionHash}`;
+  }
+
+  return "";
+}
+
 module.exports = {
   checkProfileOnPOH,
   checkProfileOnPOHGraph,
   signData,
   removeFiles,
   getRandomName,
-  changeNameFileRandom
+  changeNameFileRandom,
+  getTransactionUrl
 };

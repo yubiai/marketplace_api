@@ -73,6 +73,7 @@ app.use("/api/items", item);
 app.use("/api/categories", category);
 app.use("/api/subcategories", subcategory);
 app.use("/api/deal", deal);
+app.use("/api/terms", terms);
 app.use("/api/prices", passport.authenticate('jwt', { session: false }), pricecoin);
 app.use("/api/orders", passport.authenticate('jwt', { session: false }), order);
 app.use("/api/profiles", passport.authenticate('jwt', { session: false }), profile);
@@ -83,7 +84,6 @@ app.use("/api/questions", passport.authenticate('jwt', { session: false }), ques
 app.use("/api/report", passport.authenticate('jwt', { session: false }), report);
 app.use("/api/evidences", passport.authenticate('jwt', { session: false }), evidence);
 app.use("/api/disputespolicy", passport.authenticate('jwt', { session: false }), disputespolicy);
-app.use("/api/terms", terms);
 
 // Bot Telegram
 if (process.env.NODE_ENV === "PROD") {

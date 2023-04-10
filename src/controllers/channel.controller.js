@@ -153,6 +153,7 @@ async function pushMsg(req, res) {
     let message = {
       date: new Date(),
       user: req.body.user,
+      user_eth_address: req.body.user_eth_address.toLowerCase(),
       text: req.body.text
     };
 
@@ -180,7 +181,7 @@ async function pushMsg(req, res) {
 
     return res.status(200).json(result);
   } catch (error) {
-    console.log(error)
+    console.error(error)
     return res.status(400).json({
       message: "Ups Hubo un error!",
       error: error,
@@ -224,6 +225,7 @@ async function pushMsgWithFiles(req, res) {
       const message = {
         date: new Date(),
         user: req.body.user,
+        user_eth_address: req.body.user_eth_address.toLowerCase(),
         text: null,
         file: resultNewFilevidence._id
       };
@@ -256,6 +258,7 @@ async function pushMsgWithFiles(req, res) {
     })
 
   } catch (error) {
+    console.error(error)
     return res.status(400).json({
       message: "Ups Hubo un error!",
       error: error,
