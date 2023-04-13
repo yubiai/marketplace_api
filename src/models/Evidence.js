@@ -16,6 +16,12 @@ const evidenceSchema = new Schema({
     required: true,
     default: 0
   },
+  dealId: {
+    type: String
+  },
+  claimID: {
+    type: String
+  },
   value_to_claim: {
     type: Number,
     required: true

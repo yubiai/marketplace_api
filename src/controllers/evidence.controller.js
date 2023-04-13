@@ -261,8 +261,8 @@ async function newEvidence(req, res) {
     const pathFilePDF = await pdfGenerator(dataToGenerateThePDF);
     const resultUploadIPFS = await uploadEvidenceInIPFSKleros(pathFilePDF, dataToGenerateThePDF);
 
-    newItem.url_ipfs_pdf = process.env.KLEROS_IPFS + resultUploadIPFS.pathPDFIpfs;
-    newItem.url_ipfs_json = process.env.KLEROS_IPFS + resultUploadIPFS.pathJSONIpfs
+    newItem.url_ipfs_pdf = resultUploadIPFS.pathPDFIpfs;
+    newItem.url_ipfs_json = resultUploadIPFS.pathJSONIpfs;
 
     // Step - Saving data
     const item = new Evidence(newItem);
@@ -291,11 +291,11 @@ async function newEvidence(req, res) {
 // Update Status Evidence
 async function updateStatus(req, res) {
   const { id } = req.params;
-  const { status } = req.body;
+  const body = req.body;
 
   try {
 
-    if(!id || !status){
+    if(!id){
       throw "id or status missing."
     }
 
@@ -305,9 +305,7 @@ async function updateStatus(req, res) {
       throw "Evidence is missing."
     }
 
-    await Evidence.findByIdAndUpdate(id, {
-      status: status
-    });
+    await Evidence.findByIdAndUpdate(id, body);
 
     // Clear Evidences status 0, falta eliminar los archivos.
     const evidencesFail = await Evidence.find({

@@ -1,3 +1,4 @@
+const { Evidence } = require("../models/Evidence");
 const { Item } = require("../models/Item");
 const { Transaction, Order } = require("../models/Order");
 
@@ -36,11 +37,36 @@ async function getItemSlugByDealId(req, res) {
         })
     } catch (err) {
         console.error(err);
-        return
+        return res.status(204).end();
     }
 
 }
 
+async function getEvidenceByClaimID(req, res) {
+
+    try {
+        const { claimID } = req.params;
+
+        if (!claimID) {
+            return res.status(204).end();
+        }
+
+        const evidence = await Evidence.findOne({
+            claimID: claimID
+        }).populate({
+            path: 'files',
+            model: 'Filevidence',
+            select: { filename: 1, mimetype: 1 }
+        })
+
+        return res.status(200).json(evidence._doc)
+    } catch (err) {
+        console.error(err);
+        return res.status(204).end();
+    }
+}
+
 module.exports = {
-    getItemSlugByDealId
+    getItemSlugByDealId,
+    getEvidenceByClaimID
 };
