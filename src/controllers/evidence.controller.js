@@ -7,7 +7,7 @@ const ObjectId = require("mongoose").Types.ObjectId;
 const { Filevidence } = require("../models/Filevidence");
 const { uploadFileEvidence } = require("../utils/uploads");
 const { getTransactionUrl } = require("../utils/utils");
-const { pdfGenerator, uploadPDFEvidenceIPFS, generatorJSONandUploadIPFS, uploadEvidenceInIPFSKleros } = require("../utils/evidenceGenerator");
+const { pdfGenerator, uploadEvidenceInIPFSKleros, createdSignature, validateSignature } = require("../utils/evidenceGenerator");
 
 async function getEvidenceByOrderId(req, res) {
   const { id } = req.params;
@@ -157,7 +157,7 @@ async function newEvidence(req, res) {
       console.error("Transaction is missing.")
       throw new Error("Transaction is missing.");
     }
-    
+
     // Verify TransactionHash
     const verifyChannel = await Channel.findOne({
       order_id: verifyOrder._id
@@ -174,7 +174,7 @@ async function newEvidence(req, res) {
       const selectedMsgs = newItem.selectedMsgs.split(',')
       for (const msg_id of selectedMsgs) {
         let resultSelected = verifyChannel.messages.find((msg) => msg._id == msg_id);
-        if(resultSelected && resultSelected.file){
+        if (resultSelected && resultSelected.file) {
           let resultFile = await Filevidence.findById(resultSelected.file);
           resultSelected = {
             ...resultSelected._doc,
@@ -259,10 +259,14 @@ async function newEvidence(req, res) {
 
     // Step Generator PDF
     const pathFilePDF = await pdfGenerator(dataToGenerateThePDF);
-    const resultUploadIPFS = await uploadEvidenceInIPFSKleros(pathFilePDF, dataToGenerateThePDF);
+    // Step Created Signature
+    const signature = await createdSignature(pathFilePDF);
+    //const validate = await validateSignature(signature, pathFilePDF);
+    const resultUploadIPFS = await uploadEvidenceInIPFSKleros(pathFilePDF, dataToGenerateThePDF, signature);
 
     newItem.url_ipfs_pdf = resultUploadIPFS.pathPDFIpfs;
     newItem.url_ipfs_json = resultUploadIPFS.pathJSONIpfs;
+    newItem.fileSignature = signature;
 
     // Step - Saving data
     const item = new Evidence(newItem);
@@ -295,13 +299,13 @@ async function updateStatus(req, res) {
 
   try {
 
-    if(!id){
+    if (!id) {
       throw "id or status missing."
     }
 
     const verifyEvidence = await Evidence.findById(id);
 
-    if(!verifyEvidence){
+    if (!verifyEvidence) {
       throw "Evidence is missing."
     }
 
@@ -313,7 +317,7 @@ async function updateStatus(req, res) {
       status: 0
     })
 
-    for(const evidence of evidencesFail){
+    for (const evidence of evidencesFail) {
       await Evidence.findByIdAndRemove(evidence._id)
     }
 
@@ -326,6 +330,7 @@ async function updateStatus(req, res) {
     });
   }
 }
+
 
 module.exports = {
   getEvidenceByOrderId,

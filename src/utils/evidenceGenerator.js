@@ -3,6 +3,9 @@ const fs = require('fs');
 const axios = require('axios');
 const fileToIpfs = require('@kleros/file-to-ipfs');
 
+const ethUtil = require('ethereumjs-util');
+const sigUtil = require('eth-sig-util');
+
 const matchImage = ["image/png", "image/jpg", "image/jpeg"];
 
 
@@ -79,7 +82,7 @@ async function pdfGenerator(dataToGenerateThePDF) {
             const doc = new PDFDocument();
 
             doc.info['Author'] = 'Yubiai Marketplace';
-            doc.info['Title'] = 'Evidence Transaction: asd232131231';
+            doc.info['Title'] = `Evidence TransactionHash: ${dataToGenerateThePDF.evidence.title}`;
             doc.info['Keywords'] = 'Yubiai Marketplace, evidence'
 
             // Header
@@ -224,10 +227,132 @@ async function pdfGenerator(dataToGenerateThePDF) {
 }
 
 /**
+* Created Signature
+*/
+async function createdSignature(pathFilePDF) {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            function fileToHash(filename) {
+                const content = fs.readFileSync(filename);
+                return ethUtil.bufferToHex(ethUtil.keccak256(content));
+            }
+
+            const pdfHash = fileToHash(pathFilePDF);
+
+            const privateKey = Buffer.from(process.env.PRIVATE_WALLET_KEY, 'hex');
+
+            const domain = {
+                name: 'Yubiai Marketplace',
+                version: '1',
+                chainId: 100,
+                verifyingContract: process.env.CONTRACT_ADDRESS,
+                salt: '0x' + ethUtil.keccak256(Buffer.from('Yubiai Marketplace')).toString('hex'),
+            };
+
+            const message = {
+                pdfHash: pdfHash,
+            };
+
+            function signMessage(domain, message, privateKey) {
+                const data = {
+                    types: {
+                        EIP712Domain: [
+                            { name: 'name', type: 'string' },
+                            { name: 'version', type: 'string' },
+                            { name: 'chainId', type: 'uint256' },
+                            { name: 'verifyingContract', type: 'address' },
+                            { name: 'salt', type: 'bytes32' },
+                        ],
+                        Document: [
+                            { name: 'pdfHash', type: 'bytes32' },
+                        ],
+                    },
+                    domain,
+                    primaryType: 'Document',
+                    message,
+                };
+
+                const signature = sigUtil.signTypedData_v4(privateKey, { data });
+
+                return signature;
+            }
+
+            const signature = signMessage(domain, message, privateKey);
+
+            return resolve(signature);
+        } catch (err) {
+            console.error(err);
+            reject(err);
+            return
+        }
+    })
+}
+
+/**
+* Validate Signature
+*/
+async function validateSignature(signature, pathFilePDF) {
+    return new Promise((resolve, reject) => {
+        try {
+            const address = process.env.PUBLIC_WALLET;
+
+            function fileToHash(filename) {
+                const content = fs.readFileSync(filename);
+                return ethUtil.bufferToHex(ethUtil.keccak256(content));
+            }
+            // Hash PDF
+            const pdfHash = fileToHash(pathFilePDF);
+
+            const recoveredAddress = sigUtil.recoverTypedSignature_v4({
+                data: {
+                    types: {
+                        EIP712Domain: [
+                            { name: 'name', type: 'string' },
+                            { name: 'version', type: 'string' },
+                            { name: 'chainId', type: 'uint256' },
+                            { name: 'verifyingContract', type: 'address' },
+                            { name: 'salt', type: 'bytes32' },
+                        ],
+                        Document: [
+                            { name: 'pdfHash', type: 'bytes32' },
+                        ],
+                    },
+                    domain: {
+                        name: 'Yubiai Marketplace',
+                        version: '1',
+                        chainId: 100,
+                        verifyingContract: process.env.CONTRACT_ADDRESS,
+                        salt: '0x' + ethUtil.keccak256(Buffer.from('Yubiai Marketplace')).toString('hex'),
+                    },
+                    primaryType: 'Document',
+                    message: {
+                        pdfHash: pdfHash,
+                    },
+                },
+                sig: signature,
+            });
+
+            console.log('La dirección recuperada es:', recoveredAddress);
+
+            if (recoveredAddress.toLowerCase() === address.toLowerCase()) {
+                console.log('La firma es válida!');
+                return resolve(true);
+            } else {
+                console.log('La firma no es válida');
+                return resolve(false);
+            }
+        } catch (err) {
+            console.error(err);
+            return reject(err);
+        }
+    })
+}
+
+/**
 * Upload Evidence in IPFS Kleros
 */
-
-async function uploadEvidenceInIPFSKleros(pathFilePDF, dataToGenerateThePDF) {
+async function uploadEvidenceInIPFSKleros(pathFilePDF, dataToGenerateThePDF, signature) {
     return new Promise(async (resolve, reject) => {
         try {
             const pathPDFIpfs = await fileToIpfs(pathFilePDF);
@@ -237,7 +362,8 @@ async function uploadEvidenceInIPFSKleros(pathFilePDF, dataToGenerateThePDF) {
                 "name": dataToGenerateThePDF.evidence.title,
                 "description": dataToGenerateThePDF.evidence.description,
                 "fileURI": pathPDFIpfs,
-                "fileTypeExtension": "pdf"
+                "fileTypeExtension": "pdf",
+                "fileSignature": signature
             }
 
             fs.writeFile(pathJSON, JSON.stringify(jsonEvidence), async (res, err) => {
@@ -274,5 +400,7 @@ async function uploadEvidenceInIPFSKleros(pathFilePDF, dataToGenerateThePDF) {
 
 module.exports = {
     pdfGenerator,
-    uploadEvidenceInIPFSKleros
+    uploadEvidenceInIPFSKleros,
+    createdSignature,
+    validateSignature
 };

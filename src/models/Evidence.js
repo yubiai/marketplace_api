@@ -59,6 +59,10 @@ const evidenceSchema = new Schema({
     type: String,
     required: true
   },
+  fileSignature: {
+    type: String,
+    required: true
+  }
 },
   {
     versionKey: false,
