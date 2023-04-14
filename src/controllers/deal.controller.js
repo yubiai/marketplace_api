@@ -4,6 +4,7 @@ const { Transaction, Order } = require("../models/Order");
 const axios = require('axios');
 const fs = require('fs');
 const { validateSignature } = require("../utils/evidenceGenerator");
+const { Profile } = require("../models/Profile");
 
 // Get Item Slug By Deal Id
 async function getItemSlugByDealId(req, res) {
@@ -62,11 +63,40 @@ async function getEvidenceByClaimID(req, res) {
             select: { filename: 1, mimetype: 1 }
         })
 
-        if (evidence && evidence._doc) {
-            return res.status(200).json(evidence._doc)
+        if (!evidence) {
+            return res.status(204).end();
         }
 
-        return res.status(204).end();
+        const verifyOrder = await Order.findById(evidence._doc.order_id).populate({
+            path: 'itemId',
+            model: 'Item',
+            select: { title: 1, slug: 1 }
+        });
+
+        let newListMessages = [];
+
+        if (evidence.messages && evidence.messages.length > 0) {
+            for (let message of evidence.messages) {
+                const profile = await Profile.findById(message.user);
+                let newMessage = {
+                    ...message,
+                    user: {
+                        first_name: profile._doc.first_name,
+                        last_name: profile._doc.last_name
+                    }
+                }
+                newListMessages.push(newMessage)
+            }
+        }
+
+
+        let result = {
+            ...evidence._doc,
+            order: verifyOrder._doc,
+            messages: newListMessages
+        }
+
+        return res.status(200).json(result)
     } catch (err) {
         console.error(err);
         return res.status(204).end();

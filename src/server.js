@@ -34,6 +34,7 @@ const question = require("./routes/question/question");
 const report = require("./routes/report/report");
 const { botAlertWorker } = require('./worker/botAlert.worker');
 const { refreshOrdersCron } = require('./worker/refreshOrders');
+//const test = require("./routes/test/test");
 
 /* const user = require("./routes/user/user");
 const cart = require("./routes/cart/cart");

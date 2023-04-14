@@ -239,7 +239,7 @@ async function createdSignature(pathFilePDF) {
             }
 
             const pdfHash = fileToHash(pathFilePDF);
-
+            console.log(pdfHash, "pdfHash");
             const privateKey = Buffer.from(process.env.PRIVATE_WALLET_KEY, 'hex');
 
             const domain = {
@@ -279,7 +279,7 @@ async function createdSignature(pathFilePDF) {
             }
 
             const signature = signMessage(domain, message, privateKey);
-
+            console.log(signature, "signature")
             return resolve(signature);
         } catch (err) {
             console.error(err);

@@ -1,16 +1,27 @@
-//
-const { Storage } = require("@google-cloud/storage");
-const { upload_gc } = require("../utils/uploads");
+const fileToIpfs = require('@kleros/file-to-ipfs');
 
-async function asd(req, res) {
+async function uploadMetaevidence(req, res){
+    try {
 
-    const result = await upload_gc("./src/public/uploads/asd.jpg")
+        const pathMetaevidence = "./metaEvidence.json";
 
-    console.log(result, "Finale")
+        console.log(pathMetaevidence)
+        
+        const pathJSONIpfs = await fileToIpfs(pathMetaevidence);
+        console.log(pathJSONIpfs)
 
-    return res.json("asd")
+        return res.status(200).json({
+            path: pathJSONIpfs
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(400).json({
+            message: "Ups Hubo un error!",
+            error: error,
+          });
+    }
 }
 
 module.exports = {
-    asd
+    uploadMetaevidence
 };

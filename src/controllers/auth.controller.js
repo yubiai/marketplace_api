@@ -67,7 +67,7 @@ async function login(req, res) {
     }
 
     const response = await checkProfileOnPOHGraph(walletAddress);
-
+    
     if (!response || response.registered != true) {
       return res.status(404).json({ error: "Your status needs to be as Registered on Poh", info: "Not Validated" });
     }
