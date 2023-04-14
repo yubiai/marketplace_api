@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const got = require("got");
 const fs = require("fs");
 const { default: axios } = require("axios");
+const { ethers } = require("ethers");
 
 const POH_API_URL = "https://api.poh.dev";
 const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY || "pepe";
@@ -159,6 +160,13 @@ function getTransactionUrl(network, transactionHash){
   return "";
 }
 
+function parserForWei(value){
+  const valorBigNumber = ethers.BigNumber.from(value);
+  const valorEnEther = ethers.utils.formatEther(valorBigNumber);
+  const valorEnFloat = parseFloat(valorEnEther).toFixed(5);
+  return valorEnFloat;
+}
+
 module.exports = {
   checkProfileOnPOH,
   checkProfileOnPOHGraph,
@@ -166,5 +174,6 @@ module.exports = {
   removeFiles,
   getRandomName,
   changeNameFileRandom,
-  getTransactionUrl
+  getTransactionUrl,
+  parserForWei
 };

@@ -5,6 +5,7 @@ const fileToIpfs = require('@kleros/file-to-ipfs');
 
 const ethUtil = require('ethereumjs-util');
 const sigUtil = require('eth-sig-util');
+const { parserForWei } = require('./utils');
 
 const matchImage = ["image/png", "image/jpg", "image/jpeg"];
 
@@ -158,7 +159,7 @@ async function pdfGenerator(dataToGenerateThePDF) {
             doc.moveDown(0.6);
 
             // Value to Claim
-            doc.font('Helvetica-Bold').fontSize(10).text('Value to Claim / Valor a reclamar: ' + dataToGenerateThePDF.evidence.value_to_claim);
+            doc.font('Helvetica-Bold').fontSize(10).text('Value to Claim / Valor a reclamar: ' + parserForWei(dataToGenerateThePDF.evidence.value_to_claim));
             doc.moveDown(0.6);
 
             doc.font('Helvetica').fontSize(10).text('--------------------------------------------------------------------------');
@@ -239,7 +240,7 @@ async function createdSignature(pathFilePDF) {
             }
 
             const pdfHash = fileToHash(pathFilePDF);
-            console.log(pdfHash, "pdfHash");
+
             const privateKey = Buffer.from(process.env.PRIVATE_WALLET_KEY, 'hex');
 
             const domain = {
@@ -279,7 +280,7 @@ async function createdSignature(pathFilePDF) {
             }
 
             const signature = signMessage(domain, message, privateKey);
-            console.log(signature, "signature")
+
             return resolve(signature);
         } catch (err) {
             console.error(err);
