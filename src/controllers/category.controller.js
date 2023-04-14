@@ -14,7 +14,7 @@ async function getCategory(req, res) {
   }
 }
 
-async function postCategory(req, res) {
+/* async function postCategory(req, res) {
   try {
     const item = new Category({
       title: req.body.title,
@@ -34,7 +34,7 @@ async function postCategory(req, res) {
       error: error,
     });
   }
-}
+} */
 
 async function getCategoryId(req, res) {
   try {
@@ -78,7 +78,7 @@ async function getCategoryBySlug(req, res) {
 
 module.exports = {
   getCategory,
-  postCategory,
+  /* postCategory, */
   getCategoryId,
   getCategoryBySlug
 };

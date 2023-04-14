@@ -1,6 +1,9 @@
 const { Evidence } = require("../models/Evidence");
 const { Item } = require("../models/Item");
 const { Transaction, Order } = require("../models/Order");
+const axios = require('axios');
+const fs = require('fs');
+const { validateSignature } = require("../utils/evidenceGenerator");
 
 // Get Item Slug By Deal Id
 async function getItemSlugByDealId(req, res) {
@@ -59,14 +62,59 @@ async function getEvidenceByClaimID(req, res) {
             select: { filename: 1, mimetype: 1 }
         })
 
-        return res.status(200).json(evidence._doc)
+        if (evidence && evidence._doc) {
+            return res.status(200).json(evidence._doc)
+        }
+
+        return res.status(204).end();
     } catch (err) {
         console.error(err);
         return res.status(204).end();
     }
 }
 
+async function getValidateSignature(req, res) {
+
+    const { signature, filepath } = req.body;
+
+    try {
+        const response = await axios({
+            url: process.env.KLEROS_IPFS + filepath,
+            responseType: 'stream'
+        });
+
+        if (response.status === 200) {
+            const dividerFilePath = filepath.split('/');
+            const pathPDF = './upload/' + dividerFilePath[dividerFilePath.length - 1];
+            const writer = fs.createWriteStream(pathPDF);
+            response.data.pipe(writer);
+
+            writer.on('finish', async () => {
+                try {
+                    const validate = await validateSignature(signature, pathPDF);
+                    // Delete File
+                    fs.unlinkSync(pathPDF);
+                    return res.status(200).json({
+                        signatureValid: validate
+                    });
+                } catch (error) {
+                    return res.status(400).json({
+                        error
+                    });
+                }
+            });
+        } else {
+            return res.status(response.status).end();
+        }
+    } catch (error) {
+        return res.status(400).json({
+            error: "Signature or file Fail"
+        });
+    }
+}
+
 module.exports = {
     getItemSlugByDealId,
-    getEvidenceByClaimID
+    getEvidenceByClaimID,
+    getValidateSignature
 };

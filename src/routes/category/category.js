@@ -5,8 +5,8 @@ const categoryController = require("../../controllers/category.controller");
 
 router
   .route("/")
-  .get(categoryController.getCategory)
-  .post(categoryController.postCategory);
+  .get(categoryController.getCategory);
+  //.post(categoryController.postCategory);
 
 router.route("/:id").get(categoryController.getCategoryId);
 router.route("/slug/:slug").get(categoryController.getCategoryBySlug);

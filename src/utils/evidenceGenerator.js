@@ -303,7 +303,7 @@ async function validateSignature(signature, pathFilePDF) {
             }
             // Hash PDF
             const pdfHash = fileToHash(pathFilePDF);
-
+            
             const recoveredAddress = sigUtil.recoverTypedSignature_v4({
                 data: {
                     types: {
@@ -333,18 +333,13 @@ async function validateSignature(signature, pathFilePDF) {
                 sig: signature,
             });
 
-            console.log('La dirección recuperada es:', recoveredAddress);
-
             if (recoveredAddress.toLowerCase() === address.toLowerCase()) {
-                console.log('La firma es válida!');
                 return resolve(true);
             } else {
-                console.log('La firma no es válida');
                 return resolve(false);
             }
         } catch (err) {
-            console.error(err);
-            return reject(err);
+            return reject("Signature Fail");
         }
     })
 }

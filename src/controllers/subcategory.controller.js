@@ -34,7 +34,7 @@ async function getSubCategoryId(req, res) {
 }
 
 // New Sub Category
-async function postSubCategory(req, res) {
+/* async function postSubCategory(req, res) {
   try {
     const item = new Subcategory({
       title: req.body.title,
@@ -55,10 +55,10 @@ async function postSubCategory(req, res) {
       error: error,
     })
   }
-}
+} */
 
 module.exports = {
   getSubCategories,
-  postSubCategory,
+  /* postSubCategory, */
   getSubCategoryId
 }

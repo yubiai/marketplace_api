@@ -11,10 +11,7 @@ router
   .get(itemController.getItem)
 
 router.route("/item/:slug").get(itemController.getItemSlug);
-
 router.route("/item/id/:id").get(itemController.getItemById);
-router.route("/item/id/:id").put(itemController.updateItem);
-router.route("/item/deletefile/:id").put(itemController.deleteFileById);
 
 // Questions
 // Get questions for the Item id
