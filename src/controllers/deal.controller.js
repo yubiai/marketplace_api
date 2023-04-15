@@ -104,17 +104,16 @@ async function getEvidenceByClaimID(req, res) {
 }
 
 async function getValidateSignature(req, res) {
-
-    const { signature, filepath } = req.body;
+    const { signature, pathpdf } = req.body;
 
     try {
         const response = await axios({
-            url: process.env.KLEROS_IPFS + filepath,
+            url: process.env.KLEROS_IPFS + pathpdf,
             responseType: 'stream'
         });
 
         if (response.status === 200) {
-            const dividerFilePath = filepath.split('/');
+            const dividerFilePath = pathpdf.split('/');
             const pathPDF = './upload/' + dividerFilePath[dividerFilePath.length - 1];
             const writer = fs.createWriteStream(pathPDF);
             response.data.pipe(writer);
