@@ -27,6 +27,24 @@ async function getEvidenceByOrderId(req, res) {
   }
 }
 
+async function getEvidencesByDealId(req, res) {
+  const { dealId } = req.params;
+
+  try {
+    const evidences = await Evidence.find({
+      dealId: dealId,
+    }).sort({updatedAt: -1})
+
+    return res.status(200).json(evidences);
+  } catch (error) {
+    console.error(error)
+    return res.status(400).json({
+      message: "Ups Hubo un error!",
+      error: error,
+    });
+  }
+}
+
 async function getEvidenceById(req, res) {
   const { id } = req.params;
 
@@ -334,6 +352,7 @@ async function updateStatus(req, res) {
 
 module.exports = {
   getEvidenceByOrderId,
+  getEvidencesByDealId,
   getEvidenceById,
   getFilesEvidenceByOrderId,
   newEvidence,

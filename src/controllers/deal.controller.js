@@ -104,9 +104,36 @@ async function getEvidenceByClaimID(req, res) {
 }
 
 async function getValidateSignature(req, res) {
-    const { signature, pathpdf } = req.body;
+    const { signature, pathpdf, evidence_id } = req.body;
 
     try {
+
+        if(!signature || !pathpdf || !evidence_id){
+            return res.status(400).json({
+                error: "Signature / Path PDF / Evidence is missing."
+            });
+        }
+
+        const verifyEvidence = await Evidence.findById(evidence_id);
+
+        if(!verifyEvidence){
+            return res.status(400).json({
+                error: "Evidence not exist."
+            });
+        }
+
+        if(verifyEvidence._doc.url_ipfs_pdf !== pathpdf){
+            return res.status(400).json({
+                error: "Path pdf no valid"
+            });
+        }
+
+        if(verifyEvidence._doc.fileSignature !== signature){
+            return res.status(400).json({
+                error: "Signature no valid"
+            });
+        }
+
         const response = await axios({
             url: process.env.KLEROS_IPFS + pathpdf,
             responseType: 'stream'
