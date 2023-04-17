@@ -1,12 +1,12 @@
 
 const statusDescMap = (deal, claim) => {
-    switch (deal.dealStatus) {
+    switch (deal.state) {
       case 1:
-        if (claim.claimID != "0") {
-          if (claim.claimSolvedAt && claim.claimStatus === "2") {
+        if (deal.currentClaim != "0") {
+          if (claim.solvedAt && claim.ruling === "2") {
             return "CLAIM_WON_BY_BUYER";
-          } else if (claim.claimSolvedAt) {
-            const claimLimitReaches = claim.claimCount === claim.maxClaimsAllowed;
+          } else if (claim.solvedAt) {
+            const claimLimitReaches = deal.claimCount === 3;
             if (claimLimitReaches) {
               return "CLAIM_REJECTED_LIMIT_REACHED";
             }
@@ -19,10 +19,10 @@ const statusDescMap = (deal, claim) => {
       case 3:
         return "ORDER_DISPUTE_IN_PROGRESS";
       case 4:
-        if(claim.claimCount > 0 && claim.claimStatus == "0"){
+        if(deal.claimCount > 0 && claim.ruling == "0"){
           return "ORDER_REFUNDED";
         }
-        if(claim.claimCount > 0 && claim.claimStatus == "2"){
+        if(deal.claimCount > 0 && claim.ruling == "2"){
           return "CLAIM_WON_BY_BUYER";
         }
         return "ORDER_PAID";

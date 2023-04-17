@@ -6,144 +6,106 @@ const { statusDescMap } = require("../utils/statusOrder");
 const { Profile } = require("../models/Profile");
 const { Notification } = require("../models/Notifications");
 const { Order, Transaction } = require("../models/Order");
-const { logger } = require("../utils/logger"); 
+const { logger } = require("../utils/logger");
 
 const contractAddress = process.env.CONTRACT_ADDRESS;
 
-const refreshOrders = async () => {
+const refreshOrderStatus = async (contract) => {
     try {
-        // Initial Contact
-        const provider = new ethers.providers.JsonRpcProvider(process.env.PROVIDER_INFURA);
-        const contract = new ethers.Contract(contractAddress, abis, provider);
-        //console.log(contract,"contract")
 
-        // Settings
-        //const settings = await contract.settings();
+        const listOrders = await Order.find({ "status": "ORDER_DISPUTE_IN_PROGRESS" });
 
-        // Variables
-        const listOrders = await Order.find();
+        if (listOrders.length > 0) {
 
-        for (let i = 0; i < listOrders.length; i++) {
-            let order = listOrders[i];
+            for (let i = 0; i < listOrders.length; i++) {
+                let order = listOrders[i];
 
-            try {
-                // Revisa orders con el estado dispute in progress
-                if (order.status && order.status === "ORDER_DISPUTE_IN_PROGRESS") {
+                try {
                     let transaction = await Transaction.findOne({
                         'transactionMeta.transactionHash': order.transactionHash
                     });
-
+    
+                    if (!transaction) {
+                        continue
+                    }
+    
                     const dealId = transaction.transactionIndex;
                     const dealInfo = await contract.deals(dealId);
 
                     if (dealInfo.state !== 3) {
-                        const isOver = await contract.isOver(dealId);
-
-                        let claimInfo;
-                        let disputeId;
-                        let formattedClaimInfo = {};
-
-                        if (dealInfo.currentClaim) {
-                            claimInfo = await contract.claims(dealInfo.currentClaim);
-                            disputeId = claimInfo.disputeId;
-                            formattedClaimInfo = {
-                                claimID: dealInfo.currentClaim,
-                                claimStatus: (claimInfo || {}).ruling,
-                                claimCreatedAt: parseInt((claimInfo || {}).createdAt, 10),
-                                claimSolvedAt: parseInt((claimInfo || { solvedAt: 0 }).solvedAt),
-                                claimCount: parseInt(dealInfo.claimCount, 10),
-                                disputeId: parseInt(disputeId, 10),
-                                timeForClaim: parseInt(dealInfo.timeForClaim, 10),
-                                maxClaimsAllowed: 3,
-                            };
-                        }
-
-                        const result = {
-                            deal: {
-                                dealId,
-                                dealStatus: dealInfo.state,
-                                dealCreatedAt: parseInt((dealInfo || {}).createdAt, 10),
-                                timeForService: parseInt(dealInfo.timeForService, 10),
-                                isOver,
-                            },
-                            claim: {
-                                ...formattedClaimInfo,
-                            },
-                        }
-
-                        // Update Transaction
-                        await Transaction.findByIdAndUpdate(transaction._id, {
-                            claimCount: result.claim.claimCount,
-                            disputeId: result.claim.disputeId,
-                            transactionState: result.deal.dealStatus,
-                            currentClaim: result.claim.claimID,
-                        })
-
-                        let newStatus = statusDescMap(result.deal, result.claim);
-
+    
+                        // Update Transaction ??
+    
+                        // Get Status
+                        const claimInfo = await contract.claims(dealInfo.currentClaim);
+    
+                        const newStatus = statusDescMap(dealInfo, claimInfo);
+                        console.log("Outdated order: " + order._id + " - Status Old " + order.status + " - Status New: " + newStatus);
+                        logger.info("Outdated order: " + order._id + " - Status Old " + order.status + " - Status New: " + newStatus);
+    
                         // Update Order
-                        await Order.findByIdAndUpdate(order._id, {
+                        /* await Order.findByIdAndUpdate(order._id, {
                             status: newStatus
-                        });
-
-                        console.log("-----------------------------------------------");
-                        console.log("- Update Data Transaction ID:", transaction._id);
-                        console.log("- Update Data Order ID:", order._id);
-                        console.log("- Update Status Old: ", order.status, "- New: ", newStatus);
-                        //logger.info(`Update Order ${order._id} - Old: ${order.status} - New: ${newStatus}`);
-
-
+                        }); */
+    
+                        // Notifications Users
                         // Get User Seller
                         const profileSeller = await Profile.findOne({
                             eth_address: order.userSeller.toUpperCase()
                         })
-
+    
                         // Get User Seller
                         const profileBuyer = await Profile.findOne({
                             eth_address: order.userBuyer.toUpperCase()
                         })
-
+    
                         // Notification Seller
                         const newNotiSeller = new Notification({
                             user_id: profileSeller._id,
                             type: "DISPUTE_WAS_DECIDED_SELLER",
                             reference: order.transactionHash
                         });
-
+    
                         await newNotiSeller.save();
-
+    
                         // Notification Buyer
                         const newNotiBuyer = new Notification({
                             user_id: profileBuyer._id,
                             type: "DISPUTE_WAS_DECIDED_BUYER",
                             reference: order.transactionHash
                         });
-
+    
                         await newNotiBuyer.save();
-
-                        console.log("- Notifications sended - END -");
+    
+                        console.log("- Update Order Notifications sended - END -");
+                        logger.info("- Update Order Notifications sended - END -");
+    
+                        continue
+                    } else {
+                        continue
                     }
+                } catch(err){
+                    console.error(err)
+                    console.error("Error Update Order " + order._id)
+                    logger.error("Error Update Order " + order._id)
+                    continue
                 }
-                continue
-            } catch (err) {
-                logger.error(`Error Order ID: ${order._id}`)
-                console.error("Error Order ID: ", order._id);
-                console.error(err);
-                continue
+                
             }
         }
-        return
-    } catch (err) {
-        console.error("Error Refresh Orders")
-        console.error(err);
+
+    } catch (error) {
+        logger.error("Error Refresh Orders initial")
+        console.error("Error Refresh Orders initial" + error);
         return
     }
 }
 
 const refreshOrdersCron = async () => {
-
+    const provider = new ethers.providers.JsonRpcProvider(process.env.PROVIDER_INFURA);
+    const contract = new ethers.Contract(contractAddress, abis, provider);
     cron.schedule(`*/5 * * * *`, async () => {
-        await refreshOrders()
+        await refreshOrderStatus(contract)
     });
 
 }
