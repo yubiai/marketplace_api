@@ -40,13 +40,12 @@ const refreshOrderStatus = async (contract) => {
                         const claimInfo = await contract.claims(dealInfo.currentClaim);
     
                         const newStatus = statusDescMap(dealInfo, claimInfo);
-                        console.log("Outdated order: " + order._id + " - Status Old " + order.status + " - Status New: " + newStatus);
                         logger.info("Outdated order: " + order._id + " - Status Old " + order.status + " - Status New: " + newStatus);
     
                         // Update Order
-                        /* await Order.findByIdAndUpdate(order._id, {
+                        await Order.findByIdAndUpdate(order._id, {
                             status: newStatus
-                        }); */
+                        });
     
                         // Notifications Users
                         // Get User Seller
@@ -77,7 +76,6 @@ const refreshOrderStatus = async (contract) => {
     
                         await newNotiBuyer.save();
     
-                        console.log("- Update Order Notifications sended - END -");
                         logger.info("- Update Order Notifications sended - END -");
     
                         continue
