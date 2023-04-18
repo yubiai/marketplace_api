@@ -5,7 +5,7 @@ const { Channel } = require("../models/Channel");
 const ObjectId = require("mongoose").Types.ObjectId;
 
 const { Filevidence } = require("../models/Filevidence");
-const { uploadFileEvidence } = require("../utils/uploads");
+const { uploadFileEvidence, removeFileEvidence } = require("../utils/uploads");
 const { getTransactionUrl } = require("../utils/utils");
 const { pdfGenerator, uploadEvidenceInIPFSKleros, createdSignature, validateSignature } = require("../utils/evidenceGenerator");
 
@@ -33,7 +33,7 @@ async function getEvidencesByDealId(req, res) {
   try {
     const evidences = await Evidence.find({
       dealId: dealId,
-    }).sort({updatedAt: -1})
+    }).sort({ updatedAt: -1 })
 
     return res.status(200).json(evidences);
   } catch (error) {
@@ -349,6 +349,39 @@ async function updateStatus(req, res) {
   }
 }
 
+async function removeEvideceOld(req, res) {
+  try {
+    const { id } = req.params;
+    const evidence = await Evidence.findById(id);
+
+    if (!evidence) {
+      throw "Evidence is missing."
+    }
+
+    if (evidence.status === 0) {
+
+      for (let file of evidence.files) {
+        const fileData = await Filevidence.findById(file);
+        await removeFileEvidence(fileData);
+        await Filevidence.findByIdAndDelete(file);
+      }
+
+      await Evidence.findByIdAndDelete(id)
+
+      return res.status(200).json("Ok")
+    } else {
+      throw "Evidence not status 0"
+    }
+
+  } catch (error) {
+    console.error(error)
+    return res.status(400).json({
+      message: "Ups Hubo un error!",
+      error: error,
+    });
+  }
+}
+
 
 module.exports = {
   getEvidenceByOrderId,
@@ -356,5 +389,6 @@ module.exports = {
   getEvidenceById,
   getFilesEvidenceByOrderId,
   newEvidence,
-  updateStatus
+  updateStatus,
+  removeEvideceOld
 };

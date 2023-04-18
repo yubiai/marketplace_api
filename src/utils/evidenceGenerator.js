@@ -386,8 +386,12 @@ async function uploadEvidenceInIPFSKleros(pathFilePDF, dataToGenerateThePDF, sig
             });
         } catch (err) {
             console.error(err);
-            fs.unlinkSync(pathFilePDF)
-            fs.unlinkSync(pathJSON)
+            if(pathFilePDF){
+                fs.unlinkSync(pathFilePDF)
+            }
+            if(pathJSON){
+                fs.unlinkSync(pathJSON)
+            }
             return reject();
         }
     })

@@ -2,7 +2,7 @@ const fs = require("fs");
 const webp = require('webp-converter');
 
 const { Storage } = require("@google-cloud/storage");
-const gc_Storage = new Storage({keyFilename: `./${process.env.STORAGE_GC_KEY_FILENAME}`});
+const gc_Storage = new Storage({ keyFilename: `./${process.env.STORAGE_GC_KEY_FILENAME}` });
 
 const fleek_Storage = require('@fleekhq/fleek-storage-js');
 const { File } = require("../models/File");
@@ -147,7 +147,7 @@ function removeFile(file) {
 
             // Delete Google Cloud
             await gc_Storage.bucket(process.env.STORAGE_GC_BUCKET).file(process.env.STORAGE_GC_FOLD + "/" + file.filename).delete();
-            
+
             console.log(`gs://${process.env.STORAGE_GC_BUCKET}/${process.env.STORAGE_GC_FOLD}/${file.filename} deleted`);
 
             // Delete Fleek Storage
@@ -168,11 +168,49 @@ function removeFile(file) {
     })
 }
 
+function removeFileEvidence(file) {
+    return new Promise(async (resolve, reject) => {
+
+        if (!file || !file._id || !file.filename) {
+            console.log("Data file is missing.")
+            resolve(true)
+            return
+        }
+
+        // Delete Google Cloud
+        await gc_Storage.bucket(process.env.STORAGE_GC_BUCKET).file(process.env.STORAGE_GC_FOLD + "/evidences/" + file.filename).delete()
+            .then((res) => {
+                console.log(`gs://${process.env.STORAGE_GC_BUCKET}/${process.env.STORAGE_GC_FOLD}/evidences/${file.filename} deleted`);
+            })
+            .catch((err) => {
+                console.error("Error no pudo eliminar")
+            });
+
+
+        // Delete Fleek Storage
+        await fleek_Storage.deleteFile({
+            apiKey: process.env.STORAGE_FLEEK_API_KEY,
+            apiSecret: process.env.STORAGE_FLEEK_API_SECRET,
+            key: file.filename,
+            bucket: process.env.STORAGE_FLEEK_API_BUCKET + "/evidences/"
+        }).then((res) => {
+            console.log(`Fleek: ${process.env.STORAGE_FLEEK_API_BUCKET}/evidences/${file.filename} deleted`);
+        }).catch((err) => {
+            console.error("Error no pudo eliminar")
+        })
+
+
+        resolve(true)
+        return
+    })
+}
+
 
 module.exports = {
     uploadFile,
     uploadFileEvidence,
     convertWebp,
     upload_Fleek,
-    removeFile
+    removeFile,
+    removeFileEvidence
 };
