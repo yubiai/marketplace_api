@@ -55,7 +55,7 @@ async function getItemById(req, res) {
     const { id } = req.params;
 
     const item = await Item.findById(id).populate("category", "_id title")
-      .populate("subcategory", "_id title")
+      .populate("subcategory", "_id title en es")
       .populate({
         path: 'files',
         model: 'File',

@@ -5,10 +5,18 @@ const slug = require('mongoose-slug-updater')
 mongoose.plugin(slug)
 
 const subcategorySchema = new Schema({
-  title: String,
+  title: {
+    type: String,
+    required: true
+  },
   status: {
     type: Boolean,
-    default: true
+    required: true,
+    default: false
+  },
+  category: {
+    type: Schema.Types.ObjectId,
+    ref: "Category"
   },
   slug: {
     type: String,
@@ -19,14 +27,14 @@ const subcategorySchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Item"
   }],
-  createdBy: {
-    type: Schema.Types.ObjectId,
-    ref: "Profile"
+  en: {
+    type: String,
+    required: true
   },
-  category: {
-    type: Schema.Types.ObjectId,
-    ref: "Category"
-  }
+  es: {
+    type: String,
+    required: true
+  },
 },
   {
     versionKey: false,
