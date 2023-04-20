@@ -3,6 +3,7 @@ const { signData, checkProfileOnPOHGraph } = require("../utils/utils");
 const jwtService = require("jsonwebtoken");
 const { generateNonce, SiweMessage } = require('siwe');
 const { logger } = require("../utils/logger");
+const { verifyTokenLens } = require("../utils/authUtil");
 
 const WhiteList = process.env.WHITELIST;
 
@@ -41,7 +42,7 @@ async function login(req, res) {
       return res.status(404).json({ error: "The wallet does not exist", info: "Not Validated" });
     }
 
-    if(WhiteList.includes(walletAddress)){
+    if (WhiteList.includes(walletAddress)) {
 
       const userExists = await Profile.findOne({
         eth_address: walletAddress ? walletAddress.toUpperCase() : null
@@ -67,7 +68,7 @@ async function login(req, res) {
     }
 
     const response = await checkProfileOnPOHGraph(walletAddress);
-    
+
     if (!response || response.registered != true) {
       return res.status(404).json({ error: "Your status needs to be as Registered on Poh", info: "Not Validated" });
     }
@@ -81,21 +82,24 @@ async function login(req, res) {
       });
 
       const newResponse = {
-        realname: response.profile.name || "",
-        first_name: response.profile.firstName || "",
-        last_name: response.profile.lastName || "",
-        photo: process.env.KLEROS_IPFS + response.profile.photo || "",
-        registered_time: "",
         eth_address: walletAddress.toUpperCase(),
+        poh_info: {
+          realname: response.profile.name || "",
+          first_name: response.profile.firstName || "",
+          last_name: response.profile.lastName || "",
+          photo: process.env.KLEROS_IPFS + response.profile.photo || "",
+          registered_time: response.profile.submissionTime || "",
+        }
       };
 
-      // If the registration time is different in poh update the data
+      // Actualiza la info en poh_info
       if (
-        userExists &&
-        userExists.registered_time &&
-        userExists.registered_time != response.registered_time
+        !userExists.poh_info || Object.entries(userExists.poh_info).length === 0
       ) {
-        await Profile.findByIdAndUpdate(userExists._id, newResponse);
+        await Profile.findByIdAndUpdate(userExists._id, {
+          poh_info: newResponse.poh_info
+        });
+        logger.info("Update Data Poh Info - ID user: " + userExists._id)
       }
 
       let token = null;
@@ -107,6 +111,7 @@ async function login(req, res) {
         userExists = {
           _id: result._id,
         };
+        logger.info("New User POH - ID user: " + result._id)
       }
 
       let dataUser = await Profile.findById(userExists._id);
@@ -132,6 +137,89 @@ async function login(req, res) {
     return res.status(401).json(error ? error : {
       error: "Unauthorized"
     });
+  }
+}
+
+// Auth Lens Protocol
+async function loginLens(req, res) {
+  const { profile, tokenLens } = req.body;
+  console.log(profile, "walletAddress");
+  console.log(tokenLens, "tokenLens");
+
+  try {
+
+    if (!profile || !profile.ownedBy) {
+      return res.status(401).json({ error: "The wallet does not exist", info: "Not Validated" });
+    }
+
+    if (!tokenLens) {
+      return res.status(401).json({ error: "Token is missing", info: "Not Validated" });
+    }
+
+    // Wallet address
+    let walletAddress = profile.ownedBy;
+
+    // Verify Tokens Lens
+    const verifyToken = await verifyTokenLens(tokenLens);
+
+    if (!verifyToken) {
+      return res.status(401).json({ error: "Token not valid." });
+    }
+
+    let userExists = await Profile.findOne({
+      eth_address: walletAddress.toUpperCase()
+    });
+
+    const newResponse = {
+      eth_address: walletAddress.toUpperCase(),
+      lens_info: {
+        name: profile.name || "",
+        bio: profile.bio || "",
+        handle: profile.handle || "",
+        photo: profile.picture.original.url || ""
+      }
+    }
+
+    // Actualiza la info en lens_info
+    if (
+      !userExists.lens_info || Object.entries(userExists.lens_info).length === 0
+    ) {
+      await Profile.findByIdAndUpdate(userExists._id, {
+        lens_info: newResponse.lens_info
+      });
+      logger.info("Update Data Lens Info - ID user: " + userExists._id)
+    }
+
+    // If it does not exist, save it as a new user
+    if (!userExists) {
+      let newUser = new Profile(newResponse);
+      let result = await newUser.save();
+      userExists = {
+        _id: result._id,
+      };
+      logger.info("New User Lens Protocol - ID user: " + result._id)
+    }
+
+    let dataUser = await Profile.findById(userExists._id);
+
+    token = signData({
+      walletAddress: dataUser.eth_address,
+      id: dataUser._id
+    });
+
+    logger.info(`Login: ${walletAddress}`);
+
+    return res.status(200).json({
+      token: token,
+      data: {
+        ...dataUser._doc,
+        token,
+      },
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(401).json("Error auth lens protocol")
   }
 }
 
@@ -162,6 +250,7 @@ async function authToken(req, res) {
 
 module.exports = {
   login,
+  loginLens,
   authToken,
   nonce,
   verifySignature

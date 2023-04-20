@@ -3,7 +3,9 @@ const router = express.Router();
 
 const authController = require("../../controllers/auth.controller");
 
-router.route("/login").post(authController.login);
+router.route("/loginpoh").post(authController.login);
+
+router.route("/loginlens").post(authController.loginLens);
 
 router.route("/session").get(authController.authToken);
 

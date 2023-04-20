@@ -3,6 +3,7 @@ const got = require("got");
 const fs = require("fs");
 const { default: axios } = require("axios");
 const { ethers } = require("ethers");
+const moment = require("moment/moment");
 
 const POH_API_URL = "https://api.poh.dev";
 const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY || "pepe";
@@ -49,6 +50,7 @@ async function getProfilePOH(path) {
  * Check Profile POH
 */
 async function checkProfileOnPOHGraph(walletAddress) {
+
   return new Promise(async (resolve, reject) => {
     const query = `
                   {
@@ -56,6 +58,7 @@ async function checkProfileOnPOHGraph(walletAddress) {
                       status
                       registered
                       name
+                      submissionTime
                       requests  { 
                         evidence {
                           URI
@@ -64,15 +67,33 @@ async function checkProfileOnPOHGraph(walletAddress) {
                     }
                   }
                   `
-
+    // Registrado 0x16e3404d7cc4d33f35a52b584932baca9ebd7f95
     await axios.post("https://api.thegraph.com/subgraphs/name/andreimvp/pohv1-test", JSON.stringify({ query }))
       .then(async (res) => {
+
         const pathPOH = res.data.data.submission && res.data.data.submission.requests[0].evidence[0].URI ? res.data.data.submission.requests[0].evidence[0].URI : null;
         const resultProfile = await getProfilePOH(pathPOH);
+        
+        if (!res.data.data.submission.submissionTime) {
+          return reject({ error: "Are you using your poh address ?", info: "Not Found" })
+        }
+
+        // Esto es un calculo de 2 años ver en el futuro
+        const registroUnixTimestamp = res.data.data.submission.submissionTime; // fecha de registro en formato Unix Timestamp.
+        const registroDate = moment.unix(registroUnixTimestamp); // convierte Unix Timestamp a objeto moment.
+        const expiracionDate = moment().subtract(2, 'years'); // obtiene fecha actual y le resta 2 años.
+
+        // El usuario ha expirado.
+        if (registroDate.isBefore(expiracionDate)) {
+          return reject({ error: "The user cannot log in because their registration has expired.", info: "Unauthorized" })
+        }
 
         const dataProfile = {
-          registered: res.data.data.submission.registered ? res.data.data.submission.registered : false,
-          profile: resultProfile
+          registered: true,
+          profile: {
+            ...resultProfile,
+            submissionTime: registroUnixTimestamp
+          }
         }
 
         return resolve(dataProfile);
@@ -83,6 +104,7 @@ async function checkProfileOnPOHGraph(walletAddress) {
       })
   })
 }
+
 
 function signData(rawData = {}) {
   return jwt.sign(
@@ -147,20 +169,20 @@ async function changeNameFileRandom(file, type) {
   })
 }
 
-function getTransactionUrl(network, transactionHash){
+function getTransactionUrl(network, transactionHash) {
 
-  if(network === "gnosis"){
+  if (network === "gnosis") {
     return `https://gnosisscan.io/tx/${transactionHash}`;
   }
 
-  if(network === "sepolia"){
+  if (network === "sepolia") {
     return `https://sepolia.etherscan.io/tx/${transactionHash}`;
   }
 
   return "";
 }
 
-function parserForWei(value){
+function parserForWei(value) {
   const valorBigNumber = ethers.BigNumber.from(value);
   const valorEnEther = ethers.utils.formatEther(valorBigNumber);
   const valorEnFloat = parseFloat(valorEnEther).toFixed(5);

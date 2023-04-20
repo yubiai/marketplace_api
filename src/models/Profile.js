@@ -8,10 +8,11 @@ const profileSchema = new Schema(
       required: true,
       trim: true,
     },
-    registered_time: {
-      type: String,
-      required: false,
-      trim: true
+    poh_info: {
+      type: Object
+    },
+    lens_info: {
+      type: Object
     },
     realname: {
       type: String,

@@ -24,6 +24,7 @@
     "ethers": "^5.5.1",
     "express": "^4.17.1",
     "got": "^11.8.2",
+    "graphql-request": "^6.0.0",
     "i": "^0.3.7",
     "ipfs-core": "^0.18.0",
     "ipfs-http-client": "^56.0.2",
