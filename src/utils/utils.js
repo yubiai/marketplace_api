@@ -54,7 +54,7 @@ async function checkProfileOnPOHGraph(walletAddress) {
   return new Promise(async (resolve, reject) => {
     const query = `
                   {
-                    submission(id: "0x16e3404d7cc4d33f35a52b584932baca9ebd7f95") {
+                    submission(id: "${walletAddress.toLowerCase()}") {
                       status
                       registered
                       name
