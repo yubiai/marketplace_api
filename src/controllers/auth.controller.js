@@ -81,7 +81,7 @@ async function login(req, res) {
         eth_address: walletAddress.toUpperCase()
       });
 
-      const newResponse = {
+      let newResponse = {
         eth_address: walletAddress.toUpperCase(),
         poh_info: {
           realname: response.profile.name || "",
@@ -92,11 +92,20 @@ async function login(req, res) {
         }
       };
 
+      let getPhoto = userExists && userExists.photo ? userExists.photo : "";
+      let newPhoto = null;
+
+      if(getPhoto === "" && response.profile.photo){
+        newPhoto = process.env.KLEROS_IPFS + response.profile.photo;
+        newResponse.photo = newPhoto;
+      }
+
       // Actualiza la info en poh_info
       if (
-        !userExists.poh_info || Object.entries(userExists.poh_info).length === 0
+        !userExists.poh_info || Object.entries(userExists.poh_info).length === 0 || getPhoto === ""
       ) {
         await Profile.findByIdAndUpdate(userExists._id, {
+          photo: newResponse.photo,
           poh_info: newResponse.poh_info
         });
         logger.info("Update Data Poh Info - ID user: " + userExists._id)
@@ -143,8 +152,6 @@ async function login(req, res) {
 // Auth Lens Protocol
 async function loginLens(req, res) {
   const { profile, tokenLens } = req.body;
-  console.log(profile, "walletAddress");
-  console.log(tokenLens, "tokenLens");
 
   try {
 
@@ -170,7 +177,7 @@ async function loginLens(req, res) {
       eth_address: walletAddress.toUpperCase()
     });
 
-    const newResponse = {
+    let newResponse = {
       eth_address: walletAddress.toUpperCase(),
       lens_info: {
         name: profile.name || "",
@@ -180,11 +187,20 @@ async function loginLens(req, res) {
       }
     }
 
+    let getPhoto = userExists && userExists.photo ? userExists.photo : "";
+    let newPhoto = null;
+
+    if(getPhoto === "" && profile.picture.original.url){
+      newPhoto = "https://lens.infura-ipfs.io/ipfs/" + profile.picture.original.url.split("/")[-1]
+      newResponse.photo = newPhoto;
+    }
+
     // Actualiza la info en lens_info
     if (
-      !userExists.lens_info || Object.entries(userExists.lens_info).length === 0
+      !userExists.lens_info || Object.entries(userExists.lens_info).length === 0 || getPhoto === ""
     ) {
       await Profile.findByIdAndUpdate(userExists._id, {
+        photo: newResponse.photo,
         lens_info: newResponse.lens_info
       });
       logger.info("Update Data Lens Info - ID user: " + userExists._id)
