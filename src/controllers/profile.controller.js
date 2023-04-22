@@ -15,7 +15,7 @@ async function getProfile(req, res, _) {
   try {
     const profile = await Profile.findOne({
       eth_address: eth_address.toUpperCase(),
-    }).select('first_name last_name photo eth_address permission')
+    }).select('name photo eth_address permission')
 
     return res.status(200).json(profile);
   } catch (error) {
@@ -46,7 +46,6 @@ async function updateProfile(req, res) {
   if (!verify) {
     return res.status(404).json({ message: "User id not exists" });
   }
-  console.log(dataUser, "dataUser")
   try {
     const result = await Profile.findByIdAndUpdate(userID, {
       private_info: {
@@ -58,8 +57,6 @@ async function updateProfile(req, res) {
         email: dataUser.email || "",
       }
     });
-
-    console.log(result, "result")
     return res.status(200).json({ message: "Successfully updated" });
   } catch (error) {
     console.error(error)
@@ -134,7 +131,7 @@ async function getFavorites(req, res) {
       }).populate({
         path: 'seller',
         model: 'Profile',
-        select: { first_name: 1, last_name: 1 }
+        select: { name: 1 }
       })
 
       if (item) {

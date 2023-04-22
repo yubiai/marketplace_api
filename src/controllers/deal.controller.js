@@ -81,8 +81,7 @@ async function getEvidenceByClaimID(req, res) {
                 let newMessage = {
                     ...message,
                     user: {
-                        first_name: profile._doc.first_name,
-                        last_name: profile._doc.last_name
+                        name: profile._doc.name
                     }
                 }
                 newListMessages.push(newMessage)

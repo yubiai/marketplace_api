@@ -444,7 +444,7 @@ async function getOrdersByBuyer(req, res) {
         select: 'title slug seller files orderCompletedBySeller',
         populate: [
           {
-            path: 'seller', model: 'Profile', select: 'first_name last_name'
+            path: 'seller', model: 'Profile', select: 'name'
           },
           {
             path: 'files', model: 'File', select: 'filename'

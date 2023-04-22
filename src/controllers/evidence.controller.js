@@ -15,7 +15,7 @@ async function getEvidenceByOrderId(req, res) {
   try {
     const evidence = await Evidence.find({
       order_id: id,
-    }).populate("author", "first_name last_name photo eth_address")
+    }).populate("author", "name photo eth_address")
 
     return res.status(200).json(evidence);
   } catch (error) {
@@ -50,7 +50,7 @@ async function getEvidenceById(req, res) {
 
   try {
     const evidence = await Evidence.findById(id)
-      .populate("author", "first_name last_name photo eth_address")
+      .populate("author", "name photo eth_address")
       .populate({
         path: 'files',
         model: 'Filevidence',
@@ -62,7 +62,7 @@ async function getEvidenceById(req, res) {
     for (let msg of evidence.messages) {
 
       if (msg.user) {
-        const user = await Profile.findById(msg.user, "first_name last_name")
+        const user = await Profile.findById(msg.user, "name")
         msg.user = user ? user : null;
       }
 
@@ -92,7 +92,7 @@ async function getFilesEvidenceByOrderId(req, res) {
   try {
     const filesEvidence = await Filevidence.find({
       order_id: id,
-    }).populate("author", "first_name last_name photo eth_address")
+    }).populate("author", "name photo eth_address")
 
 
     if (!filesEvidence || filesEvidence.length === 0) {

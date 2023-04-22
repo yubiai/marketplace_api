@@ -56,8 +56,8 @@ async function getChannelByOrderId(req, res) {
     const channel = await Channel.findOne({
       order_id: id,
     })
-      .populate("buyer", "first_name last_name photo eth_address")
-      .populate("seller", "first_name last_name photo eth_address")
+      .populate("buyer", "name photo eth_address")
+      .populate("seller", "name photo eth_address")
       .populate({
         path: 'order_id',
         model: 'Order',

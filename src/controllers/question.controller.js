@@ -25,8 +25,8 @@ async function getQuestionsByItemId(req, res) {
     const questions = await Question.find({
       itemId: itemId,
       status: 2
-    }).populate("buyer", "first_name last_name photo eth_address")
-      .populate("seller", "first_name last_name photo eth_address")
+    }).populate("buyer", "name photo eth_address")
+      .populate("seller", "name photo eth_address")
       .populate("itemId", "title slug")
       .limit(Number(limit))
 

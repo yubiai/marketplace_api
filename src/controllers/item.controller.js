@@ -26,7 +26,7 @@ async function getItem(req, res) {
 async function getItemSlug(req, res) {
   try {
     const item = await Item.findOne({ slug: req.params.slug })
-      .populate("seller", "first_name last_name photo eth_address permission")
+      .populate("seller", "name photo eth_address permission")
       .populate("category", "title")
       .populate("subcategory", "title")
       .populate({
@@ -155,7 +155,7 @@ async function getItems(req, res) {
         }, {
           path: 'seller',
           model: 'Profile',
-          select: { first_name: 1, last_name: 1 }
+          select: { name: 1 }
         }
       ]
     });
@@ -212,7 +212,7 @@ async function search(req, res) {
       {
         path: 'seller',
         model: 'Profile',
-        select: { first_name: 1, last_name: 1 }
+        select: { name: 1 }
       }
     ])
 
