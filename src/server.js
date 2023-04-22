@@ -34,6 +34,7 @@ const question = require("./routes/question/question");
 const report = require("./routes/report/report");
 const { botAlertWorker } = require('./worker/botAlert.worker');
 const { refreshOrdersCron } = require('./worker/refreshOrders');
+const { clearProfile } = require('./utils/migrationUtil');
 //const test = require("./routes/test/test");
 
 /* const user = require("./routes/user/user");
@@ -95,6 +96,8 @@ if (process.env.NODE_ENV === "PROD") {
 
 // Refresh Order CRON
 refreshOrdersCron();
+
+//clearProfile();
 
 app.listen(process.env.PORT || 4000, () => {
   console.log("Server running on port", process.env.PORT);

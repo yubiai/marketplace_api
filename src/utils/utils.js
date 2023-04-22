@@ -54,7 +54,7 @@ async function checkProfileOnPOHGraph(walletAddress) {
   return new Promise(async (resolve, reject) => {
     const query = `
                   {
-                    submission(id: "${walletAddress.toLowerCase()}") {
+                    submission(id: "${walletAddress}") {
                       status
                       registered
                       name
@@ -67,13 +67,13 @@ async function checkProfileOnPOHGraph(walletAddress) {
                     }
                   }
                   `
-    // Registrado 0x16e3404d7cc4d33f35a52b584932baca9ebd7f95
+                  // 0x16e3404d7cc4d33f35a52b584932baca9ebd7f95 example register
     await axios.post("https://api.thegraph.com/subgraphs/name/andreimvp/pohv1-test", JSON.stringify({ query }))
       .then(async (res) => {
 
         const pathPOH = res.data.data.submission && res.data.data.submission.requests[0].evidence[0].URI ? res.data.data.submission.requests[0].evidence[0].URI : null;
         const resultProfile = await getProfilePOH(pathPOH);
-        
+
         if (!res.data.data.submission.submissionTime) {
           return reject({ error: "Are you using your poh address ?", info: "Not Found" })
         }
@@ -85,7 +85,11 @@ async function checkProfileOnPOHGraph(walletAddress) {
 
         // El usuario ha expirado.
         if (registroDate.isBefore(expiracionDate)) {
-          return reject({ error: "The user cannot log in because their registration has expired.", info: "Unauthorized" })
+          return resolve({
+            registered: false,
+            profile: null
+          })
+          //return reject({ error: "The user cannot log in because their registration has expired.", info: "Unauthorized" })
         }
 
         const dataProfile = {

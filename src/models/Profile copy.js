@@ -3,11 +3,6 @@ const Schema = mongoose.Schema;
 
 const privateInfoSchema = new Schema(
   {
-    realname: {
-      type: String,
-      trim: true,
-      default: ""
-    },
     address: {
       type: String,
       trim: true,
@@ -51,11 +46,51 @@ const profileSchema = new Schema(
     private_info: {
       type: privateInfoSchema
     },
+    address: {
+      type: String,
+      trim: true,
+      default: ""
+    },
+    country: {
+      type: String,
+      trim: true,
+      default: ""
+    },
+    city: {
+      type: String,
+      trim: true,
+      default: ""
+    },
+    telephone: {
+      type: String,
+      default: ""
+    },
+    email: {
+      type: String,
+      trim: true,
+      default: ""
+    },
     permission: {
       type: Number,
       default: 1
     },
     name: {
+      type: String,
+      trim: true
+    },
+    first_name: {
+      type: String,
+      trim: true
+    },
+    last_name: {
+      type: String,
+      trim: true
+    },
+    realname: {
+      type: String,
+      trim: true
+    },
+    registered_time: {
       type: String,
       trim: true
     },

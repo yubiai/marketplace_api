@@ -35,7 +35,7 @@ async function verifySignature(req, res) {
 // Login
 async function login(req, res) {
   const { walletAddress } = { ...req.body };
-
+  console.log(walletAddress, "walletAddress")
   try {
 
     if (!walletAddress) {
@@ -69,45 +69,93 @@ async function login(req, res) {
 
     const response = await checkProfileOnPOHGraph(walletAddress);
 
-    if (!response || response.registered != true) {
-      return res.status(404).json({ error: "Your status needs to be as Registered on Poh", info: "Not Validated" });
+    // El usuario poh esta en estatus no registrado
+    if (!response || response && response.registered === false) {
+
+      // Lo busco en la base
+      const userExists = await Profile.findOne({
+        eth_address: walletAddress.toUpperCase()
+      });
+
+      // Si no existe afuera
+      if (!userExists || userExists && userExists._id && userExists.permission === 9) {
+        return res.status(401).json({ error: "The user cannot log in because their registration has expired.", info: "Unauthorized" });
+      }
+
+      // Si existe y tiene permiso 2 lo actualiza a 9
+      if (userExists && userExists._id && userExists.permission === 2) {
+        await Profile.findByIdAndUpdate(userExists._id, {
+          permission: 9
+        });
+        logger.info("Login by Poh but the user is not registered - ID user: " + userExists._id);
+        return res.status(401).json({ error: "The user cannot log in because their registration has expired.", info: "Unauthorized" });
+      }
+
+      // Si existe y tiene permiso 8 lo dejo entrar
+      if (userExists && userExists._id && userExists.permission === 8) {
+        const token = signData({
+          walletAddress: userExists.eth_address,
+          id: userExists._id
+        });
+
+        logger.info(`Login: ${walletAddress}`);
+
+        return res.status(200).json({
+          token: token,
+          data: {
+            ...userExists._doc,
+            token,
+          },
+        });
+      }
+
     }
 
     if (response && response.registered == true && response.profile) {
-      // If it is not validated in Poh
-      // Falta Validacion si existe una orden activa para dejarlo pasar.
-
+      console.log(response.profile, "response.profile")
+      // Verificar si el profile existe
       let userExists = await Profile.findOne({
         eth_address: walletAddress.toUpperCase()
       });
 
-      let newResponse = {
-        eth_address: walletAddress.toUpperCase(),
-        poh_info: {
+      // Creando nueva data
+      let newData = {};
+
+      // Si no existe usuario agregar wallet
+      if (!userExists) {
+        console.log("userExists")
+        newData.eth_address = walletAddress.toUpperCase()
+      }
+
+      if (!userExists || userExists && !userExists.poh_info) {
+        console.log("No tiene poh info aca")
+        newData.poh_info = {
           realname: response.profile.name || "",
           first_name: response.profile.firstName || "",
           last_name: response.profile.lastName || "",
-          photo: process.env.KLEROS_IPFS + response.profile.photo || "",
+          photo: response.profile.photo || "",
           registered_time: response.profile.submissionTime || "",
-        }
-      };
-
-      let getPhoto = userExists && userExists.photo ? userExists.photo : "";
-      let newPhoto = null;
-
-      if(getPhoto === "" && response.profile.photo){
-        newPhoto = process.env.KLEROS_IPFS + response.profile.photo;
-        newResponse.photo = newPhoto;
+        };
       }
 
-      // Actualiza la info en poh_info
+      if (!userExists || userExists && !userExists.name) {
+        console.log("poniendo nombre")
+        newData.name = `${response.profile.firstName || ""} ${response.profile.lastName || ""}`
+      }
+
+      const getPhoto = userExists && userExists.photo ? userExists.photo : "";
+
+      if (!userExists || getPhoto === "" && response.profile.photo) {
+        newData.photo = process.env.KLEROS_IPFS + response.profile.photo || ""
+      }
+
+      console.log(newData, "newData quedo asi")
+      // Actualiza la info de profile
       if (
-        !userExists.poh_info || Object.entries(userExists.poh_info).length === 0 || getPhoto === ""
+        userExists && !userExists.poh_info || userExists && !userExists.name || userExists && getPhoto === ""
       ) {
-        await Profile.findByIdAndUpdate(userExists._id, {
-          photo: newResponse.photo,
-          poh_info: newResponse.poh_info
-        });
+        console.log("Se activo para actualizar")
+        await Profile.findByIdAndUpdate(userExists._id, newData);
         logger.info("Update Data Poh Info - ID user: " + userExists._id)
       }
 
@@ -115,28 +163,29 @@ async function login(req, res) {
 
       // If it does not exist, save it as a new user
       if (!userExists) {
-        let newUser = new Profile(newResponse);
+        console.log("Se activo nuevo user")
+        let newUser = new Profile(newData);
         let result = await newUser.save();
+        console.log(result, "result")
         userExists = {
+          ...result,
           _id: result._id,
         };
         logger.info("New User POH - ID user: " + result._id)
       }
 
-      let dataUser = await Profile.findById(userExists._id);
-
       token = signData({
-        walletAddress: dataUser.eth_address,
-        id: dataUser._id
+        walletAddress: walletAddress,
+        id: userExists._id
       });
 
-      logger.info(`Login: ${walletAddress}`);
+      logger.info(`Login Poh: ${walletAddress}`);
 
       return res.status(200).json({
         token: token,
         data: {
-          ...dataUser._doc,
-          token,
+          ...userExists._doc,
+          token
         },
       });
     }
@@ -173,57 +222,74 @@ async function loginLens(req, res) {
       return res.status(401).json({ error: "Token not valid." });
     }
 
+    // Verificar si existe el user
     let userExists = await Profile.findOne({
       eth_address: walletAddress.toUpperCase()
     });
 
-    let newResponse = {
-      eth_address: walletAddress.toUpperCase(),
-      lens_info: {
+    // Creando nueva data
+    let newData = {};
+
+    // Si no existe usuario agregar wallet
+    if (!userExists) {
+      newData.eth_address = walletAddress.toUpperCase()
+    }
+
+    if (!userExists || userExists && !userExists.lens_info) {
+      console.log("aca para lens  info")
+      newData.lens_info = {
         name: profile.name || "",
         bio: profile.bio || "",
         handle: profile.handle || "",
         photo: profile.picture.original.url || ""
-      }
+      };
     }
 
-    let getPhoto = userExists && userExists.photo ? userExists.photo : "";
-    let newPhoto = null;
-
-    if(getPhoto === "" && profile.picture.original.url){
-      newPhoto = "https://lens.infura-ipfs.io/ipfs/" + profile.picture.original.url.split("/")[-1]
-      newResponse.photo = newPhoto;
+    if (!userExists || userExists && !userExists.name) {
+      console.log("aca para el name")
+      newData.name = profile.name
     }
+
+    const getPhoto = userExists && userExists.photo ? userExists.photo : "";
+
+    if (!userExists || getPhoto === "" && profile.picture && profile.picture.original && profile.picture.original.url) {
+      console.log("aca para la pohoto")
+      const pictureLens = profile.picture.original.url.split("/");
+      const newPhoto = pictureLens[pictureLens.length - 1] ? "https://lens.infura-ipfs.io/ipfs/" + pictureLens[pictureLens.length - 1] : ""
+      newData.photo = newPhoto;
+    }
+
+    console.log(newData, "newData quedo asi")
 
     // Actualiza la info en lens_info
     if (
-      !userExists.lens_info || Object.entries(userExists.lens_info).length === 0 || getPhoto === ""
+      userExists && !userExists.lens_info || userExists && !userExists.name || userExists && getPhoto === ""
     ) {
-      await Profile.findByIdAndUpdate(userExists._id, {
-        photo: newResponse.photo,
-        lens_info: newResponse.lens_info
-      });
+      console.log("Se activo para actualizar")
+      await Profile.findByIdAndUpdate(userExists._id, newData);
       logger.info("Update Data Lens Info - ID user: " + userExists._id)
     }
 
     // If it does not exist, save it as a new user
     if (!userExists) {
-      let newUser = new Profile(newResponse);
+      console.log("Se activo nuevo user")
+      let newUser = new Profile(newData);
       let result = await newUser.save();
       userExists = {
+        ...result,
         _id: result._id,
       };
       logger.info("New User Lens Protocol - ID user: " + result._id)
     }
 
-    let dataUser = await Profile.findById(userExists._id);
+    const dataUser = await Profile.findById(userExists._id);
 
     token = signData({
-      walletAddress: dataUser.eth_address,
-      id: dataUser._id
+      walletAddress: walletAddress,
+      id: userExists._id
     });
 
-    logger.info(`Login: ${walletAddress}`);
+    logger.info(`Login (Lens): ${walletAddress}`);
 
     return res.status(200).json({
       token: token,

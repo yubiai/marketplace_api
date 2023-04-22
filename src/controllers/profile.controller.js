@@ -46,16 +46,20 @@ async function updateProfile(req, res) {
   if (!verify) {
     return res.status(404).json({ message: "User id not exists" });
   }
-
+  console.log(dataUser, "dataUser")
   try {
-    await Profile.findByIdAndUpdate(userID, {
-      realname: dataUser.realname || "",
-      address: dataUser.address || "",
-      city: dataUser.city || "",
-      country: dataUser.country || "",
-      telephone: dataUser.telephone || "",
-      email: dataUser.email || "",
+    const result = await Profile.findByIdAndUpdate(userID, {
+      private_info: {
+        realname: dataUser.realname || "",
+        address: dataUser.address || "",
+        city: dataUser.city || "",
+        country: dataUser.country || "",
+        telephone: dataUser.telephone || "",
+        email: dataUser.email || "",
+      }
     });
+
+    console.log(result, "result")
     return res.status(200).json({ message: "Successfully updated" });
   } catch (error) {
     console.error(error)
