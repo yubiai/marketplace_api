@@ -54,7 +54,7 @@ async function checkProfileOnPOHGraph(walletAddress) {
   return new Promise(async (resolve, reject) => {
     const query = `
                   {
-                    submission(id: "${walletAddress}") {
+                    submission(id: "${walletAddress.toLowerCase()}") {
                       status
                       registered
                       name
@@ -67,7 +67,6 @@ async function checkProfileOnPOHGraph(walletAddress) {
                     }
                   }
                   `
-                  // 0x16e3404d7cc4d33f35a52b584932baca9ebd7f95 example register
     await axios.post("https://api.thegraph.com/subgraphs/name/andreimvp/pohv1-test", JSON.stringify({ query }))
       .then(async (res) => {
 

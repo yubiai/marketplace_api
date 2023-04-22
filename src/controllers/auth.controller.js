@@ -35,7 +35,7 @@ async function verifySignature(req, res) {
 // Login
 async function login(req, res) {
   const { walletAddress } = { ...req.body };
-  console.log(walletAddress, "walletAddress")
+
   try {
 
     if (!walletAddress) {
@@ -241,7 +241,7 @@ async function loginLens(req, res) {
         name: profile.name || "",
         bio: profile.bio || "",
         handle: profile.handle || "",
-        photo: profile.picture.original.url || ""
+        photo: profile?.picture?.original?.url || ""
       };
     }
 
