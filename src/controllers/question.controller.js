@@ -7,6 +7,8 @@ const { Question } = require("../models/Question");
 const { Item } = require("../models/Item");
 const { Notification } = require("../models/Notifications");
 const getPagination = require("../libs/getPagination");
+const { sendNotiTargeted } = require("../utils/pushProtocolUtil");
+const { Profile } = require("../models/Profile");
 
 // Get Question for Item id
 async function getQuestionsByItemId(req, res) {
@@ -78,11 +80,15 @@ async function newQuestion(req, res) {
     const addQuestion = new Question(data);
     const result = await addQuestion.save();
 
+    const profile = await Profile.findById(data.seller)
+
     const newNotification = new Notification({
       user_id: data.seller,
       type: "NewQuestion",
       reference: result._id
     });
+
+    sendNotiTargeted(profile.eth_address.toLowerCase(), "NewQuestion", result.itemId)
 
     await newNotification.save();
 

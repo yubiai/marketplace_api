@@ -4,6 +4,7 @@ const { uploadFileEvidence } = require("../utils/uploads");
 const { Filevidence } = require("../models/Filevidence");
 const { Profile } = require("../models/Profile");
 const { Notification } = require("../models/Notifications");
+const { sendNotiTargeted } = require("../utils/pushProtocolUtil");
 
 async function getChannel(req, res) {
   const { id } = req.params;
@@ -31,17 +32,17 @@ async function getMessagesByOrderId(req, res) {
       order_id: id,
     })
 
-    if(!channel){
+    if (!channel) {
       throw new Error("Channel not exist.");
     }
 
-    if(channel.messages.length > 0){
+    if (channel.messages.length > 0) {
       return res.status(200).json(true);
     } else {
       return res.status(200).json(false);
     }
 
-  } catch (err){
+  } catch (err) {
     console.error(err)
     return res.status(400).json({
       message: "Ups Hubo un error!"
@@ -64,7 +65,7 @@ async function getChannelByOrderId(req, res) {
         select: { itemId: 1, transactionHash: 1, status: 1 }
       });
 
-    if(!channel){
+    if (!channel) {
       throw new Error("Channel not exist.");
     }
 
@@ -179,6 +180,8 @@ async function pushMsg(req, res) {
 
     await newNotification.save();
 
+    sendNotiTargeted(profile.eth_address.toLowerCase(), "Channel", channel.order_id)
+
     return res.status(200).json(result);
   } catch (error) {
     console.error(error)
@@ -252,6 +255,8 @@ async function pushMsgWithFiles(req, res) {
     });
 
     await newNotification.save();
+
+    sendNotiTargeted(profile.eth_address.toLowerCase(), "Channel", channel.order_id)
 
     return res.status(200).json({
       message: "Ok"

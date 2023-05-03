@@ -95,7 +95,7 @@ if (process.env.NODE_ENV === "PROD") {
 }
 
 // Refresh Order CRON
-refreshOrdersCron();
+//refreshOrdersCron();
 
 //clearProfile();
 

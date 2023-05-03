@@ -5,6 +5,7 @@ const { Profile } = require("../models/Profile");
 const ObjectId = require("mongoose").Types.ObjectId;
 const { Notification } = require("../models/Notifications");
 const { logger } = require("../utils/logger");
+const { sendNotiTargeted } = require("../utils/pushProtocolUtil");
 
 async function createTransaction(transactionData) {
   const transaction = new Transaction({
@@ -27,7 +28,7 @@ async function createOrder(req, res) {
       transactionHash: transactionCreated.transactionMeta.transactionHash,
     });
 
-    await orderCreated.save();
+    const resultOrder = await orderCreated.save();
 
     // Get User Seller
     const profile = await Profile.findOne({
@@ -40,6 +41,8 @@ async function createOrder(req, res) {
       type: "Sale",
       reference: transactionCreated.transactionMeta.transactionHash
     });
+
+    sendNotiTargeted(profile.eth_address.toLowerCase(), "Sale", resultOrder._id)
 
     await newNotification.save();
 
@@ -95,6 +98,7 @@ async function updateOrderStatus(req, res) {
         });
 
         await newNotification.save();
+        sendNotiTargeted(profileSeller.eth_address.toLowerCase(), "Orderchange", result._id)
       }
 
       if (status === "ORDER_REFUNDED") {
@@ -106,6 +110,7 @@ async function updateOrderStatus(req, res) {
         });
 
         await newNotification.save();
+        sendNotiTargeted(profileBuyer.eth_address.toLowerCase(), "Orderchange", result._id)
       }
 
       if (status === "ORDER_DISPUTE_RECEIVER_FEE_PENDING") {
@@ -117,6 +122,8 @@ async function updateOrderStatus(req, res) {
         });
 
         await newNotification.save();
+        sendNotiTargeted(profileSeller.eth_address.toLowerCase(), "Orderchange", result._id)
+
       }
 
       if (status === "ORDER_DISPUTE_IN_PROGRESS") {
@@ -128,6 +135,8 @@ async function updateOrderStatus(req, res) {
         });
 
         await newNotification.save();
+        sendNotiTargeted(profileBuyer.eth_address.toLowerCase(), "Orderchange", result._id)
+
       }
 
       if (status === "ORDER_CLOSE_DEAL") {
@@ -139,6 +148,7 @@ async function updateOrderStatus(req, res) {
         });
 
         await newNotification.save();
+        sendNotiTargeted(profileBuyer.eth_address.toLowerCase(), "Orderchange", result._id)
       }
 
       if (status === "ORDER_DISPUTE_FINISHED") {
@@ -150,6 +160,8 @@ async function updateOrderStatus(req, res) {
         });
 
         await newNotiBuyer.save();
+        sendNotiTargeted(profileBuyer.eth_address.toLowerCase(), "Orderchange", result._id)
+
 
         // Noti Seller
         const newNotiSeller = new Notification({
@@ -159,6 +171,8 @@ async function updateOrderStatus(req, res) {
         });
 
         await newNotiSeller.save();
+        sendNotiTargeted(profileSeller.eth_address.toLowerCase(), "Orderchange", result._id)
+
       }
 
       if (status === "ORDER_DISPUTE_APPEALABLE") {
@@ -170,7 +184,10 @@ async function updateOrderStatus(req, res) {
         });
 
         await newNotification.save();
+        sendNotiTargeted(profileSeller.eth_address.toLowerCase(), "Orderchange", result._id)
+
       }
+
 
       return res.status(200).json({
         status: "ok",
@@ -231,6 +248,7 @@ async function updateOrderCompletedBySeller(req, res) {
       });
 
       await newNotification.save();
+      sendNotiTargeted(buyer.eth_address.toLowerCase(), "Orderchange", result._id)
     }
 
     return res.status(200).json({

@@ -4,6 +4,42 @@ const { Order, Transaction } = require("../models/Order");
 const { Channel } = require("../models/Channel");
 const { Filevidence } = require("../models/Filevidence");
 const { removeFileEvidence } = require('../utils/uploads');
+const PushAPI = require('@pushprotocol/restapi')
+const ethers = require('ethers');
+
+async function testNotificationPush(req, res) {
+    const PK = process.env.PRIVATE_WALLET_KEY;
+    try {
+        const Pkey = `0x${PK}`;
+        const signer = new ethers.Wallet(Pkey);
+
+        const apiResponse = await PushAPI.payloads.sendNotification({
+            signer: signer,
+            type: 4, // target
+            identityType: 2, // direct payload
+            notification: {
+              title: '[TEST] Decime si te llego',
+              body: '[test] Sale Item design logo 2'
+            },
+            payload: {
+              title: '[test] New Sale! 3',
+              body: 'Sale Item design logo 3',
+              cta: '',
+              img: ''
+            },
+            recipients: ['eip155:5:0x245Bd6B5D8f494df8256Ae44737A1e5D59769aB4', 'eip155:5:0x623fb5FF84192947E8908ff6b3624c89216eB7A0'], // recipients addresses
+            channel: '0xA2c51FC0d268CcA1ee0cA00Dd0D6b616028fb609', // your channel address
+            env: 'prod'
+          });
+
+        console.log(apiResponse, "apiResponse")
+        return res.status(200).json("Ok")
+
+    } catch (err) {
+        console.error(err);
+        return res.status(404).json("Error")
+    }
+}
 
 
 async function uploadMetaevidence(req, res) {
@@ -87,5 +123,6 @@ async function clearEvidence(req, res) {
 
 module.exports = {
     uploadMetaevidence,
-    clearEvidence
+    clearEvidence,
+    testNotificationPush
 };

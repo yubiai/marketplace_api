@@ -3,7 +3,7 @@ const { Profile } = require("../models/Profile")
 
 const clearProfile = async () => {
 
-    console.log("Empezo clearProfile")
+    /* console.log("Empezo clearProfile")
     const listProfiles = await Profile.find();
 
     for (let i = 0; i < listProfiles.length; i++) {
@@ -39,7 +39,7 @@ const clearProfile = async () => {
             if (err) throw err;
             console.log(`${result.nModified} documentos actualizados`);
         }
-    );
+    ); */
 
 }
 
