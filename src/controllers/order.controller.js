@@ -98,7 +98,7 @@ async function updateOrderStatus(req, res) {
         });
 
         await newNotification.save();
-        sendNotiTargeted(profileSeller.eth_address.toLowerCase(), "Orderchange", result._id)
+        sendNotiTargeted(profileSeller.eth_address.toLowerCase(), "ORDER_PAID", result._id)
       }
 
       if (status === "ORDER_REFUNDED") {
@@ -110,7 +110,7 @@ async function updateOrderStatus(req, res) {
         });
 
         await newNotification.save();
-        sendNotiTargeted(profileBuyer.eth_address.toLowerCase(), "Orderchange", result._id)
+        sendNotiTargeted(profileBuyer.eth_address.toLowerCase(), "ORDER_REFUNDED", result._id)
       }
 
       if (status === "ORDER_DISPUTE_RECEIVER_FEE_PENDING") {
@@ -122,7 +122,7 @@ async function updateOrderStatus(req, res) {
         });
 
         await newNotification.save();
-        sendNotiTargeted(profileSeller.eth_address.toLowerCase(), "Orderchange", result._id)
+        sendNotiTargeted(profileSeller.eth_address.toLowerCase(), "ORDER_DISPUTE_RECEIVER_FEE_PENDING", result._id)
 
       }
 
@@ -135,7 +135,7 @@ async function updateOrderStatus(req, res) {
         });
 
         await newNotification.save();
-        sendNotiTargeted(profileBuyer.eth_address.toLowerCase(), "Orderchange", result._id)
+        sendNotiTargeted(profileBuyer.eth_address.toLowerCase(), "ORDER_DISPUTE_IN_PROGRESS", result._id)
 
       }
 
@@ -148,19 +148,19 @@ async function updateOrderStatus(req, res) {
         });
 
         await newNotification.save();
-        sendNotiTargeted(profileBuyer.eth_address.toLowerCase(), "Orderchange", result._id)
+        sendNotiTargeted(profileBuyer.eth_address.toLowerCase(), "ORDER_CLOSE_DEAL", result._id)
       }
 
       if (status === "ORDER_DISPUTE_FINISHED") {
         // Noti Buyer
         const newNotiBuyer = new Notification({
           user_id: profileBuyer._id,
-          type: "ORDER_DISPUTE_IN_PROGRESS_BUYER",
+          type: "ORDER_DISPUTE_FINISHED_BUYER",
           reference: result.transactionHash
         });
 
         await newNotiBuyer.save();
-        sendNotiTargeted(profileBuyer.eth_address.toLowerCase(), "Orderchange", result._id)
+        sendNotiTargeted(profileBuyer.eth_address.toLowerCase(), "ORDER_DISPUTE_FINISHED", result._id)
 
 
         // Noti Seller
@@ -171,7 +171,7 @@ async function updateOrderStatus(req, res) {
         });
 
         await newNotiSeller.save();
-        sendNotiTargeted(profileSeller.eth_address.toLowerCase(), "Orderchange", result._id)
+        sendNotiTargeted(profileSeller.eth_address.toLowerCase(), "ORDER_DISPUTE_FINISHED", result._id)
 
       }
 
@@ -184,7 +184,7 @@ async function updateOrderStatus(req, res) {
         });
 
         await newNotification.save();
-        sendNotiTargeted(profileSeller.eth_address.toLowerCase(), "Orderchange", result._id)
+        sendNotiTargeted(profileSeller.eth_address.toLowerCase(), "ORDER_DISPUTE_APPEALABLE", result._id)
 
       }
 
@@ -248,7 +248,7 @@ async function updateOrderCompletedBySeller(req, res) {
       });
 
       await newNotification.save();
-      sendNotiTargeted(buyer.eth_address.toLowerCase(), "Orderchange", result._id)
+      sendNotiTargeted(buyer.eth_address.toLowerCase(), "ORDER_COMPLETED_BY_SELLER", result._id)
     }
 
     return res.status(200).json({

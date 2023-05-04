@@ -29,15 +29,64 @@ const formatMsg = (type, order_id) => {
                 titleBody: "New Sale",
                 body: `Order #${order_id}`
             }
-        case "Orderchange":
+        case "ORDER_COMPLETED_BY_SELLER":
             return {
                 title: "Notification",
-                subtitle: "New status change in order!",
-                titleBody: "New status change in order",
+                subtitle: "Work completed by seller!",
+                titleBody: "Work completed by seller",
+                body: `Order #${order_id}`
+            }
+        case "ORDER_PAID":
+            return {
+                title: "Notification",
+                subtitle: "Order Paid!",
+                titleBody: "Order Paid",
+                body: `Order #${order_id}`
+            }
+        case "ORDER_DISPUTE_RECEIVER_FEE_PENDING":
+            return {
+                title: "Notification",
+                subtitle: "Order dispute receiver fee pending!",
+                titleBody: "Order dispute receiver fee pending",
+                body: `Order #${order_id}`
+            }
+        case "ORDER_REFUNDED":
+            return {
+                title: "Notification",
+                subtitle: "Order Reimbursed!",
+                titleBody: "Order Reimbursed",
+                body: `Order #${order_id}`
+            }
+        case "ORDER_DISPUTE_IN_PROGRESS":
+            return {
+                title: "Notification",
+                subtitle: "Dispute initiated",
+                titleBody: "Dispute initiated as seller rejected your claim",
+                body: `Order #${order_id}`
+            }
+        case "ORDER_CLOSE_DEAL":
+            return {
+                title: "Notification",
+                subtitle: "Seller has requested your payment!",
+                titleBody: "Seller has requested your payment",
+                body: `Order #${order_id}`
+            }
+        case "ORDER_DISPUTE_FINISHED":
+            return {
+                title: "Notification",
+                subtitle: "Order dispute finished!",
+                titleBody: "Order dispute finished",
+                body: `Order #${order_id}`
+            }
+        case "ORDER_DISPUTE_APPEALABLE":
+            return {
+                title: "Notification",
+                subtitle: "Order dispute appealable!",
+                titleBody: "Order dispute appealable",
                 body: `Order #${order_id}`
             }
         default:
-            break;
+            return null
     }
 
 }
@@ -52,6 +101,12 @@ function sendNotiTargeted(walletUser, type, order_id) {
 
             const message = formatMsg(type, order_id)
             console.log(message, "message")
+
+            if (!message) {
+                console.error(err);
+                reject(err)
+            }
+
             await PushAPI.payloads.sendNotification({
                 signer: signer,
                 type: 3, // target
