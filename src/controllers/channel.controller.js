@@ -5,6 +5,7 @@ const { Filevidence } = require("../models/Filevidence");
 const { Profile } = require("../models/Profile");
 const { Notification } = require("../models/Notifications");
 const { sendNotiTargeted } = require("../utils/pushProtocolUtil");
+const getPagination = require("../libs/getPagination");
 
 async function getChannel(req, res) {
   const { id } = req.params;
@@ -271,11 +272,74 @@ async function pushMsgWithFiles(req, res) {
   }
 }
 
+const getChannelsBuyerByProfile = async (req, res) => {
+  const { id } = req.params;
+  const { size, page } = req.query;
+  const { limit, offset } = getPagination(page, size);
+  const sort = { updatedAt: -1 };
+
+  try {
+    const data = await Channel.paginate({
+      buyer: ObjectId(id)
+    }, {
+      offset, limit, sort, populate: [
+        {
+          path: 'seller',
+          model: 'Profile',
+          select: { name: 1, photo: 1, eth_address: 1 }
+        },
+        {
+          path: 'order_id',
+          model: 'Order',
+          select: { itemId: 1, transactionHash: 1, status: 1 }
+        }
+      ]
+    });
+
+    return res.status(200).json({
+      totalItems: data.totalDocs,
+      items: data.docs,
+      totalPages: data.totalPages,
+      currentPage: data.page - 1,
+      prevPage: data.prevPage - 1,
+      nextPage: data.nextPage - 1,
+    });
+  } catch (err) {
+    console.error(err)
+    return res.status(400).json({
+      message: "Ups Hubo un error!",
+      error: err,
+    });
+  }
+}
+
+const getChannelsSellerByProfile = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const channels = await Channel.find({
+      seller: ObjectId(id)
+    })
+
+    return res.status(200).json(channels)
+  } catch (err) {
+    console.error(err)
+    return res.status(400).json({
+      message: "Ups Hubo un error!",
+      error: err,
+    });
+  }
+}
+
+
+
 module.exports = {
   getChannel,
   getChannelByOrderId,
   getMessagesByOrderId,
   newChannel,
   pushMsg,
-  pushMsgWithFiles
+  pushMsgWithFiles,
+  getChannelsBuyerByProfile,
+  getChannelsSellerByProfile
 };

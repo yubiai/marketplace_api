@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const mongoosePagination = require("mongoose-paginate-v2");
 
 const channelSchema = new Schema(
   {
@@ -50,6 +51,8 @@ const channelSchema = new Schema(
     timestamps: true,
   }
 );
+
+channelSchema.plugin(mongoosePagination)
 
 const Channel = mongoose.model("Channel", channelSchema);
 

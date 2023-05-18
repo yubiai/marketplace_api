@@ -34,6 +34,10 @@ router.route("/pushmsg/:id").post(channelController.pushMsg);
 
 router.route("/pushmsgwithfiles/:id").post(upload.array("files"), channelController.pushMsgWithFiles);
 
+router.route("/channels/buyer/:id").get(channelController.getChannelsBuyerByProfile);
+
+router.route("/channels/seller/:id").get(channelController.getChannelsSellerByProfile);
+
 router.route("/orderID/:id").get(channelController.getChannelByOrderId);
 
 router.route("/messagesbyorder/:id").get(channelController.getMessagesByOrderId);
