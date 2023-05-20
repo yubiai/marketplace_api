@@ -12,7 +12,7 @@ const formatMsg = (type, order_id) => {
                 title: "Notification",
                 subtitle: "New Message!",
                 titleBody: "New Message",
-                body: `Order #${order_id}`
+                body: `Order #${order_id ? order_id : "No Order"}`
             }
             return message
         case "NewQuestion":

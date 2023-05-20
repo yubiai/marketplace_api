@@ -38,10 +38,10 @@ router.route("/channels/buyer/:id").get(channelController.getChannelsBuyerByProf
 
 router.route("/channels/seller/:id").get(channelController.getChannelsSellerByProfile);
 
-router.route("/orderID/:id").get(channelController.getChannelByOrderId);
+router.route("/find/").post(channelController.findChannel);
 
 router.route("/messagesbyorder/:id").get(channelController.getMessagesByOrderId);
 
-router.route("/:id").get(channelController.getChannel);
+router.route("/:id").get(channelController.getChannelById);
 
 module.exports = router;

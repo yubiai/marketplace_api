@@ -7,7 +7,7 @@ const channelSchema = new Schema(
     order_id: {
       type: Schema.Types.ObjectId,
       ref: "Order",
-      required: true
+      default: null
     },
     buyer: {
       type: Schema.Types.ObjectId,
@@ -17,6 +17,11 @@ const channelSchema = new Schema(
     seller: {
       type: Schema.Types.ObjectId,
       ref: "Profile",
+      required: true
+    },
+    item_id: {
+      type: Schema.Types.ObjectId,
+      ref: "Item",
       required: true
     },
     status: {
