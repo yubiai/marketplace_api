@@ -57,11 +57,18 @@ async function getChannelById(req, res) {
   try {
     const channel = await Channel.findById(id)
       .populate("buyer", "name photo eth_address")
-      .populate("seller", "name photo eth_address")
+      .populate({
+        path: 'seller',
+        model: 'Profile'
+      })
       .populate({
         path: 'order_id',
         model: 'Order',
         select: { itemId: 1, transactionHash: 1, status: 1 }
+      })
+      .populate({
+        path: 'item_id',
+        model: 'Item'
       });
 
     if (!channel) {
@@ -114,15 +121,12 @@ async function newChannel(req, res) {
     }
 
     if (order_id) {
-      console.log("Tiene order id")
       const verifyChannelExist = await Channel.findOne({
         buyer: ObjectId(buyer),
         seller: ObjectId(seller),
         item_id: ObjectId(item_id),
         order_id: null
       });
-
-      console.log(verifyChannelExist, "verifyChannelExist")
 
       if (verifyChannelExist) {
         // Actualizar channel con order_id
@@ -409,7 +413,7 @@ const findChannel = async (req, res) => {
       });
     }
 
-    if(buyer, seller, item_id){
+    if (buyer, seller, item_id) {
       const result = await Channel.findOne({
         buyer: ObjectId(buyer),
         seller: ObjectId(seller),
@@ -417,7 +421,7 @@ const findChannel = async (req, res) => {
         order_id: null
       });
 
-      if(!result){
+      if (!result) {
         return res.status(200).json({
           id: null
         });
@@ -440,6 +444,26 @@ const findChannel = async (req, res) => {
 
 }
 
+const updatePriceConfig = async (req, res) => {
+  const { id } = req.params;
+  const { priceconfig } = req.body;
+
+  try {
+    const result = await Channel.findByIdAndUpdate(id, {
+      priceconfig: priceconfig
+    })
+
+    return res.status(200).json(result)
+
+  } catch (error) {
+    console.error(error);
+    return res.status(400).json({
+      message: "Ups Hubo un error!",
+      error: error,
+    });
+  }
+}
+
 
 module.exports = {
   getChannel,
@@ -450,5 +474,6 @@ module.exports = {
   pushMsgWithFiles,
   getChannelsBuyerByProfile,
   getChannelsSellerByProfile,
-  findChannel
+  findChannel,
+  updatePriceConfig
 };

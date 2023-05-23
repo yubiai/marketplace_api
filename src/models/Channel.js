@@ -28,6 +28,9 @@ const channelSchema = new Schema(
       type: Boolean,
       default: true,
     },
+    priceconfig: {
+      type: Number
+    },
     messages: [
       {
         date: Date,
