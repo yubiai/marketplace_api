@@ -42,6 +42,8 @@ router.route("/find/").post(channelController.findChannel);
 
 router.route("/priceconfig/:id").put(channelController.updatePriceConfig);
 
+router.route("/updatestatus/:id").put(channelController.updateStatus);
+
 router.route("/messagesbyorder/:id").get(channelController.getMessagesByOrderId);
 
 router.route("/:id").get(channelController.getChannelById);

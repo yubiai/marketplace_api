@@ -464,6 +464,25 @@ const updatePriceConfig = async (req, res) => {
   }
 }
 
+const updateStatus = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  try {
+    const result = await Channel.findByIdAndUpdate(id, {
+      status: status
+    })
+
+    return res.status(200).json(result)
+  } catch (error) {
+    console.error(error);
+    return res.status(400).json({
+      message: "Ups Hubo un error!",
+      error: error,
+    });
+  }
+}
+
 
 module.exports = {
   getChannel,
@@ -475,5 +494,6 @@ module.exports = {
   getChannelsBuyerByProfile,
   getChannelsSellerByProfile,
   findChannel,
-  updatePriceConfig
+  updatePriceConfig,
+  updateStatus
 };
