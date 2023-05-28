@@ -1,42 +1,22 @@
 const cron = require('node-cron');
 const { Profile } = require("../models/Profile");
 const { Notification } = require("../models/Notifications");
-const { Order, Transaction } = require("../models/Order");
+const { Order } = require("../models/Order");
 const { logger } = require("../utils/logger");
+const { sendNotiTargeted } = require("../utils/pushProtocolUtil");
 
 const refreshOrderStatus = async () => {
     try {
-
+        const currentDate = new Date();
         const listOrders = await Order.find({ "status": "ORDER_DISPUTE_IN_PROGRESS" });
 
         if (listOrders.length > 0) {
 
             for (let i = 0; i < listOrders.length; i++) {
                 let order = listOrders[i];
-
-                try {
-                    let transaction = await Transaction.findOne({
-                        'transactionMeta.transactionHash': order.transactionHash
-                    });
-
-                    if (!transaction) {
-                        continue
-                    }
-
-                    if (dealInfo.state !== 3) {
-
-                        // Update Transaction ??
-
-                        // Get Status
-
-                        const newStatus = statusDescMap(dealInfo, claimInfo);
-                        logger.info("Outdated order: " + order._id + " - Status Old " + order.status + " - Status New: " + newStatus);
-
-                        // Update Order
-                        await Order.findByIdAndUpdate(order._id, {
-                            status: newStatus
-                        });
-
+                if (order.disputeEndDate && order.disputeEndDate < currentDate && !order.notified) {
+                    try {
+                        logger.info("Order vencida", order._id)
                         // Notifications Users
                         // Get User Seller
                         const profileSeller = await Profile.findOne({
@@ -56,6 +36,7 @@ const refreshOrderStatus = async () => {
                         });
 
                         await newNotiSeller.save();
+                        sendNotiTargeted(order.userSeller.toLowerCase(), "DISPUTE_WAS_DECIDED", order._id);
 
                         // Notification Buyer
                         const newNotiBuyer = new Notification({
@@ -65,20 +46,25 @@ const refreshOrderStatus = async () => {
                         });
 
                         await newNotiBuyer.save();
+                        sendNotiTargeted(order.userBuyer.toLowerCase(), "DISPUTE_WAS_DECIDED", order._id);
+
+                        // Update Order
+                        await Order.findByIdAndUpdate(order._id, {
+                            notified: true
+                        });
 
                         logger.info("- Update Order Notifications sended - END -");
 
                         continue
-                    } else {
+
+                    } catch (err) {
+                        console.error(err)
+                        console.error("Error Update Order " + order._id)
+                        logger.error("Error Update Order " + order._id)
                         continue
                     }
-                } catch (err) {
-                    console.error(err)
-                    console.error("Error Update Order " + order._id)
-                    logger.error("Error Update Order " + order._id)
-                    continue
-                }
 
+                }
             }
         }
 
@@ -91,7 +77,7 @@ const refreshOrderStatus = async () => {
 
 const refreshOrdersCron = async () => {
 
-    cron.schedule(`*/1 * * * *`, async () => {
+    cron.schedule(`*/5 * * * *`, async () => {
         await refreshOrderStatus()
     });
 

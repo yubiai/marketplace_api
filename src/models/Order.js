@@ -110,6 +110,14 @@ const orderSchema = new Schema(
     orderCompletedBySeller: {
       type: Boolean,
       default: false
+    },
+    disputeEndDate: {
+      type: Date,
+      default: null
+    },
+    notified: {
+      type: Boolean,
+      default: false
     }
   },
   {

@@ -6,6 +6,7 @@ const ObjectId = require("mongoose").Types.ObjectId;
 const { Notification } = require("../models/Notifications");
 const { logger } = require("../utils/logger");
 const { sendNotiTargeted } = require("../utils/pushProtocolUtil");
+const moment = require('moment');
 
 async function createTransaction(transactionData) {
   const transaction = new Transaction({
@@ -127,6 +128,27 @@ async function updateOrderStatus(req, res) {
       }
 
       if (status === "ORDER_DISPUTE_IN_PROGRESS") {
+
+        // Calculating dispute in kleros to warn
+        // Total days
+        const totalDays = process.env.JURY_TIME;
+
+        // Get the current date
+        const currentDate = moment();
+
+        // Calculate the resulting date by adding the total days
+        const resultingDate = currentDate.add(totalDays, 'days');
+
+        // Convert the resulting date to a JavaScript Date object
+        const disputeEndDate = resultingDate.toDate();
+
+        await Order.findOneAndUpdate(
+          {
+            transactionHash: req.params.transactionId,
+          },
+          { disputeEndDate: disputeEndDate }
+        );
+
         // Noti Buyer
         const newNotification = new Notification({
           user_id: profileBuyer._id,
@@ -135,7 +157,7 @@ async function updateOrderStatus(req, res) {
         });
 
         await newNotification.save();
-        sendNotiTargeted(profileBuyer.eth_address.toLowerCase(), "ORDER_DISPUTE_IN_PROGRESS", result._id)
+
 
       }
 

@@ -3,9 +3,7 @@ const PushAPI = require('@pushprotocol/restapi')
 
 const PK = process.env.PRIVATE_WALLET_KEY;
 
-
 const formatMsg = (type, order_id) => {
-    console.log(type)
     switch (type) {
         case "Channel":
             const message = {
@@ -85,6 +83,13 @@ const formatMsg = (type, order_id) => {
                 titleBody: "Order dispute appealable",
                 body: `Order #${order_id}`
             }
+        case "DISPUTE_WAS_DECIDED":
+            return {
+                title: "Notification",
+                subtitle: "The jury has decided in the dispute!",
+                titleBody: "The jury has decided in the dispute",
+                body: `Order #${order_id}`
+            }
         default:
             return null
     }
@@ -100,11 +105,10 @@ function sendNotiTargeted(walletUser, type, order_id) {
             const signer = new ethers.Wallet(Pkey);
 
             const message = formatMsg(type, order_id)
-            console.log(message, "message")
 
             if (!message) {
-                console.error(err);
-                reject(err)
+                console.error("Error generating the message");
+                throw "Error generating the message";
             }
 
             await PushAPI.payloads.sendNotification({
