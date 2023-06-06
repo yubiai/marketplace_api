@@ -259,8 +259,6 @@ async function loginLens(req, res) {
       newData.photo = newPhoto;
     }
 
-    console.log(newData, "newData quedo asi")
-
     // Actualiza la info en lens_info
     if (
       userExists && !userExists.lens_info || userExists && !userExists.name || userExists && getPhoto === ""
@@ -300,8 +298,89 @@ async function loginLens(req, res) {
     });
 
   } catch (error) {
-    console.error(error);
-    return res.status(401).json("Error auth lens protocol")
+    console.error("Error auth lens protocol", error)
+    logger.error(`The following wallet tried to connect but couldn't ${walletAddress} (Lens Protocol)`)
+    return res.status(401).json(error ? error : {
+      error: "Unauthorized"
+    });
+  }
+}
+
+// Login Sequence
+async function loginSequence(req, res) {
+  const { walletAddress, email } = { ...req.body };
+
+  try {
+    if (!walletAddress) {
+      return res.status(404).json({ error: "The wallet does not exist", info: "Not Validated" });
+    }
+
+    // Lo busco en la base
+    let userExists = await Profile.findOne({
+      eth_address: walletAddress.toUpperCase()
+    });
+
+    // Creando nueva data
+    let newData = {};
+
+    // Si no existe usuario agregar wallet
+    if (!userExists) {
+      console.log("userExists")
+      newData.eth_address = walletAddress.toUpperCase()
+    }
+
+    if (!userExists || userExists && !userExists.sequence_info) {
+      newData.lens_info = {
+        name: email.split('@')[0] || "",
+        bio: "",
+        photo: ""
+      };
+    }
+
+    if (!userExists || userExists && !userExists.name) {
+      console.log("poniendo nombre")
+      newData.name = email.split('@')[0] || ""
+    }
+
+    if (!userExists || userExists && !userExists.photo) {
+      newData.photo = ""
+    }
+
+    // If it does not exist, save it as a new user
+    if (!userExists) {
+      console.log("Se activo nuevo user")
+      let newUser = new Profile(newData);
+      let result = await newUser.save();
+      userExists = {
+        ...result,
+        _id: result._id,
+      };
+      logger.info("New User Sequence - ID user: " + result._id)
+    }
+
+    const dataUser = await Profile.findById(userExists._id);
+
+    token = signData({
+      walletAddress: walletAddress,
+      id: userExists._id
+    });
+
+    logger.info(`Login (Sequence): ${walletAddress}`);
+
+    return res.status(200).json({
+      token: token,
+      data: {
+        ...dataUser._doc,
+        token,
+      },
+    });
+
+  } catch (error) {
+    console.error("Error Sequence", error)
+    logger.error(`The following wallet tried to connect but couldn't ${walletAddress} (Sequence Protocol)`)
+    return res.status(401).json(error ? error : {
+      error: "Unauthorized"
+    });
   }
 }
 
@@ -333,6 +412,7 @@ async function authToken(req, res) {
 module.exports = {
   login,
   loginLens,
+  loginSequence,
   authToken,
   nonce,
   verifySignature

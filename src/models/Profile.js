@@ -48,6 +48,9 @@ const profileSchema = new Schema(
     lens_info: {
       type: Object
     },
+    sequence_info: {
+      type: Object
+    },
     private_info: {
       type: privateInfoSchema
     },

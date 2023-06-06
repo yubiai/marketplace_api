@@ -7,6 +7,8 @@ router.route("/loginpoh").post(authController.login);
 
 router.route("/loginlens").post(authController.loginLens);
 
+router.route("/loginsq").post(authController.loginSequence);
+
 router.route("/session").get(authController.authToken);
 
 router.route("/nonce").get(authController.nonce);
