@@ -23,9 +23,10 @@ async function nonce(req, res) {
 async function verifySignature(req, res) {
   const { message, signature } = req.body;
   const siweMessage = new SiweMessage(message);
+
   try {
-    await siweMessage.validate(signature);
-    return res.status(200).send(true)
+    await siweMessage.verify({ signature })
+    return res.status(200).send(true);
   } catch (err) {
     console.log("Error Auth:", err)
     return res.status(401).send(false)
@@ -372,7 +373,7 @@ async function loginSequence(req, res) {
       data: {
         ...dataUser._doc,
         token,
-      },
+      }
     });
 
   } catch (error) {

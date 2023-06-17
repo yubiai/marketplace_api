@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const got = require("got");
 const fs = require("fs");
+const createKeccakHash = require('keccak');
 const { default: axios } = require("axios");
 const { ethers } = require("ethers");
 const moment = require("moment/moment");
@@ -192,6 +193,26 @@ function parserForWei(value) {
   return valorEnFloat;
 }
 
+/**
+ * Address eip-55
+ */
+
+function toChecksumAddress(address) {
+  address = address.toLowerCase().replace('0x', '')
+  var hash = createKeccakHash('keccak256').update(address).digest('hex')
+  var ret = '0x'
+
+  for (var i = 0; i < address.length; i++) {
+    if (parseInt(hash[i], 16) >= 8) {
+      ret += address[i].toUpperCase()
+    } else {
+      ret += address[i]
+    }
+  }
+
+  return ret
+}
+
 module.exports = {
   checkProfileOnPOH,
   checkProfileOnPOHGraph,
@@ -200,5 +221,6 @@ module.exports = {
   getRandomName,
   changeNameFileRandom,
   getTransactionUrl,
-  parserForWei
+  parserForWei,
+  toChecksumAddress
 };
