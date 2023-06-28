@@ -26,6 +26,7 @@ async function verifySignature(req, res) {
 
   try {
     await siweMessage.verify({ signature })
+    console.log("verificado")
     return res.status(200).send(true);
   } catch (err) {
     console.log("Error Auth:", err)
@@ -36,7 +37,7 @@ async function verifySignature(req, res) {
 // Login
 async function login(req, res) {
   const { walletAddress } = { ...req.body };
-
+  
   try {
 
     if (!walletAddress) {
@@ -140,7 +141,6 @@ async function login(req, res) {
       }
 
       if (!userExists || userExists && !userExists.name) {
-        console.log("poniendo nombre")
         newData.name = `${response.profile.firstName || ""} ${response.profile.lastName || ""}`
       }
 
@@ -150,12 +150,10 @@ async function login(req, res) {
         newData.photo = process.env.KLEROS_IPFS + response.profile.photo || ""
       }
 
-      console.log(newData, "newData quedo asi")
       // Actualiza la info de profile
       if (
         userExists && !userExists.poh_info || userExists && !userExists.name || userExists && getPhoto === ""
       ) {
-        console.log("Se activo para actualizar")
         await Profile.findByIdAndUpdate(userExists._id, newData);
         logger.info("Update Data Poh Info - ID user: " + userExists._id)
       }
@@ -164,7 +162,6 @@ async function login(req, res) {
 
       // If it does not exist, save it as a new user
       if (!userExists) {
-        console.log("Se activo nuevo user")
         let newUser = new Profile(newData);
         let result = await newUser.save();
         console.log(result, "result")
@@ -309,7 +306,7 @@ async function loginLens(req, res) {
 
 // Login Sequence
 async function loginSequence(req, res) {
-  const { walletAddress, email } = { ...req.body };
+  const { walletAddress } = { ...req.body };
 
   try {
     if (!walletAddress) {
@@ -330,17 +327,8 @@ async function loginSequence(req, res) {
       newData.eth_address = walletAddress.toUpperCase()
     }
 
-    if (!userExists || userExists && !userExists.sequence_info) {
-      newData.lens_info = {
-        name: email.split('@')[0] || "",
-        bio: "",
-        photo: ""
-      };
-    }
-
     if (!userExists || userExists && !userExists.name) {
-      console.log("poniendo nombre")
-      newData.name = email.split('@')[0] || ""
+      newData.name = "User" + Math.floor(Math.random() * 9999);
     }
 
     if (!userExists || userExists && !userExists.photo) {
@@ -365,6 +353,7 @@ async function loginSequence(req, res) {
       walletAddress: walletAddress,
       id: userExists._id
     });
+    console.log(`Login (Sequence): ${walletAddress}`);
 
     logger.info(`Login (Sequence): ${walletAddress}`);
 

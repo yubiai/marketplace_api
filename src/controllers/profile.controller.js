@@ -2,6 +2,7 @@ const getPagination = require("../libs/getPagination");
 const { Item } = require("../models/Item");
 const { Profile } = require("../models/Profile");
 const { Terms } = require("../models/Terms");
+const { uploadFile } = require("../utils/uploads");
 
 /**
  *
@@ -38,16 +39,36 @@ async function getProfileFromId(req, res) {
 async function updateProfile(req, res) {
   const { userID } = req.params;
   const dataUser = req.body;
+  let filesUpload = req.files;
+  let files = [];
 
-  const verify = await Profile.exists({
+  const verifyProfile = await Profile.findOne({
     _id: userID,
   });
 
-  if (!verify) {
+  if (!verifyProfile) {
     return res.status(404).json({ message: "User id not exists" });
   }
+
   try {
-    const result = await Profile.findByIdAndUpdate(userID, {
+
+    async function uploadFiles(filesUpload, profileID) {
+    
+      for (const file of filesUpload) {
+        const result = await uploadFile(file, profileID);
+        files.push(result.filename)
+      }
+    
+      return;
+    }
+
+    if(filesUpload && filesUpload.length > 0){
+      await uploadFiles(filesUpload, userID);
+    }
+
+    await Profile.findByIdAndUpdate(userID, {
+      name: dataUser.name ? dataUser.name : verifyProfile.name,
+      photo: files && files[0] ? files[0] : verifyProfile.photo,
       private_info: {
         realname: dataUser.realname || "",
         address: dataUser.address || "",

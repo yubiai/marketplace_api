@@ -42,15 +42,6 @@ const profileSchema = new Schema(
       required: true,
       trim: true,
     },
-    poh_info: {
-      type: Object
-    },
-    lens_info: {
-      type: Object
-    },
-    sequence_info: {
-      type: Object
-    },
     private_info: {
       type: privateInfoSchema
     },
