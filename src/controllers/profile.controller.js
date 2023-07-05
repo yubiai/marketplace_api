@@ -404,12 +404,11 @@ async function verifyProtocol(req, res) {
     const eth_address = verifyUser.eth_address;
     let badge = {};
     let status = false;
-    // registered 0xfa6475ba7cf8a5f216dc92c6c5a6c33ebac3e0df
 
     switch (protocol) {
       case "poh":
         try {
-          const confirmPoh = await checkProfileOnPOHGraph("0xfa6475ba7cf8a5f216dc92c6c5a6c33ebac3e0df");
+          const confirmPoh = await checkProfileOnPOHGraph(eth_address);
           if (confirmPoh && confirmPoh.registered == true && confirmPoh.profile) {
             status = true;
             badge = {
