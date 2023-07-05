@@ -47,4 +47,6 @@ router.route("/terms/:userID").put(profileController.addTerms);
 
 router.route("/touraccepted/:userID").put(profileController.tourAccepted);
 
+router.route("/verifyprotocol/:userID").put(profileController.verifyProtocol);
+
 module.exports = router;

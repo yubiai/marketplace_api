@@ -26,7 +26,7 @@ async function getItem(req, res) {
 async function getItemSlug(req, res) {
   try {
     const item = await Item.findOne({ slug: req.params.slug })
-      .populate("seller", "name photo eth_address permission poh_info lens_info")
+      .populate("seller", "name photo eth_address permission poh_info lens_info badges")
       .populate("category", "title")
       .populate("subcategory", "title")
       .populate({

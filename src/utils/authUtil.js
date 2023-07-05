@@ -21,6 +21,21 @@ const verifyTokenLens = (tokenLens) => {
     })
 }
 
+const verifyPoh = (eth_address) => {
+
+    return new Promise(async(resolve, reject) => {
+        try {
+
+            
+            
+        } catch (error) {
+            console.error(error);
+            return reject(false);
+        }
+    })
+}
+
 module.exports = {
-    verifyTokenLens
+    verifyTokenLens,
+    verifyPoh
 };

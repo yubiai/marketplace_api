@@ -8,7 +8,9 @@ const titleAlert = (title) => {
         case "newItem":
             return "New Post"
         case "updateItem":
-            return "Update Post"      
+            return "Update Post" 
+        case "newVerify":
+            return "New verification User"     
         default:
             return "No Data"    
     }

@@ -35,6 +35,36 @@ const privateInfoSchema = new Schema(
   }
 );
 
+const badgesInfoSchema = new Schema(
+  {
+    protocol: {
+      type: String,
+      trim: true
+    },
+    status: {
+      type: Boolean
+    },
+    dateOfVerification: {
+      type: Date
+    },
+    dateDue: {
+      type: Date
+    },
+    reward: {
+      type: Boolean,
+      default: false
+    },
+    receipt: {
+      type: String,
+      trim: true
+    }
+  },
+  {
+    versionKey: false,
+    timestamps: true,
+  }
+)
+
 const profileSchema = new Schema(
   {
     eth_address: {
@@ -44,6 +74,9 @@ const profileSchema = new Schema(
     },
     private_info: {
       type: privateInfoSchema
+    },
+    badges: {
+      type: [badgesInfoSchema]
     },
     permission: {
       type: Number,

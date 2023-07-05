@@ -77,7 +77,6 @@ async function checkProfileOnPOHGraph(walletAddress) {
         if (!res.data.data.submission.submissionTime) {
           return reject({ error: "Are you using your poh address ?", info: "Not Found" })
         }
-
         // Esto es un calculo de 2 años ver en el futuro
         const registroUnixTimestamp = res.data.data.submission.submissionTime; // fecha de registro en formato Unix Timestamp.
         const registroDate = moment.unix(registroUnixTimestamp); // convierte Unix Timestamp a objeto moment.
