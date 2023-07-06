@@ -49,14 +49,26 @@ const badgesInfoSchema = new Schema(
     },
     dateDue: {
       type: Date
-    },
+    }
+  },
+  {
+    versionKey: false,
+    timestamps: true,
+  }
+)
+
+const rewardsSchema = new Schema(
+  {
     reward: {
-      type: Boolean,
+      type: Number,
       default: false
     },
-    receipt: {
+    hash: {
       type: String,
       trim: true
+    },
+    date: {
+      type: Date
     }
   },
   {
@@ -77,6 +89,9 @@ const profileSchema = new Schema(
     },
     badges: {
       type: [badgesInfoSchema]
+    },
+    rewards: {
+      type: [rewardsSchema]
     },
     permission: {
       type: Number,
