@@ -4,6 +4,7 @@ const jwtService = require("jsonwebtoken");
 const { generateNonce, SiweMessage } = require('siwe');
 const { logger } = require("../utils/logger");
 const { verifyTokenLens } = require("../utils/authUtil");
+const { sendMsgBot } = require("../worker/botAlert.worker");
 
 const WhiteList = process.env.WHITELIST;
 
@@ -344,7 +345,8 @@ async function loginSequence(req, res) {
         ...result,
         _id: result._id,
       };
-      logger.info("New User Sequence - ID user: " + result._id)
+      sendMsgBot("newUser", userExists._id);
+      logger.info("New User - ID user: " + result._id)
     }
 
     const dataUser = await Profile.findById(userExists._id);
