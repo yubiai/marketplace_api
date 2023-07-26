@@ -265,55 +265,34 @@ async function getMyPublished(req, res) {
   const { userID } = req.params;
   const { size, page } = req.query;
   const { limit, offset } = getPagination(page, size);
+  const sort = { updatedAt: -1 };
+
   try {
-    let user = await Profile.findById(userID);
 
-    if (!user) {
-      return res.status(404).json({ error: "User id not exists" });
+    if(!userID){
+      return res.status(404).json({ message: "User id not exists" });
     }
 
-    let published = user.items.reverse();
-
-    if (published.length === 0) {
-      return res
-        .status(200)
-        .json({ message: "Items Published not found", items: [] });
-    }
-
-    const total_items = published.length;
-    const total_pages = Math.ceil(published.length / limit);
-    current_page = Number(page) || 0;
-    published = published.slice(offset).slice(0, limit);
-
-    let items = [];
-
-    for (let i = 0; i < published.length; i++) {
-      const item = await Item.findById(published[i], {
-        title: 1,
-        files: 1,
-        price: 1,
-        slug: 1,
-        published: 1,
-        status: 1,
-        currencySymbolPrice: 1
-      }).populate({
+    const data = await Item.paginate({
+      seller: userID,
+      status: {$ne: 6}
+    }, {
+      offset, limit, sort, populate: {
         path: 'files',
         model: 'File',
         select: { filename: 1, mimetype: 1 }
-      })
-      if (item) {
-        items.push(item);
       }
-    }
+    });
 
     return res.status(200).json({
-      totalItems: total_items,
-      totalPages: total_pages,
-      currentPage: current_page,
-      prevPage: current_page ? current_page - 1 : null,
-      nextPage: total_pages > current_page + 1 ? current_page + 1 : null,
-      items,
+      totalItems: data.totalDocs,
+      items: data.docs,
+      totalPages: data.totalPages,
+      currentPage: data.page - 1,
+      prevPage: data.prevPage - 1,
+      nextPage: data.nextPage - 1,
     });
+
   } catch (error) {
     console.log(error);
     return res.status(404).json(error);
@@ -449,9 +428,9 @@ async function verifyProtocol(req, res) {
           if (!accessToken) {
             return res.status(200).json({ status: false });
           }
-  
+
           const verifyToken = await verifyTokenLens(accessToken);
-  
+
           if (verifyToken) {
             status = true;
             badge = {
@@ -470,9 +449,9 @@ async function verifyProtocol(req, res) {
               dateDue: null
             }
           }
-  
+
           const existingBadgeLens = verifyUser.badges.find(b => b.protocol === badge.protocol);
-  
+
           if (existingBadgeLens) {
             existingBadgeLens.status = badge.status;
             existingBadgeLens.dateOfVerification = badge.dateOfVerification;
@@ -480,9 +459,9 @@ async function verifyProtocol(req, res) {
           } else {
             verifyUser.badges.push(badge);
           }
-  
+
           await verifyUser.save();
-  
+
           return res.status(200).json({ status: status });
         } catch (error) {
           return res.status(200).json({ status: false });
