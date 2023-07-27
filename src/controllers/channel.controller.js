@@ -444,14 +444,16 @@ const findChannel = async (req, res) => {
 
 }
 
-const updatePriceConfig = async (req, res) => {
+const updateSettings = async (req, res) => {
   const { id } = req.params;
-  const { priceconfig } = req.body;
+  const { priceconfig, time_for_service, time_for_claim } = req.body;
 
   try {
     const result = await Channel.findByIdAndUpdate(id, {
-      priceconfig: priceconfig
-    })
+      priceconfig: priceconfig,
+      time_for_service,
+      time_for_claim
+    });
 
     return res.status(200).json(result)
 
@@ -494,6 +496,6 @@ module.exports = {
   getChannelsBuyerByProfile,
   getChannelsSellerByProfile,
   findChannel,
-  updatePriceConfig,
+  updateSettings,
   updateStatus
 };

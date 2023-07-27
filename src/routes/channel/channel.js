@@ -40,7 +40,7 @@ router.route("/channels/seller/:id").get(channelController.getChannelsSellerByPr
 
 router.route("/find/").post(channelController.findChannel);
 
-router.route("/priceconfig/:id").put(channelController.updatePriceConfig);
+router.route("/settings/:id").put(channelController.updateSettings);
 
 router.route("/updatestatus/:id").put(channelController.updateStatus);
 

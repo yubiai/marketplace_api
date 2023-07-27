@@ -31,6 +31,12 @@ const channelSchema = new Schema(
     priceconfig: {
       type: Number
     },
+    time_for_service: {
+      type: Number
+    },
+    time_for_claim: {
+      type: Number
+    },
     messages: [
       {
         date: Date,
