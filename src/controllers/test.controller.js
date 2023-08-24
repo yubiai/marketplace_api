@@ -6,6 +6,7 @@ const { Filevidence } = require("../models/Filevidence");
 const { removeFileEvidence } = require('../utils/uploads');
 const PushAPI = require('@pushprotocol/restapi')
 const ethers = require('ethers');
+const { Item } = require('../models/Item');
 
 async function testNotificationPush(req, res) {
     const PK = process.env.PRIVATE_WALLET_KEY;
@@ -120,6 +121,8 @@ async function clearEvidence(req, res) {
         return res.status(404).json("Error")
     }
 }
+
+
 
 module.exports = {
     uploadMetaevidence,

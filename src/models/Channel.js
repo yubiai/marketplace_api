@@ -37,6 +37,9 @@ const channelSchema = new Schema(
     time_for_claim: {
       type: Number
     },
+    typeprice: {
+      type: String
+    },
     messages: [
       {
         date: Date,

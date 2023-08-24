@@ -14,12 +14,15 @@ async function newItem(req, res) {
   let filesUpload = req.files;
   let files = [];
 
+  console.log(req.body, "body")
+
   try {
     // Step 1 - Validates
     const body = Object.keys(newItem);
     const allowedCreates = [
       "title",
       "description",
+      "typeprice",
       "price",
       "seller",
       "maxorders",

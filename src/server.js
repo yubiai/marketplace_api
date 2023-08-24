@@ -34,7 +34,8 @@ const question = require("./routes/question/question");
 const report = require("./routes/report/report");
 const { botAlertWorker } = require('./worker/botAlert.worker');
 const { refreshOrdersCron } = require('./worker/refreshOrders');
-const { clearProfile } = require('./utils/migrationUtil');
+const { clearProfile, updateeItems } = require('./utils/migrationUtil');
+
 //const test = require("./routes/test/test");
 
 /* const user = require("./routes/user/user");

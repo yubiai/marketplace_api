@@ -16,6 +16,10 @@ const itemSchema = new Schema({
     required: true,
     trim: true,
   },
+  typeprice: {
+    type: String,
+    required: true
+  },
   price: {
     type: Number,
     required: true,

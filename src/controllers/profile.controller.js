@@ -142,6 +142,7 @@ async function getFavorites(req, res) {
       const item = await Item.findById(favorites[i], {
         title: 1,
         files: 1,
+        typeprice: 1,
         price: 1,
         currencySymbolPrice: 1,
         category: 1,

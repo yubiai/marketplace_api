@@ -446,13 +446,14 @@ const findChannel = async (req, res) => {
 
 const updateSettings = async (req, res) => {
   const { id } = req.params;
-  const { priceconfig, time_for_service, time_for_claim } = req.body;
+  const { priceconfig, time_for_service, time_for_claim, typeprice } = req.body;
 
   try {
     const result = await Channel.findByIdAndUpdate(id, {
       priceconfig: priceconfig,
       time_for_service,
-      time_for_claim
+      time_for_claim,
+      typeprice
     });
 
     return res.status(200).json(result)

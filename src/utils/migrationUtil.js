@@ -1,3 +1,4 @@
+const { Item } = require("../models/Item");
 const { Profile } = require("../models/Profile")
 
 
@@ -43,7 +44,29 @@ const clearProfile = async () => {
 
 }
 
+const updateeItems = async() => {
+    try {
+        console.log("Update item")
+
+        const items = await Item.find();
+
+        console.log("item", items.length);
+
+        for (let item of items){
+            console.log(item, "item")
+            await Item.findByIdAndUpdate(item._id, {
+                typeprice: "Total"
+            })
+        }        
+        return
+
+    } catch (err){
+        console.error(err);
+        return
+    }
+}
 
 module.exports = {
-    clearProfile
+    clearProfile,
+    updateeItems
 }
