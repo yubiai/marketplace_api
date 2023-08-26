@@ -342,7 +342,8 @@ async function getOrderByTransaction(req, res) {
         transactionDate,
         networkEnv,
         transactionMeta,
-        timeForClaim
+        timeForClaim,
+        typeprice
       } = transaction;
       const item = await Item.findOne({ _id: itemId }).lean().populate({
         path: 'files',
@@ -374,17 +375,18 @@ async function getOrderByTransaction(req, res) {
           transactionDate,
           networkEnv,
           timeForClaim,
-          transactionMeta
+          transactionMeta,
+          typeprice
         },
       };
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       status: "ok",
       result,
     });
   } catch (error) {
-    res.status(404).json({
+    return res.status(404).json({
       message: "Order not found",
       error: error,
     });

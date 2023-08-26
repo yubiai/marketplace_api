@@ -44,6 +44,9 @@ const transactionSchema = new Schema(
     currentClaim: {
       type: Number
     },
+    typeprice: {
+      type: String
+    },
     transactionMeta: {
       type: transactionMetaSchema
     },
