@@ -114,11 +114,7 @@ async function pdfGenerator(dataToGenerateThePDF) {
             doc.moveDown(0.3);
             doc.font('Helvetica').fontSize(8).text('Url: ' + dataToGenerateThePDF.item.url, { link: dataToGenerateThePDF.item.url });
             doc.moveDown(0.3);
-            doc.font('Helvetica').fontSize(10).text('Description / Descripción: ');
-            doc.moveDown(0.3);
-            doc.font('Helvetica').fontSize(8).text(dataToGenerateThePDF.item.description);
-            doc.moveDown(0.3);
-            doc.font('Helvetica').fontSize(10).text('Price / Precio: ' + dataToGenerateThePDF.item.price + " " + dataToGenerateThePDF.item.currencySymbolPrice + " (" + dataToGenerateThePDF.item.typeprice + ")");
+            doc.font('Helvetica').fontSize(10).text('Price / Precio: ' + parserForWei(dataToGenerateThePDF.item.price) + " " + dataToGenerateThePDF.item.currencySymbolPrice + " (" + dataToGenerateThePDF.item.typeprice + ")");
             doc.moveDown(0.6);
 
             doc.font('Helvetica').fontSize(10).text('--------------------------------------------------------------------------');

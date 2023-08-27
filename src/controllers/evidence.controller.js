@@ -250,8 +250,7 @@ async function newEvidence(req, res) {
       item: {
         title: verifyOrder.itemId.title,
         url: `${process.env.FRONT_URL}/item/${verifyOrder.itemId.slug}`,
-        description: verifyOrder.itemId.description,
-        price: parseInt(verifyTransaction.transactionPayedAmount, 10),
+        price: verifyTransaction.transactionPayedAmount,
         currencySymbolPrice: verifyOrder.itemId.currencySymbolPrice,
         typeprice: verifyTransaction.typeprice
       },
