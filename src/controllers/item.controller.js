@@ -97,12 +97,12 @@ async function getItemsAll(req, res) {
 
 async function updateItem(req, res) {
 
-  const { title, description, category, subcategory, currencySymbolPrice, price, ubiburningamount } = req.body;
+  const { title, description, descriptionString, category, subcategory, currencySymbolPrice, price, ubiburningamount } = req.body;
   const { id } = req.params;
 
   try {
 
-    if (title || description || category || subcategory || currencySymbolPrice || price || ubiburningamount) {
+    if (title || description || descriptionString || category || subcategory || currencySymbolPrice || price || ubiburningamount) {
       const verifyItem = await Item.findById(id);
 
       if (!verifyItem) {

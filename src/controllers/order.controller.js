@@ -286,33 +286,38 @@ async function updateOrderCompletedBySeller(req, res) {
   }
 }
 
-
-async function setDisputeOnOrderTransaction(req, res) {
+async function setDisputeOnOrderTransactionById(req, res) {
   try {
-    const { disputeId } = req.body;
+    console.log(req.body);
+    const { claimCount, currentClaim, disputeId } = req.body;
 
-    if (req.params.transactionId) {
-      const result = await Transaction.findOneAndUpdate(
-        {
-          transactionHash: req.params.transactionId,
-        },
-        { disputeId }
-      );
+    const { transactionId } = req.params;
+    console.log(transactionId);
 
-      res.status(200).json({
-        status: "ok",
-        result,
-      });
-    } else {
-      res.status(404).json({
-        message: "Transaction not found",
-        error: error,
-      });
+    const verifyTransaction = await Transaction.findById(transactionId);
+
+    if (!verifyTransaction) {
+      return res.status(400).json({
+        message: "Error Transaction not find"
+      })
     }
-  } catch (error) {
-    res.status(400).json({
+
+    const result = await Transaction.findByIdAndUpdate(transactionId, {
+      claimCount: claimCount,
+      currentClaim: currentClaim,
+      disputeId: disputeId
+    })
+
+    res.status(200).json({
+      status: "ok",
+      result,
+    });
+
+    return;
+  } catch (err) {
+    return res.status(400).json({
       message: "Error on transaction",
-      error: error,
+      error: err,
     });
   }
 }
@@ -333,17 +338,18 @@ async function getOrderByTransaction(req, res) {
 
       const { itemId, userBuyer, userSeller, dateOrder, _id, status, orderCompletedBySeller } = order;
       const {
+        _id: transactionId,
         transactionHash,
         transactionIndex,
         to,
-        disputeId,
         transactionPayedAmount,
         transactionFeeAmount,
         transactionDate,
         networkEnv,
         transactionMeta,
         timeForClaim,
-        typeprice
+        typeprice,
+        currentClaim
       } = transaction;
       const item = await Item.findOne({ _id: itemId }).lean().populate({
         path: 'files',
@@ -366,17 +372,18 @@ async function getOrderByTransaction(req, res) {
         status,
         orderCompletedBySeller,
         transaction: {
+          transactionId,
           transactionHash,
           transactionIndex,
           to,
-          disputeId,
           transactionPayedAmount,
           transactionFeeAmount,
           transactionDate,
           networkEnv,
           timeForClaim,
           transactionMeta,
-          typeprice
+          typeprice,
+          currentClaim
         },
       };
     }
@@ -410,7 +417,6 @@ async function getOrderByOrderId(req, res) {
         transactionHash,
         transactionIndex,
         to,
-        disputeId,
         transactionPayedAmount,
         transactionFeeAmount,
         transactionDate,
@@ -441,7 +447,6 @@ async function getOrderByOrderId(req, res) {
           transactionHash,
           transactionIndex,
           to,
-          disputeId,
           transactionPayedAmount,
           transactionFeeAmount,
           transactionDate,
@@ -627,5 +632,5 @@ module.exports = {
   updateOrderCompletedBySeller,
   getOrdersByBuyer,
   getOrdersBySeller,
-  setDisputeOnOrderTransaction,
+  setDisputeOnOrderTransactionById
 };
