@@ -22,6 +22,7 @@ async function newItem(req, res) {
     const allowedCreates = [
       "title",
       "description",
+      "descriptionString",
       "typeprice",
       "price",
       "seller",

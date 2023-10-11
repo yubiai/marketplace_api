@@ -11,10 +11,27 @@ const termsSchema = new Schema({
       required: true,
       default: false
     },
-    author: {
+    published: {
+      type: Boolean,
+      required: true,
+      default: false
+    },
+    createdBy: {
       type: String,
       required: true
-    }
+    },
+    updateBy: {
+      type: String,
+      required: true
+    },
+    createdAt: {
+      type: Date,
+      required: true
+    },
+    updateAt: {
+      type: Date,
+      required: true
+    },
   },
   {
     versionKey: false,
