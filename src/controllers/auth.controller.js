@@ -23,11 +23,11 @@ async function nonce(req, res) {
 // Verify 
 async function verifySignature(req, res) {
   const { message, signature } = req.body;
-  const siweMessage = new SiweMessage(message);
 
   try {
+    const siweMessage = new SiweMessage(message);
     await siweMessage.verify({ signature })
-    console.log("verificado")
+
     return res.status(200).send(true);
   } catch (err) {
     console.log("Error Auth:", err)
