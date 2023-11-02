@@ -316,7 +316,6 @@ async function newEvidence(req, res) {
 async function updateStatus(req, res) {
   const { id } = req.params;
   const body = req.body;
-  console.log(id, body)
   try {
 
     if (!id) {

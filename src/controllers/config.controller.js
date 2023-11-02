@@ -19,7 +19,6 @@ async function initialBD(req, res) {
 
         let newUser = new Profile(newData);
         let userSave = await newUser.save();
-        console.log("User", userSave);
 
         // New Category Services
         let newCategory = {};
@@ -33,7 +32,6 @@ async function initialBD(req, res) {
 
         // New SubCategories
         for (let i = 0; i < subcategories.length; i++) {
-            console.log(subcategories[i]);
             subcategories[i].category = ObjectId(categorySave._id);
             subcategories[i].createdBy = ObjectId(userSave._id);
 

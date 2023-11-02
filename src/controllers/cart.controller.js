@@ -136,8 +136,6 @@ async function deleteArticle(req, res) {
 async function validateCheckout(req, res) {
   const { userId } = req.params;
 
-  console.log(data)
-
   try {
     if (!ObjectId.isValid(userId)) {
       return res.status(404).json({ error: "Not Object ID User" });
@@ -145,7 +143,6 @@ async function validateCheckout(req, res) {
 
     const cart = await currentCart(userId);
     // falta validar cada articulo si existe el stock para el proximo paso.
-    console.log(cart)
     return res.status(200).json("Cart Validate");
   } catch (error) {
     return res.status(404).json(error);
