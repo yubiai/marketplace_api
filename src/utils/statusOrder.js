@@ -24,7 +24,6 @@ const dealCreatedsInfo = (dealId) => {
       const apiYubiaiMarketTheGraph = 'https://api.studio.thegraph.com/query/45614/yubiaimarketplace/v0.0.1';
 
       await request(apiYubiaiMarketTheGraph, query).then(data => {
-        console.log(data)
         return resolve(true);
       });
 

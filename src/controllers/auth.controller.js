@@ -23,11 +23,11 @@ async function nonce(req, res) {
 // Verify 
 async function verifySignature(req, res) {
   const { message, signature } = req.body;
-  const siweMessage = new SiweMessage(message);
 
   try {
+    const siweMessage = new SiweMessage(message);
     await siweMessage.verify({ signature })
-    console.log("verificado")
+
     return res.status(200).send(true);
   } catch (err) {
     console.log("Error Auth:", err)
@@ -115,7 +115,6 @@ async function login(req, res) {
     }
 
     if (response && response.registered == true && response.profile) {
-      console.log(response.profile, "response.profile")
       // Verificar si el profile existe
       let userExists = await Profile.findOne({
         eth_address: walletAddress.toUpperCase()
@@ -165,7 +164,6 @@ async function login(req, res) {
       if (!userExists) {
         let newUser = new Profile(newData);
         let result = await newUser.save();
-        console.log(result, "result")
         userExists = {
           ...result,
           _id: result._id,
@@ -235,7 +233,6 @@ async function loginLens(req, res) {
     }
 
     if (!userExists || userExists && !userExists.lens_info) {
-      console.log("aca para lens  info")
       newData.lens_info = {
         name: profile.name || "",
         bio: profile.bio || "",
@@ -245,14 +242,12 @@ async function loginLens(req, res) {
     }
 
     if (!userExists || userExists && !userExists.name) {
-      console.log("aca para el name")
       newData.name = profile.name
     }
 
     const getPhoto = userExists && userExists.photo ? userExists.photo : "";
 
     if (!userExists || getPhoto === "" && profile.picture && profile.picture.original && profile.picture.original.url) {
-      console.log("aca para la pohoto")
       const pictureLens = profile.picture.original.url.split("/");
       const newPhoto = pictureLens[pictureLens.length - 1] ? "https://lens.infura-ipfs.io/ipfs/" + pictureLens[pictureLens.length - 1] : ""
       newData.photo = newPhoto;
@@ -262,14 +257,12 @@ async function loginLens(req, res) {
     if (
       userExists && !userExists.lens_info || userExists && !userExists.name || userExists && getPhoto === ""
     ) {
-      console.log("Se activo para actualizar")
       await Profile.findByIdAndUpdate(userExists._id, newData);
       logger.info("Update Data Lens Info - ID user: " + userExists._id)
     }
 
     // If it does not exist, save it as a new user
     if (!userExists) {
-      console.log("Se activo nuevo user")
       let newUser = new Profile(newData);
       let result = await newUser.save();
       userExists = {
@@ -338,7 +331,6 @@ async function loginSequence(req, res) {
 
     // If it does not exist, save it as a new user
     if (!userExists) {
-      console.log("Se activo nuevo user")
       let newUser = new Profile(newData);
       let result = await newUser.save();
       userExists = {

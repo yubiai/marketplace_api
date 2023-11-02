@@ -8,6 +8,7 @@ const { Filevidence } = require("../models/Filevidence");
 const { uploadFileEvidence, removeFileEvidence } = require("../utils/uploads");
 const { getTransactionUrl } = require("../utils/utils");
 const { pdfGenerator, uploadEvidenceInIPFSKleros, createdSignature, validateSignature } = require("../utils/evidenceGenerator");
+const { ethers } = require("ethers");
 
 async function getEvidenceByOrderId(req, res) {
   const { id } = req.params;
@@ -250,7 +251,8 @@ async function newEvidence(req, res) {
       item: {
         title: verifyOrder.itemId.title,
         url: `${process.env.FRONT_URL}/item/${verifyOrder.itemId.slug}`,
-        price: verifyTransaction.transactionPayedAmount,
+        description: verifyOrder.itemId.descriptionString,
+        price: ethers.utils.formatEther(verifyTransaction.transactionPayedAmount),
         currencySymbolPrice: verifyOrder.itemId.currencySymbolPrice,
         typeprice: verifyTransaction.typeprice
       },
@@ -314,7 +316,6 @@ async function newEvidence(req, res) {
 async function updateStatus(req, res) {
   const { id } = req.params;
   const body = req.body;
-
   try {
 
     if (!id) {

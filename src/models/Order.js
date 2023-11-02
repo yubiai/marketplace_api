@@ -78,8 +78,7 @@ const transactionSchema = new Schema(
       default: 0
     },
     disputeId: {
-      type: Number,
-      default: 0
+      type: Number
     }
   },
 );
